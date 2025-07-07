@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { ticketCommand } from './commands/ticket/index.js';
+import { flowCommand } from './commands/flow/index.js';
 
 const program = new Command();
 
@@ -11,9 +12,9 @@ program
 
 // Add command groups
 program.addCommand(ticketCommand);
+program.addCommand(flowCommand);
 
 // Future command groups will be added here:
-// program.addCommand(tddCommand);
 // program.addCommand(analyzeCommand);
 
 program.parse();
