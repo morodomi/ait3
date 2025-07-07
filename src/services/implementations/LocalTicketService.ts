@@ -6,7 +6,7 @@ import { lock } from 'proper-lockfile';
 import type { TicketService } from '../interfaces/TicketService.js';
 import type { Ticket, CreateTicketOptions, TicketConfig } from '../../common/types.js';
 import { TICKET_CONSTANTS, DEFAULT_TICKET_CONFIG, ERROR_MESSAGES } from '../../common/constants.js';
-import { ValidationError, FileSystemError, ConfigurationError, LockError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError } from '../../common/errors.js';
+import { ValidationError, FileSystemError, ConfigurationError, LockError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError, TicketNotStartedError } from '../../common/errors.js';
 import { TimeUtils, IDUtils, FileUtils } from '../../common/utils.js';
 
 // Zod schema for validation
@@ -17,6 +17,8 @@ const TicketSchema = z.object({
   priority: z.enum(['low', 'medium', 'high', 'critical']),
   created: z.string().datetime(),
   updated: z.string().datetime(),
+  started: z.string().datetime().optional(),
+  completed: z.string().datetime().optional(),
   assignee: z.string().optional(),
   labels: z.array(z.string())
 });
@@ -151,7 +153,7 @@ export class LocalTicketService implements TicketService {
 
 
   private generateFileContent(ticket: Ticket): string {
-    const frontmatter = {
+    const frontmatter: Record<string, any> = {
       id: ticket.id,
       title: ticket.title,
       status: ticket.status,
@@ -162,7 +164,7 @@ export class LocalTicketService implements TicketService {
     };
 
     if (ticket.assignee) {
-      (frontmatter as any).assignee = ticket.assignee;
+      frontmatter.assignee = ticket.assignee;
     }
 
     // Use gray-matter to create content with YAML frontmatter
@@ -287,7 +289,16 @@ export class LocalTicketService implements TicketService {
     }
   }
 
-  async startTicket(id: string): Promise<void> {
+  /**
+   * Generic method to move tickets between states
+   * Reduces code duplication for state transitions
+   */
+  private async moveTicketState(
+    id: string,
+    fromStatus: string,
+    toStatus: 'todo' | 'doing' | 'done',
+    timestampField?: 'started' | 'completed'
+  ): Promise<void> {
     try {
       await this.ensureDirectoryStructure();
 
@@ -328,18 +339,25 @@ export class LocalTicketService implements TicketService {
         throw new TicketNotFoundError(id);
       }
 
-      // Validate current status - prevent starting already started or completed tickets
-      if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.DOING) {
-        throw new TicketAlreadyInProgressError(id);
-      }
-      
-      if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.DONE) {
-        throw new TicketAlreadyCompletedError(id);
-      }
-
-      // Only allow starting tickets from 'todo' status
-      if (currentStatus !== TICKET_CONSTANTS.DIRECTORIES.TODO) {
-        throw new ValidationError(`Cannot start ticket from '${currentStatus}' status`);
+      // Validate current status matches expected fromStatus
+      if (currentStatus !== fromStatus) {
+        // Throw specific errors based on the transition type
+        if (fromStatus === TICKET_CONSTANTS.DIRECTORIES.TODO && toStatus === 'doing') {
+          if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.DOING) {
+            throw new TicketAlreadyInProgressError(id);
+          }
+          if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.DONE) {
+            throw new TicketAlreadyCompletedError(id);
+          }
+        } else if (fromStatus === TICKET_CONSTANTS.DIRECTORIES.DOING && toStatus === 'done') {
+          if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.TODO) {
+            throw new TicketNotStartedError(id);
+          }
+          if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.DONE) {
+            throw new TicketAlreadyCompletedError(id);
+          }
+        }
+        throw new ValidationError(`Cannot transition ticket from '${currentStatus}' to '${toStatus}'`);
       }
 
       // Read and update ticket content
@@ -348,18 +366,28 @@ export class LocalTicketService implements TicketService {
 
       // Update metadata
       const now = TimeUtils.now();
-      const updatedData = {
+      const updatedData: Record<string, any> = {
         ...data,
-        status: 'doing',
-        updated: now,
-        started: now  // Use same timestamp
+        status: toStatus,
+        updated: now
       };
+
+      // Add timestamp field if specified
+      if (timestampField) {
+        updatedData[timestampField] = now;
+      }
 
       // Generate updated file content
       const updatedContent = matter.stringify(markdownContent, updatedData);
 
-      // Move file from todo to doing directory atomically
-      const targetPath = join(this.basePath, TICKET_CONSTANTS.DIRECTORIES.DOING, targetFilename);
+      // Move file to target directory atomically
+      const statusToDir: Record<typeof toStatus, string> = {
+        'todo': TICKET_CONSTANTS.DIRECTORIES.TODO,
+        'doing': TICKET_CONSTANTS.DIRECTORIES.DOING,
+        'done': TICKET_CONSTANTS.DIRECTORIES.DONE
+      };
+      const targetDir = statusToDir[toStatus];
+      const targetPath = join(this.basePath, targetDir, targetFilename);
       
       // Write updated content to new location
       await writeFile(targetPath, updatedContent, 'utf-8');
@@ -383,13 +411,32 @@ export class LocalTicketService implements TicketService {
       if (error instanceof TicketNotFoundError || 
           error instanceof TicketAlreadyInProgressError ||
           error instanceof TicketAlreadyCompletedError ||
+          error instanceof TicketNotStartedError ||
           error instanceof ValidationError ||
           error instanceof FileSystemError) {
         throw error;
       }
       
       // Wrap other errors
-      throw new FileSystemError(`Failed to start ticket: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
+      throw new FileSystemError(`Failed to move ticket state: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
     }
+  }
+
+  async startTicket(id: string): Promise<void> {
+    await this.moveTicketState(
+      id,
+      TICKET_CONSTANTS.DIRECTORIES.TODO,
+      'doing',
+      'started'
+    );
+  }
+
+  async completeTicket(id: string): Promise<void> {
+    await this.moveTicketState(
+      id,
+      TICKET_CONSTANTS.DIRECTORIES.DOING,
+      'done',
+      'completed'
+    );
   }
 }
