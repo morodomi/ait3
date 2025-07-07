@@ -67,13 +67,15 @@ describe('redPhase Pure Function', () => {
       
       // Add acceptance criteria to the ticket file manually
       const ticketContent = `---
-id: 0001
-title: User Authentication
+id: '0001'
+title: 'User Authentication'
 status: todo
 priority: high
 created: '2025-07-07T10:00:00.000Z'
 updated: '2025-07-07T10:00:00.000Z'
-labels: ['auth', 'user']
+labels:
+  - auth
+  - user
 ---
 # Ticket #0001: User Authentication
 
@@ -136,13 +138,15 @@ Implement user authentication with JWT
       
       // Then overwrite with acceptance criteria
       const ticketContent = `---
-id: 0001
-title: Payment Processing
+id: '0001'
+title: 'Payment Processing'
 status: todo
 priority: high
 created: '2025-07-07T10:00:00.000Z'
 updated: '2025-07-07T10:00:00.000Z'
-labels: ['payment', 'api']
+labels:
+  - payment
+  - api
 ---
 # Ticket #0001: Payment Processing
 
@@ -151,7 +155,7 @@ labels: ['payment', 'api']
 - [ ] Handle payment failures gracefully
 - [ ] Send email confirmation on success`;
 
-      await mkdir(join(testDir, 'todo'), { recursive: true });
+      // Don't need to create todo directory - service already did that
       await writeFile(
         join(testDir, 'todo', '0001-payment-processing.md'),
         ticketContent

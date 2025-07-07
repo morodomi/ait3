@@ -1,0 +1,148 @@
+# AIT³ - AI + Ticket + Test + Tool driven development
+
+AIT³ provides an AI-driven development workflow with local ticket management and test-driven development support.
+
+## Implemented Commands
+
+### Ticket Management
+```bash
+# Create a new ticket
+ait3 ticket create "Feature name" [options]
+  Options:
+    -p, --priority <priority>  Ticket priority (low, medium, high, critical) [default: medium]
+    -a, --assignee <assignee>  Assign ticket to user
+    -l, --labels <labels>      Comma-separated labels
+
+# List all tickets
+ait3 ticket list [options]
+  Options:
+    -s, --status <status>      Filter by status (todo, doing, done)
+    -p, --priority <priority>  Filter by priority (low, medium, high, critical)
+
+# Show ticket details
+ait3 ticket show <id>
+
+# Start working on a ticket
+ait3 ticket start <id>
+
+# Complete a ticket
+ait3 ticket complete <id>
+```
+
+### AIT³ Workflow Commands
+
+#### Planning Phase
+```bash
+# Start planning phase with Socratic dialogue
+ait3 flow plan <featureName> [options]
+  Options:
+    -m, --mode <mode>          Planning mode (guided, express, manual) [default: guided]
+    -r, --requirements <requirements>  Comma-separated requirements
+    -t, --ticket <ticketId>    Associate with specific ticket ID
+
+# Examples:
+ait3 flow plan "user-auth" --requirements "security,oauth"
+ait3 flow plan "payment-system" --mode guided --ticket 0015
+```
+
+#### RED Phase
+```bash
+# Generate failing tests from ticket requirements
+ait3 flow red <ticketId> [options]
+  Options:
+    -t, --type <type>     Test type to generate (unit, integration, both) [default: unit]
+    -i, --interactive     Interactive mode for test customization
+    -d, --dry-run        Preview what would be generated without creating files
+
+# Examples:
+ait3 flow red 0010
+ait3 flow red 0010 --type both
+ait3 flow red 0010 --interactive
+```
+
+## Usage Examples
+
+### Complete Feature Development Flow
+```bash
+# 1. Create a ticket
+ait3 ticket create "User authentication feature" --priority high --labels "auth,security"
+
+# 2. Start working on it
+ait3 ticket start 0001
+
+# 3. Plan the implementation
+ait3 flow plan "user-authentication" --ticket 0001 --requirements "jwt,oauth,security"
+
+# 4. Generate failing tests
+ait3 flow red 0001 --type both
+
+# 5. Implement to pass tests (green phase - coming soon)
+# ait3 flow green 0001
+
+# 6. Refactor the code (refactor phase - coming soon)
+# ait3 flow refactor 0001
+
+# 7. Complete the ticket
+ait3 ticket complete 0001
+```
+
+### Quick Commands
+```bash
+# See all active tickets
+ait3 ticket list --status doing
+
+# Check high priority items
+ait3 ticket list --priority high
+
+# Quick feature planning
+ait3 flow plan "quick-fix" --mode express
+
+# Preview test generation
+ait3 flow red 0001 --dry-run
+```
+
+## Philosophy
+
+AIT³ follows a structured development approach:
+
+1. **PLANNING**: Claude proposes → Gemini refutes → Human decides
+2. **RED**: Write failing tests that define expected behavior
+3. **GREEN**: Implement minimal code for 100% test pass rate
+4. **REFACTOR**: Optimize while maintaining 100% test coverage
+5. **SQUASH**: Create clean commit history
+
+## Project Structure
+
+```
+.tickets/              # Local ticket management
+├── todo/             # Pending tickets
+├── doing/            # In-progress tickets
+├── done/             # Completed tickets
+└── config.json       # Ticket system configuration
+
+src/
+├── commands/         # CLI command implementations
+│   ├── ticket/      # Ticket management commands
+│   └── flow/        # AIT³ workflow commands
+└── services/        # Service layer with dependency injection
+
+tests/
+├── commands/        # Unit tests
+└── integration/     # Integration tests
+```
+
+## Best Practices
+
+1. **Always create a ticket** before starting work
+2. **Use flow plan** to validate approach with AI assistance
+3. **Generate tests first** with flow red command
+4. **Maintain 100% test pass rate** in green phase
+5. **Document architectural decisions** in commit messages
+
+## Tips
+
+- Use `--dry-run` flag to preview actions before execution
+- Filter tickets by status to focus on current work
+- Use interactive mode for complex test scenarios
+- Associate planning with tickets using `--ticket` flag
+- Add meaningful labels for better organization

@@ -159,12 +159,17 @@ describe('CLI Integration: flow red', () => {
 
   describe('ticket with acceptance criteria', () => {
     it('should parse acceptance criteria from ticket', async () => {
+      // Create directory structure
+      await mkdir(join(testDir, 'todo'), { recursive: true });
+      await mkdir(join(testDir, 'doing'), { recursive: true });
+      await mkdir(join(testDir, 'done'), { recursive: true });
+      
       // Create config file
       const config = {
         backend: 'local',
         path: testDir,
         numbering: {
-          format: '001',
+          format: '0000',
           increment: 1,
           next: 2
         },
@@ -179,7 +184,7 @@ describe('CLI Integration: flow red', () => {
       
       // Create ticket with detailed content
       const ticketContent = `---
-id: 0001
+id: '0001'
 title: 'User Registration'
 status: todo
 priority: high
@@ -197,8 +202,6 @@ Implement user registration functionality
 - [ ] Email must be unique
 - [ ] Password must be at least 8 characters
 - [ ] Send welcome email after registration`;
-
-      await mkdir(join(testDir, 'todo'), { recursive: true });
       await writeFile(
         join(testDir, 'todo', '0001-user-registration.md'),
         ticketContent
