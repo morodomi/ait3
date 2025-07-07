@@ -43,3 +43,23 @@ export class TicketNotFoundError extends TicketError {
     this.ticketId = ticketId;
   }
 }
+
+export class TicketAlreadyInProgressError extends TicketError {
+  public readonly ticketId: string;
+
+  constructor(ticketId: string, message?: string) {
+    super(message || `Ticket with ID '${ticketId}' is already in progress`, 'TICKET_ALREADY_IN_PROGRESS');
+    this.name = 'TicketAlreadyInProgressError';
+    this.ticketId = ticketId;
+  }
+}
+
+export class TicketAlreadyCompletedError extends TicketError {
+  public readonly ticketId: string;
+
+  constructor(ticketId: string, message?: string) {
+    super(message || `Ticket with ID '${ticketId}' is already completed`, 'TICKET_ALREADY_COMPLETED');
+    this.name = 'TicketAlreadyCompletedError';
+    this.ticketId = ticketId;
+  }
+}
