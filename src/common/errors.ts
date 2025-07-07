@@ -33,3 +33,13 @@ export class LockError extends TicketError {
     this.name = 'LockError';
   }
 }
+
+export class TicketNotFoundError extends TicketError {
+  public readonly ticketId: string;
+  
+  constructor(ticketId: string, message?: string) {
+    super(message || `Ticket with ID '${ticketId}' not found`, 'TICKET_NOT_FOUND');
+    this.name = 'TicketNotFoundError';
+    this.ticketId = ticketId;
+  }
+}
