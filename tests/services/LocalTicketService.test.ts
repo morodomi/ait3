@@ -14,7 +14,7 @@ describe('LocalTicketService', () => {
   beforeEach(async () => {
     // Create unique test directory with hash for parallel test safety
     const hash = randomBytes(8).toString('hex');
-    const prefix = join(tmpdir(), `test-synapse-${hash}-`);
+    const prefix = join(tmpdir(), `test-ait3-${hash}-`);
     testDir = await mkdtemp(prefix);
     
     // Initialize service with test directory

@@ -1,14 +1,16 @@
 ---
 id: '0007'
 title: 'refactor: Rebrand project from Synapse to AIT3 - プロジェクト名とコマンドの変更'
-status: todo
+status: done
 priority: high
 created: '2025-07-07T08:19:29.689Z'
-updated: '2025-07-07T08:19:29.689Z'
+updated: '2025-07-07T08:42:10.209Z'
 labels:
   - refactor
   - branding
   - breaking-change
+started: '2025-07-07T08:21:56.258Z'
+completed: '2025-07-07T08:42:10.209Z'
 ---
 # Ticket #0007: refactor: Rebrand project from Synapse to AIT3 - プロジェクト名とコマンドの変更
 

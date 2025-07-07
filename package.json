@@ -1,8 +1,11 @@
 {
-  "name": "synapse",
+  "name": "@morodomi/ait3",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
+  "bin": {
+    "ait3": "./bin/ait3.js"
+  },
   "scripts": {
     "test": "vitest",
     "test:watch": "vitest",
@@ -14,10 +17,10 @@
     "type-check": "tsc --noEmit",
     "ci": "npm run type-check && npm run test:ci"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": ["ai", "development", "workflow", "ticket", "test", "tool", "cli"],
+  "author": "morodomi",
+  "license": "MIT",
+  "description": "AIT³ Development Platform - AI + Ticket + Test + Tool driven development methodology",
   "devDependencies": {
     "@types/node": "^24.0.10",
     "gray-matter": "^4.0.3",

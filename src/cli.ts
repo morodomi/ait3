@@ -5,8 +5,8 @@ import { ticketCommand } from './commands/ticket/index.js';
 const program = new Command();
 
 program
-  .name('synapse')
-  .description('Synapse - AI-Driven Development Platform')
+  .name('ait3')
+  .description('AIT³ Development Platform - AI + Ticket + Test + Tool driven development')
   .version('1.0.0');
 
 // Add command groups

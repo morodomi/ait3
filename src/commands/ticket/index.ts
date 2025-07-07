@@ -20,15 +20,15 @@ export const ticketCommand = new Command('ticket')
   .description('Ticket management commands')
   .addHelpText('after', `
 Examples:
-  $ synapse ticket create "Fix authentication bug"
-  $ synapse ticket create "Add dark mode" --priority high --assignee "john@example.com"
-  $ synapse ticket create "Feature request" --labels "feature,backend,urgent"
+  $ ait3 ticket create "Fix authentication bug"
+  $ ait3 ticket create "Add dark mode" --priority high --assignee "john@example.com"
+  $ ait3 ticket create "Feature request" --labels "feature,backend,urgent"
   
 Future commands:
-  $ synapse ticket list
-  $ synapse ticket show 001
-  $ synapse ticket start 001
-  $ synapse ticket complete 001
+  $ ait3 ticket list
+  $ ait3 ticket show 001
+  $ ait3 ticket start 001
+  $ ait3 ticket complete 001
   `);
 
 // ticket create subcommand
@@ -120,7 +120,7 @@ ticketCommand
         console.error(chalk.yellow('💡 Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
       } else if (error instanceof TicketNotFoundError) {
         console.error(chalk.red('❌ Ticket Not Found:'), error.message);
-        console.error(chalk.yellow('💡 Use "synapse ticket list" to see available tickets'));
+        console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
       } else {
         console.error(chalk.red('❌ Error showing ticket:'), error instanceof Error ? error.message : String(error));
       }
@@ -144,7 +144,7 @@ ticketCommand
         console.error(chalk.yellow('💡 Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
       } else if (error instanceof TicketNotFoundError) {
         console.error(chalk.red('❌ Ticket Not Found:'), error.message);
-        console.error(chalk.yellow('💡 Use "synapse ticket list" to see available tickets'));
+        console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
       } else if (error instanceof TicketAlreadyInProgressError) {
         console.error(chalk.red('❌ Already In Progress:'), error.message);
         console.error(chalk.yellow('💡 This ticket is already being worked on'));
@@ -174,7 +174,7 @@ ticketCommand
         console.error(chalk.yellow('💡 Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
       } else if (error instanceof TicketNotFoundError) {
         console.error(chalk.red('❌ Ticket Not Found:'), error.message);
-        console.error(chalk.yellow('💡 Use "synapse ticket list" to see available tickets'));
+        console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
       } else if (error instanceof TicketNotStartedError) {
         console.error(chalk.red('❌ Not Started:'), error.message);
         console.error(chalk.yellow('💡 You must start the ticket before completing it'));
