@@ -1,6 +1,6 @@
-# Using Gemini CLI for Synapse Development and Large Codebase Analysis
+# Using Gemini CLI for AIT³ Development and Large Codebase Analysis
 
-When working with Synapse projects or analyzing large codebases that exceed Claude's context limits, use the Gemini CLI with its massive context window. Use `gemini -p` to leverage Google Gemini's large context capacity for TiDD workflow validation and architectural analysis.
+When working with AIT³ projects or analyzing large codebases that exceed Claude's context limits, use the Gemini CLI with its massive context window. Use `gemini -p` to leverage Google Gemini's large context capacity for TiDD workflow validation and architectural analysis.
 
 ## File and Directory Inclusion Syntax
 
@@ -30,12 +30,12 @@ gemini -p "@src/services/ @tests/ Analyze service layer test coverage"
 
 **Full project analysis:**
 ```bash
-gemini -p "@./ Give me an overview of this Synapse project"
+gemini -p "@./ Give me an overview of this AIT³ project"
 # Or use --all_files flag:
-gemini --all_files -p "Analyze the entire Synapse project structure and patterns"
+gemini --all_files -p "Analyze the entire AIT³ project structure and patterns"
 ```
 
-## Synapse TiDD Workflow Integration
+## AIT³ TiDD Workflow Integration
 
 ### PLANNING Phase Validation
 Use Gemini to challenge Claude's proposed approaches:
@@ -87,7 +87,7 @@ gemini -p "@src/commands/ @src/services/ Are the naming conventions and patterns
 gemini -p "@src/ Identify technical debt and maintenance issues. Prioritize by impact."
 ```
 
-## Synapse Architecture Verification
+## AIT³ Architecture Verification
 
 ### Service Layer Analysis
 ```bash
@@ -215,7 +215,7 @@ gemini -p "@src/ Compare this code against TypeScript and Node.js best practices
 gemini -p "@src/ How future-proof is this architecture? What changes would be needed for emerging requirements?"
 ```
 
-## When to Use Gemini CLI for Synapse Projects
+## When to Use Gemini CLI for AIT³ Projects
 
 Use `gemini -p` when:
 - **TiDD Phase Validation**: Challenging Claude's proposals during PLANNING phase
@@ -241,7 +241,7 @@ Use `gemini -p` when:
 - **REFACTOR**: Use Gemini to identify optimization opportunities
 - **SQUASH**: Use Gemini to ensure clean, consistent final state
 
-## Important Notes for Synapse Development
+## Important Notes for AIT³ Development
 
 - **Context Awareness**: Gemini sees the entire codebase, unlike Claude's limited context
 - **Architectural Validation**: Use for verifying pure function + service injection patterns

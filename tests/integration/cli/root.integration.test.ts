@@ -20,7 +20,7 @@ describe('CLI Integration: Root Commands', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('Synapse - AI-Driven Development Platform');
+      expect(result).toContain('AIT³ Development Platform - AI + Ticket + Test + Tool driven development');
       expect(result).toContain('Commands:');
       expect(result).toContain('ticket');
     });
@@ -31,7 +31,7 @@ describe('CLI Integration: Root Commands', () => {
           encoding: 'utf8',
           timeout: 5000
         });
-      }).toThrow(/Usage: synapse \[options\] \[command\]/);
+      }).toThrow(/Usage: ait3 \[options\] \[command\]/);
     });
   });
 

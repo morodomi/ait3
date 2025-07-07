@@ -1,8 +1,8 @@
-# Using similarity-ts for Synapse Code Quality and Refactoring
+# Using similarity-ts for AIT³ Code Quality and Refactoring
 
-When working with the Synapse project during the REFACTOR phase of TiDD workflow, use `similarity-ts` to identify code duplication, maintain pattern consistency, and ensure architectural compliance across the TypeScript codebase.
+When working with the AIT³ project during the REFACTOR phase of TiDD workflow, use `similarity-ts` to identify code duplication, maintain pattern consistency, and ensure architectural compliance across the TypeScript codebase.
 
-## Core similarity-ts Commands for Synapse
+## Core similarity-ts Commands for AIT³
 
 ### Basic Project Analysis
 ```bash
@@ -28,7 +28,7 @@ similarity-ts --interfaces-only --threshold 0.9 src/services/interfaces/
 ## TiDD Workflow Integration
 
 ### REFACTOR Phase - Code Duplication Detection
-The primary use case for similarity-ts in Synapse's TiDD workflow:
+The primary use case for similarity-ts in AIT³'s TiDD workflow:
 
 ```bash
 # Comprehensive refactoring analysis
@@ -64,7 +64,7 @@ similarity-ts --threshold 0.7 --min-lines 3 --no-size-penalty src/
 similarity-ts --experimental-types --threshold 0.9 src/common/types.ts src/services/interfaces/
 ```
 
-## Synapse Architecture-Specific Analysis
+## AIT³ Architecture-Specific Analysis
 
 ### Pure Function Pattern Consistency
 ```bash
@@ -152,7 +152,7 @@ similarity-ts --threshold 0.8 --min-lines 4 tests/unit/ tests/integration/
 similarity-ts --threshold 0.7 --min-lines 3 --filter-function-body "Buffer\|stream\|large" src/
 ```
 
-## Threshold Guidelines for Synapse
+## Threshold Guidelines for AIT³
 
 ### Recommended Thresholds by Use Case
 - **Pure Functions**: 0.6-0.7 (should be unique, low similarity expected)
@@ -268,7 +268,7 @@ similarity-ts --threshold 0.7 --min-lines 5 src/services/implementations/
 similarity-ts --threshold 0.8 --min-lines 4 --filter-function-body "private.*async" src/services/
 ```
 
-## Exclusions for Synapse
+## Exclusions for AIT³
 
 ### Directories to Exclude
 ```bash
@@ -306,7 +306,7 @@ similarity-ts --threshold 0.8 --min-lines 4 src/ > after-refactor.txt
 gemini -p "@before-refactor.txt @after-refactor.txt Compare these similarity reports and assess refactoring effectiveness"
 ```
 
-## Best Practices for Synapse
+## Best Practices for AIT³
 
 1. **Use during REFACTOR phase**: Primary integration point in TiDD workflow
 2. **Adjust thresholds by component**: Different similarity expectations for different parts
@@ -334,4 +334,4 @@ similarity-ts --threshold 0.8 --min-lines 4 src/services/
 similarity-ts --threshold 0.8 --min-lines 4 src/common/
 ```
 
-Remember: similarity-ts is a tool for maintaining code quality and consistency within the Synapse TiDD workflow. Use it to identify refactoring opportunities, not to enforce artificial uniformity where business logic should be unique.
+Remember: similarity-ts is a tool for maintaining code quality and consistency within the AIT³ TiDD workflow. Use it to identify refactoring opportunities, not to enforce artificial uniformity where business logic should be unique.

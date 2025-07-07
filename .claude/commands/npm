@@ -1,10 +1,10 @@
-# NPM Scripts for Synapse - AI-Driven Development Platform
+# NPM Scripts for AIT³ - AI-Driven Development Platform
 
-This guide explains the npm scripts available in the Synapse project and how they integrate with our TiDD (Test-Intelligence-Driven Development) workflow and AI-driven development philosophy.
+This guide explains the npm scripts available in the AIT³ project and how they integrate with our TiDD (Test-Intelligence-Driven Development) workflow and AI-driven development philosophy.
 
 ## 🎭 TiDD Workflow Integration
 
-Synapse follows a **Test-Intelligence-Driven Development** methodology with 5 phases. Each npm script supports specific phases of this workflow.
+AIT³ follows a **Test-Intelligence-Driven Development** methodology with 5 phases. Each npm script supports specific phases of this workflow.
 
 ### PLANNING Phase (Socratic Dialogue)
 ```bash
@@ -271,7 +271,7 @@ npm run lint
 gemini -p "@src/ Review code quality issues and suggest improvements"
 ```
 
-## 🧩 Integration with Synapse Architecture
+## 🧩 Integration with AIT³ Architecture
 
 ### Pure Functions + Service Injection
 All npm scripts support the project's architectural patterns:
@@ -310,4 +310,4 @@ Scripts support `.tickets/` workflow:
 - **Code quality**: All lint rules must pass
 - **Coverage**: Maintain comprehensive test coverage
 
-Remember: These scripts are tools in service of the Synapse philosophy - enabling thoughtful, evidence-based development through AI collaboration and systematic validation.
+Remember: These scripts are tools in service of the AIT³ philosophy - enabling thoughtful, evidence-based development through AI collaboration and systematic validation.

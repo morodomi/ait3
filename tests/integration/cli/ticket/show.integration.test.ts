@@ -12,7 +12,7 @@ describe('CLI Integration: ticket show', () => {
   beforeEach(async () => {
     // Create unique test directory with hash for parallel test safety
     const hash = randomBytes(8).toString('hex');
-    const prefix = join(tmpdir(), `test-synapse-cli-ticket-show-${hash}-`);
+    const prefix = join(tmpdir(), `test-ait3-cli-ticket-show-${hash}-`);
     testDir = await mkdtemp(prefix);
     
     // Store original .tickets directory for restoration

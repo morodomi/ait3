@@ -14,7 +14,7 @@ describe('createTicket Pure Function', () => {
   beforeEach(async () => {
     // Create unique test directory with hash for parallel test safety
     const hash = randomBytes(8).toString('hex');
-    const prefix = join(tmpdir(), `test-synapse-create-${hash}-`);
+    const prefix = join(tmpdir(), `test-ait3-create-${hash}-`);
     testDir = await mkdtemp(prefix);
     
     // Create services container with test ticket service

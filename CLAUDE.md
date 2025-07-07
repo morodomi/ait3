@@ -1,8 +1,8 @@
-# 🧠 Synapse - AI-Driven Development Platform
+# 🧠 AIT³ - AI-Driven Development Platform
 
 ## 📋 Project Overview
 
-**Synapse** is an AI-driven development platform that revolutionizes software engineering through intelligent collaboration between Claude Code, Gemini, and human developers. By implementing a 4-Phase TiDD (Test-Intelligence-Driven Development) workflow, Synapse facilitates thoughtful decision-making through dialectical reasoning, where human judgment remains supreme.
+**AIT³** is an AI-driven development platform that revolutionizes software engineering through intelligent collaboration between Claude Code, Gemini, and human developers. By implementing a 4-Phase TiDD (Test-Intelligence-Driven Development) workflow, AIT³ facilitates thoughtful decision-making through dialectical reasoning, where human judgment remains supreme.
 
 **Mission**: Transform development from isolated coding to collaborative intelligence, where AI assists in exploring possibilities, challenging assumptions, and discovering optimal solutions through reasoned discourse.
 
@@ -34,7 +34,7 @@
 ### 🛠️ Claude Code Integration
 - **Auto Setup**: Automatic `.claude/commands` installation
 - **MCP Server**: Seamless Claude Code integration
-- **Command Templates**: Synapse and Gemini command files
+- **Command Templates**: AIT³ and Gemini command files
 - **Context Optimization**: Large codebase analysis with Gemini CLI
 
 ## 🏗️ Architecture
@@ -52,7 +52,7 @@
 
 ```
 ├── bin/
-│   └── synapse.js              ← CLI executable
+│   └── ait3.js                 ← CLI executable
 │
 ├── src/
 │   ├── cli.ts                  ← Simple router with ServiceContainer (~100 lines)
@@ -123,7 +123,7 @@
 │
 ├── .claude/                   ← Claude Code integration (auto-installed)
 │   ├── commands/              ← Command templates
-│   │   ├── synapse            ← Synapse CLI commands guide
+│   │   ├── ait3               ← AIT³ CLI commands guide
 │   │   └── gemini             ← Gemini large codebase analysis guide
 │   └── mcp_settings.json      ← MCP server configuration
 │
@@ -155,55 +155,55 @@ npm run build         # Build for production
 npm run dev           # Development mode with watch
 ```
 
-### CLI Commands (Synapse)
+### CLI Commands (AIT³)
 
 #### 🎫 Ticket Management
 ```bash
-synapse ticket create "Feature name"          # Create new ticket
-synapse ticket list                           # List all tickets
-synapse ticket list --status doing            # Filter by status
-synapse ticket start 001                      # Start working on ticket
-synapse ticket show 001                       # Show ticket details
-synapse ticket complete 001                   # Complete ticket
-synapse ticket delete 001                     # Delete ticket
+ait3 ticket create "Feature name"             # Create new ticket
+ait3 ticket list                              # List all tickets
+ait3 ticket list --status doing               # Filter by status
+ait3 ticket start 001                         # Start working on ticket
+ait3 ticket show 001                          # Show ticket details
+ait3 ticket complete 001                      # Complete ticket
+ait3 ticket delete 001                        # Delete ticket
 ```
 
 #### 🧠 TiDD Workflow
 ```bash
-synapse tdd plan "feature-name"               # PLANNING: Socratic dialogue
-synapse tdd red 001                           # RED: Create failing tests
-synapse tdd green 001                         # GREEN: Implement feature
-synapse tdd refactor 001                      # REFACTOR: Optimize code
-synapse tdd squash 001                        # SQUASH: Clean commits & PR
+ait3 tdd plan "feature-name"                  # PLANNING: Socratic dialogue
+ait3 tdd red 001                              # RED: Create failing tests
+ait3 tdd green 001                            # GREEN: Implement feature
+ait3 tdd refactor 001                         # REFACTOR: Optimize code
+ait3 tdd squash 001                           # SQUASH: Clean commits & PR
 ```
 
 #### 🔍 Project Analysis
 ```bash
-synapse analyze project                       # Analyze current project
-synapse analyze structure                     # Analyze directory structure
-synapse analyze dependencies                  # Analyze dependency graph
+ait3 analyze project                          # Analyze current project
+ait3 analyze structure                        # Analyze directory structure
+ait3 analyze dependencies                     # Analyze dependency graph
 ```
 
 #### 📄 CLAUDE.md Generation
 ```bash
-synapse generate claude-md                    # Generate CLAUDE.md
-synapse generate auto                         # Auto-generate with analysis
-synapse generate interactive                  # Interactive generation
+ait3 generate claude-md                       # Generate CLAUDE.md
+ait3 generate auto                            # Auto-generate with analysis
+ait3 generate interactive                     # Interactive generation
 ```
 
 #### 🛠️ Setup & Installation
 ```bash
-synapse install claude                        # Install .claude/commands files
-synapse install mcp                           # Install MCP server configuration
-synapse install commands                      # Install command templates
-synapse install all                           # Install all components
+ait3 install claude                           # Install .claude/commands files
+ait3 install mcp                              # Install MCP server configuration
+ait3 install commands                         # Install command templates
+ait3 install all                              # Install all components
 ```
 
 #### 📊 Status & Monitoring
 ```bash
-synapse status                               # System status overview
-synapse status --tickets                     # Include ticket statistics
-synapse status --detailed                    # Detailed system information
+ait3 status                                  # System status overview
+ait3 status --tickets                        # Include ticket statistics
+ait3 status --detailed                       # Detailed system information
 ```
 
 ## 🔄 TiDD Workflow (Test-Intelligence-Driven Development)
@@ -214,7 +214,7 @@ synapse status --detailed                    # Detailed system information
 
 ```bash
 # 1. Claude proposes approach
-synapse tdd plan "user-authentication" --requirements "security,oauth,persistence"
+ait3 tdd plan "user-authentication" --requirements "security,oauth,persistence"
 
 # 2. Human reviews Claude's proposal, then challenges with Gemini
 gemini -p "Critique Claude's approach for user authentication: [proposal-details]"
@@ -243,7 +243,7 @@ Human decision: Implement with secure httpOnly cookies + additional CSRF protect
 
 ```bash
 # Create failing tests that define expected behavior
-synapse tdd red 123
+ait3 tdd red 123
 
 # Tests must:
 # - Reflect ticket purpose and acceptance criteria
@@ -268,7 +268,7 @@ Coverage: 47 test cases, 0% passing (intentionally red)"
 
 ```bash
 # Implement feature with strict test compliance
-synapse tdd green 123
+ait3 tdd green 123
 
 # Requirements:
 # - 100% test pass rate (non-negotiable)
@@ -295,7 +295,7 @@ Tests: 47/47 passing (100% green)"
 
 ```bash
 # Optimize structure, performance, and maintainability
-synapse tdd refactor 123
+ait3 tdd refactor 123
 
 # Focus areas:
 # - Extract common patterns and utilities
@@ -326,7 +326,7 @@ Tests: 47/47 passing (maintained 100%)"
 
 ```bash
 # Consolidate development commits into meaningful history
-synapse tdd squash 123 "Complete user authentication system"
+ait3 tdd squash 123 "Complete user authentication system"
 
 # Automated process:
 # 1. Backup current state with tags
@@ -490,45 +490,45 @@ Implement comprehensive user authentication system with OAuth2 support.
 
 **Setup Command**:
 ```bash
-synapse install all
+ait3 install all
 # Installs:
-# - .claude/commands/synapse (Synapse CLI commands guide)
+# - .claude/commands/ait3 (AIT³ CLI commands guide)
 # - .claude/commands/gemini (Gemini large codebase analysis guide)
 # - .claude/mcp_settings.json (MCP server configuration)
 ```
 
-### 📋 .claude/commands/synapse
+### 📋 .claude/commands/ait3
 
 ```markdown
-# Synapse - AI-Driven Development Platform
+# AIT³ - AI-Driven Development Platform
 
-Synapse provides TiDD (Test-Intelligence-Driven Development) workflow with local ticket management and Claude Code integration.
+AIT³ provides TiDD (Test-Intelligence-Driven Development) workflow with local ticket management and Claude Code integration.
 
 ## Core Commands
 
 ### Ticket Management
 ```bash
-synapse ticket create "Feature name"     # Create new ticket
-synapse ticket list                      # List all tickets
-synapse ticket start 001                 # Start working on ticket
-synapse ticket complete 001              # Complete ticket
-synapse ticket show 001                  # Show ticket details
+ait3 ticket create "Feature name"        # Create new ticket
+ait3 ticket list                         # List all tickets
+ait3 ticket start 001                    # Start working on ticket
+ait3 ticket complete 001                 # Complete ticket
+ait3 ticket show 001                     # Show ticket details
 ```
 
 ### TiDD Workflow
 ```bash
-synapse tdd plan "feature-name"          # PLANNING: Socratic dialogue
-synapse tdd red 001                      # RED: Create failing tests
-synapse tdd green 001                    # GREEN: Implement feature
-synapse tdd refactor 001                 # REFACTOR: Optimize code
-synapse tdd squash 001                   # SQUASH: Clean commits
+ait3 tdd plan "feature-name"             # PLANNING: Socratic dialogue
+ait3 tdd red 001                         # RED: Create failing tests
+ait3 tdd green 001                       # GREEN: Implement feature
+ait3 tdd refactor 001                    # REFACTOR: Optimize code
+ait3 tdd squash 001                      # SQUASH: Clean commits
 ```
 
 ### Project Analysis
 ```bash
-synapse analyze project                  # Analyze current project
-synapse generate claude-md               # Generate CLAUDE.md
-synapse status                          # System status
+ait3 analyze project                     # Analyze current project
+ait3 generate claude-md                  # Generate CLAUDE.md
+ait3 status                             # System status
 ```
 
 ## TiDD Philosophy
@@ -549,7 +549,7 @@ synapse status                          # System status
 
 ## Integration with Claude Code
 
-Synapse is optimized for Claude Code development:
+AIT³ is optimized for Claude Code development:
 - Automatic CLAUDE.md generation for projects
 - Context-aware ticket management
 - Pure function architecture for easy understanding
@@ -667,10 +667,10 @@ Use gemini -p when:
 ```json
 {
   "mcpServers": {
-    "synapse": {
+    "ait3": {
       "command": "node",
       "args": ["src/mcp/server.js"],
-      "description": "Synapse AI Development Platform MCP Server"
+      "description": "AIT³ AI Development Platform MCP Server"
     }
   }
 }
@@ -680,7 +680,7 @@ Use gemini -p when:
 
 ### 🎭 Socratic Foundation
 
-Synapse embodies **Socratic epistemology** - wisdom emerges through questioning, dialogue, and examining assumptions. Like Socrates, we embrace ignorance as the starting point for knowledge.
+AIT³ embodies **Socratic epistemology** - wisdom emerges through questioning, dialogue, and examining assumptions. Like Socrates, we embrace ignorance as the starting point for knowledge.
 
 > *"The only true wisdom is in knowing you know nothing."* - Socrates
 
@@ -757,9 +757,9 @@ afterEach(async () => {
 ```
 
 **Directory Naming Convention:**
-- `test-synapse-{hash}-` - General Synapse tests
-- `test-synapse-cli-{hash}-` - CLI integration tests  
-- `test-synapse-create-{hash}-` - createTicket function tests
+- `test-ait3-{hash}-` - General AIT³ tests
+- `test-ait3-cli-{hash}-` - CLI integration tests  
+- `test-ait3-create-{hash}-` - createTicket function tests
 - `test-{feature}-{hash}-` - Feature-specific tests
 
 #### **🚨 Project Directory Protection**
@@ -774,7 +774,7 @@ const service = new LocalTicketService('.tickets');
 const service = new LocalTicketService('./test-data');
 
 // NEVER do this - unsafe parallel execution
-const testDir = '/tmp/synapse-test';  // Fixed path
+const testDir = '/tmp/ait3-test';  // Fixed path
 ```
 
 **Environment Variables for CLI Tests:**
@@ -847,35 +847,35 @@ export function createService(config?: ServiceConfig) {
 
 ### Quick Start
 ```bash
-# Install Synapse globally
-npm install -g @morodomi/synapse
+# Install AIT³ globally
+npm install -g @morodomi/ait3
 
 # Initialize in existing project
 cd your-project
-synapse install all
+ait3 install all
 
 # Generate CLAUDE.md for Claude Code
-synapse generate claude-md
+ait3 generate claude-md
 
 # Start first ticket
-synapse ticket create "Setup project structure"
-synapse ticket start 001
-synapse tdd plan "project-setup"
+ait3 ticket create "Setup project structure"
+ait3 ticket start 001
+ait3 tdd plan "project-setup"
 ```
 
 ### Integration with Existing Projects
 ```bash
 # Analyze existing project
-synapse analyze project --comprehensive
+ait3 analyze project --comprehensive
 
 # Setup complete integration
-synapse install all
+ait3 install all
 
 # Setup ticket system
-synapse ticket create "Integrate Synapse workflow"
+ait3 ticket create "Integrate AIT³ workflow"
 
 # Begin TiDD process
-synapse tdd plan "synapse-integration"
+ait3 tdd plan "ait3-integration"
 ```
 
 ## 📋 Roadmap
@@ -908,32 +908,32 @@ synapse tdd plan "synapse-integration"
 ### New Feature Development
 ```bash
 # 1. Create and start ticket
-synapse ticket create "User profile management"
-synapse ticket start 001
+ait3 ticket create "User profile management"
+ait3 ticket start 001
 
 # 2. PLANNING phase with AI collaboration
-synapse tdd plan "user-profile" --requirements "crud,validation,security"
+ait3 tdd plan "user-profile" --requirements "crud,validation,security"
 # → Claude proposes approach
 # → Challenge with Gemini for alternatives
 # → Human decides on final approach
 
 # 3. RED phase - create comprehensive tests
-synapse tdd red 001
+ait3 tdd red 001
 # → Creates failing tests for all requirements
 # → Tests define behavior, not implementation
 
 # 4. GREEN phase - implement to pass tests
-synapse tdd green 001  
+ait3 tdd green 001  
 # → Minimal implementation for 100% test pass
 # → Mock external services, create tickets for real implementations
 
 # 5. REFACTOR phase - optimize and clean
-synapse tdd refactor 001
+ait3 tdd refactor 001
 # → Improve performance and maintainability
 # → Maintain 100% test coverage
 
 # 6. SQUASH phase - clean integration
-synapse tdd squash 001 "Complete user profile management"
+ait3 tdd squash 001 "Complete user profile management"
 # → Clean commit history
 # → Create PR or merge to main
 # → Mark ticket as complete
@@ -942,23 +942,23 @@ synapse tdd squash 001 "Complete user profile management"
 ### Project Integration
 ```bash
 # 1. Analyze existing codebase
-synapse analyze project --detailed
-synapse analyze structure --dependencies
+ait3 analyze project --detailed
+ait3 analyze structure --dependencies
 
 # 2. Setup complete integration
-synapse install all
+ait3 install all
 # → Installs .claude/commands files
 # → Configures MCP server
 # → Sets up local ticket system
 
 # 3. Generate project-specific CLAUDE.md
-synapse generate interactive
+ait3 generate interactive
 # → AI-powered content generation
 
 # 4. Begin systematic improvement
-synapse ticket create "Migrate to Synapse workflow"
-synapse ticket start 001
-synapse tdd plan "synapse-migration"
+ait3 ticket create "Migrate to AIT³ workflow"
+ait3 ticket start 001
+ait3 tdd plan "ait3-migration"
 # → Continue with TiDD workflow
 ```
 
@@ -966,11 +966,11 @@ synapse tdd plan "synapse-migration"
 
 ## 💫 Meta Information
 
-**Package**: `@morodomi/synapse`  
-**Command**: `synapse`  
+**Package**: `@morodomi/ait3`  
+**Command**: `ait3`  
 **Version**: 1.0.0  
 **License**: MIT  
-**Repository**: https://github.com/morodomi/synapse  
+**Repository**: https://github.com/morodomi/ait3  
 
 **Claude Code Integration**: This project is optimized for Claude Code development with comprehensive context management and intelligent assistance.
 
@@ -981,7 +981,7 @@ synapse tdd plan "synapse-migration"
 ## 🧠 AI Instructions
 
 ### Project Mission & Purpose
-**Synapse** is an AI-driven development platform implementing Socratic methodology for superior software engineering. This is NOT just another CLI tool - it's a **philosophical transformation** of how humans and AI collaborate in development.
+**AIT³** is an AI-driven development platform implementing Socratic methodology for superior software engineering. This is NOT just another CLI tool - it's a **philosophical transformation** of how humans and AI collaborate in development.
 
 **Core Purpose**: Enable thoughtful, evidence-based development through dialectical reasoning between Claude and Gemini, with human wisdom as the final arbiter.
 
