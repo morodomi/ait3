@@ -3,9 +3,9 @@ import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
-import { refactorPhase } from '../../../src/commands/flow/refactor.js';
-import { LocalTicketService } from '../../../src/services/implementations/LocalTicketService.js';
-import type { Services } from '../../../src/common/types.js';
+import { refactorPhase } from './refactor.js';
+import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
+import type { Services } from '@/common/types.js';
 
 describe('refactorPhase Pure Function', () => {
   let testDir: string;

@@ -3,9 +3,9 @@ import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
-import { redPhase } from '../../../src/commands/flow/red.js';
-import { LocalTicketService } from '../../../src/services/implementations/LocalTicketService.js';
-import type { Services } from '../../../src/common/types.js';
+import { redPhase } from './red.js';
+import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
+import type { Services } from '@/common/types.js';
 
 describe('redPhase Pure Function', () => {
   let testDir: string;

@@ -3,9 +3,9 @@ import { mkdtemp, rm, writeFile, mkdir, readFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
-import { greenPhase } from '../../../src/commands/flow/green.js';
-import { LocalTicketService } from '../../../src/services/implementations/LocalTicketService.js';
-import type { Services } from '../../../src/common/types.js';
+import { greenPhase } from './green.js';
+import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
+import type { Services } from '@/common/types.js';
 
 describe('greenPhase Pure Function', () => {
   let testDir: string;

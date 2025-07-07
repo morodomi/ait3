@@ -3,9 +3,9 @@ import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
-import { createTicket } from '../../../src/commands/ticket/create.js';
-import { LocalTicketService } from '../../../src/services/implementations/LocalTicketService.js';
-import type { Services, CreateTicketArgs } from '../../../src/common/types.js';
+import { createTicket } from './create.js';
+import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
+import type { Services, CreateTicketArgs } from '@/common/types.js';
 
 describe('createTicket Pure Function', () => {
   let testDir: string;

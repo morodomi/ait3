@@ -2,6 +2,10 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    include: [
+      'src/**/*.test.ts',           // ユニットテスト（コロケーション）
+      'tests/integration/**/*.integration.test.ts'  // インテグレーション（維持）
+    ],
     globals: true,
     environment: 'node',
     coverage: {
@@ -13,6 +17,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         '**/mockData.ts',
+        'src/**/*.test.ts',      // コロケーションテストはカバレッジ除外
         'tests/**'
       ]
     }

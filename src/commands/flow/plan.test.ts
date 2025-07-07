@@ -3,9 +3,9 @@ import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
-import { planPhase } from '../../../src/commands/flow/plan.js';
-import { LocalTicketService } from '../../../src/services/implementations/LocalTicketService.js';
-import type { Services } from '../../../src/common/types.js';
+import { planPhase } from './plan.js';
+import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
+import type { Services } from '@/common/types.js';
 
 describe('planPhase Pure Function', () => {
   let testDir: string;

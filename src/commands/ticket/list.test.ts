@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { listTickets } from '../../../src/commands/ticket/list.js';
-import type { Services, ListTicketsArgs } from '../../../src/common/types.js';
-import type { TicketService } from '../../../src/services/interfaces/TicketService.js';
-import type { Ticket } from '../../../src/common/types.js';
-import { ValidationError } from '../../../src/common/errors.js';
+import { listTickets } from './list.js';
+import type { Services, ListTicketsArgs } from '@/common/types.js';
+import type { TicketService } from '@/services/interfaces/TicketService.js';
+import type { Ticket } from '@/common/types.js';
+import { ValidationError } from '@/common/errors.js';
 
 // Mock TicketService for unit testing
 class MockTicketService implements TicketService {

@@ -4,8 +4,8 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
 import matter from 'gray-matter';
-import { LocalTicketService } from '../../src/services/implementations/LocalTicketService.js';
-import type { Ticket } from '../../src/common/types.js';
+import { LocalTicketService } from './LocalTicketService.js';
+import type { Ticket } from '@/common/types.js';
 
 describe('LocalTicketService', () => {
   let testDir: string;
