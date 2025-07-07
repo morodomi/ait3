@@ -38,7 +38,7 @@ describe('redPhase Pure Function', () => {
     it('should validate ticket exists', async () => {
       await expect(
         redPhase({ ticketId: '9999' }, services)
-      ).rejects.toThrow('Ticket #9999 not found');
+      ).rejects.toThrow("Ticket with ID '9999' not found");
     });
 
     it('should generate unit test by default', async () => {
@@ -59,8 +59,23 @@ describe('redPhase Pure Function', () => {
 
   describe('test type options', () => {
     beforeEach(async () => {
-      // Create test ticket with acceptance criteria
-      const ticketContent = `# Ticket #0001: User Authentication
+      // Create test ticket using LocalTicketService
+      await services.ticketService.createTicket('User Authentication', {
+        priority: 'high',
+        labels: ['auth', 'user']
+      });
+      
+      // Add acceptance criteria to the ticket file manually
+      const ticketContent = `---
+id: 0001
+title: User Authentication
+status: todo
+priority: high
+created: '2025-07-07T10:00:00.000Z'
+updated: '2025-07-07T10:00:00.000Z'
+labels: ['auth', 'user']
+---
+# Ticket #0001: User Authentication
 
 ## Description
 Implement user authentication with JWT
@@ -71,7 +86,6 @@ Implement user authentication with JWT
 - [ ] Tokens expire after 24 hours
 - [ ] Invalid credentials return 401 error`;
 
-      await mkdir(join(testDir, 'todo'), { recursive: true });
       await writeFile(
         join(testDir, 'todo', '0001-user-authentication.md'),
         ticketContent
@@ -114,6 +128,13 @@ Implement user authentication with JWT
 
   describe('test content generation', () => {
     it('should extract test cases from acceptance criteria', async () => {
+      // Create ticket using service first
+      await services.ticketService.createTicket('Payment Processing', {
+        priority: 'high',
+        labels: ['payment', 'api']
+      });
+      
+      // Then overwrite with acceptance criteria
       const ticketContent = `---
 id: 0001
 title: Payment Processing
@@ -145,23 +166,12 @@ labels: ['payment', 'api']
     });
 
     it('should use ticket labels to determine test patterns', async () => {
-      const ticketContent = `---
-id: 0001
-title: API Endpoint
-status: todo
-priority: high
-created: '2025-07-07T10:00:00.000Z'
-updated: '2025-07-07T10:00:00.000Z'
-labels: ['api', 'rest']
----
-# Ticket #0001: API Endpoint`;
-
-      await mkdir(join(testDir, 'todo'), { recursive: true });
-      await writeFile(
-        join(testDir, 'todo', '0001-api-endpoint.md'),
-        ticketContent
-      );
-
+      // Create ticket using service first
+      await services.ticketService.createTicket('API Endpoint', {
+        priority: 'high',
+        labels: ['api', 'rest']
+      });
+      
       const result = await redPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);

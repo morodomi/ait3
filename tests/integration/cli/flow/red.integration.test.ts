@@ -47,7 +47,7 @@ describe('CLI Integration: flow red', () => {
           timeout: 5000,
           env: { ...process.env, TICKETS_DIR: testDir }
         });
-      }).toThrow(/Ticket #9999 not found/);
+      }).toThrow(/Ticket with ID '9999' not found/);
     });
 
     it('should generate unit test for valid ticket', async () => {
@@ -159,6 +159,24 @@ describe('CLI Integration: flow red', () => {
 
   describe('ticket with acceptance criteria', () => {
     it('should parse acceptance criteria from ticket', async () => {
+      // Create config file
+      const config = {
+        backend: 'local',
+        path: testDir,
+        numbering: {
+          format: '001',
+          increment: 1,
+          next: 2
+        },
+        templates: {},
+        labels: {
+          priority: ['low', 'medium', 'high', 'critical'],
+          type: [],
+          status: ['todo', 'doing', 'done']
+        }
+      };
+      await writeFile(join(testDir, 'config.json'), JSON.stringify(config, null, 2));
+      
       // Create ticket with detailed content
       const ticketContent = `---
 id: 0001

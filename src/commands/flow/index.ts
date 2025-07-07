@@ -1,7 +1,8 @@
 import { Command, Option } from 'commander';
 import { planPhase } from './plan.js';
+import { redPhase } from './red.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
-import { ValidationError } from '../../common/errors.js';
+import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
 import chalk from 'chalk';
 
@@ -20,6 +21,8 @@ Examples:
   $ ait3 flow plan "feature-name" --mode guided
   $ ait3 flow plan "quick-feature" --mode express
   $ ait3 flow plan "manual-feature" --mode manual
+  $ ait3 flow red 0001
+  $ ait3 flow red 0001 --type both --interactive
   
 Philosophy:
   Claude proposes → Gemini refutes → Human decides
@@ -55,6 +58,44 @@ flowCommand
         console.error(chalk.red('❌ Validation Error:'), error.message);
       } else {
         console.error(chalk.red('❌ Error in planning phase:'), error instanceof Error ? error.message : String(error));
+      }
+      process.exit(1);
+    }
+  });
+
+// flow red subcommand
+flowCommand
+  .command('red <ticketId>')
+  .description('RED Phase - Generate failing tests from ticket requirements')
+  .addOption(new Option('-t, --type <type>', 'Test type to generate').choices(['unit', 'integration', 'both']).default('unit'))
+  .option('-i, --interactive', 'Interactive mode for test customization')
+  .option('-d, --dry-run', 'Preview what would be generated without creating files')
+  .action(async (ticketId: string, options) => {
+    try {
+      const result = await redPhase(
+        {
+          ticketId,
+          type: options.type,
+          interactive: options.interactive || false,
+          dryRun: options.dryRun || false
+        },
+        services
+      );
+      
+      console.log(result.message);
+      process.exit(result.success ? 0 : 1);
+    } catch (error) {
+      // Enhanced error handling
+      if (error instanceof ValidationError) {
+        console.error(chalk.red('❌ Validation Error:'), error.message);
+        if (error.field === 'ticketId') {
+          console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
+        }
+      } else if (error instanceof TicketNotFoundError) {
+        console.error(chalk.red('❌ Ticket Not Found:'), error.message);
+        console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
+      } else {
+        console.error(chalk.red('❌ Error in RED phase:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
