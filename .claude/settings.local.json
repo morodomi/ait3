@@ -5,7 +5,12 @@
       "Bash(find:*)",
       "Bash(gemini:*)",
       "Bash(npm install:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(git mv:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run test:ci:*)",
+      "Bash(npm run type-check:*)"
     ],
     "deny": []
   }
