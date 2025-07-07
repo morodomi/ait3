@@ -2,6 +2,7 @@ import { Command, Option } from 'commander';
 import { planPhase } from './plan.js';
 import { redPhase } from './red.js';
 import { greenPhase } from './green.js';
+import { refactorPhase } from './refactor.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
@@ -26,6 +27,8 @@ Examples:
   $ ait3 flow red 0001 --type both --interactive
   $ ait3 flow green 0001
   $ ait3 flow green 0001 --verbose --strict
+  $ ait3 flow refactor 0001
+  $ ait3 flow refactor 0001 --verbose --focus mocks,duplication
   
 Philosophy:
   Claude proposes → Gemini refutes → Human decides
@@ -138,6 +141,44 @@ flowCommand
         console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
       } else {
         console.error(chalk.red('❌ Error in GREEN phase:'), error instanceof Error ? error.message : String(error));
+      }
+      process.exit(1);
+    }
+  });
+
+// flow refactor subcommand
+flowCommand
+  .command('refactor <ticketId>')
+  .description('REFACTOR Phase - Analyze and suggest code optimizations')
+  .option('-v, --verbose', 'Show detailed analysis results')
+  .option('-f, --focus <areas>', 'Focus on specific areas (comma-separated: duplication,mocks,types,organization)')
+  .action(async (ticketId: string, options) => {
+    try {
+      const result = await refactorPhase(
+        {
+          ticketId,
+          verbose: options.verbose || false,
+          focus: options.focus
+        },
+        services
+      );
+      
+      console.log(result.message);
+      process.exit(result.success ? 0 : 1);
+    } catch (error) {
+      // Enhanced error handling
+      if (error instanceof ValidationError) {
+        console.error(chalk.red('❌ Validation Error:'), error.message);
+        if (error.field === 'ticketId') {
+          console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
+        } else if (error.field === 'focus') {
+          console.error(chalk.yellow('💡 Valid areas: duplication, mocks, types, organization'));
+        }
+      } else if (error instanceof TicketNotFoundError) {
+        console.error(chalk.red('❌ Ticket Not Found:'), error.message);
+        console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
+      } else {
+        console.error(chalk.red('❌ Error in REFACTOR phase:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
