@@ -1,29 +1,7 @@
 import type { Services, CLIResult } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
-import chalk from 'chalk';
-
-// Constants for consistent styling and messaging
-const STYLES = {
-  title: chalk.bold,
-  success: chalk.green,
-  warning: chalk.yellow,
-  error: chalk.red,
-  info: chalk.blue,
-  path: chalk.cyan,
-  count: chalk.magenta,
-  progress: chalk.green,
-  dim: chalk.dim
-} as const;
-
-const MESSAGES = {
-  TICKET_ID_REQUIRED: 'Ticket ID is required for GREEN phase',
-  TICKET_NOT_FOUND: (id: string) => `Ticket with ID '${id}' not found`,
-  TICKET_NOT_IN_PROGRESS: (id: string) => `Ticket #${id} must be in progress (doing status)`,
-  TICKET_ALREADY_COMPLETED: (id: string) => `Ticket #${id} is already completed`,
-  TARGET_TEST_NOT_FOUND: (path: string) => `Target test file not found: ${path}`,
-  TEST_MODIFICATION_WARNING: `WARNING: Test file modification detected!`,
-  IMPLEMENTATION_COMPLETE: 'All tests passing - implementation complete!'
-} as const;
+import { FLOW_STYLES } from '../../common/styles.js';
+import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 
 export interface GreenArgs {
   ticketId: string;
@@ -40,7 +18,7 @@ export async function greenPhase(
 ): Promise<CLIResult> {
   // Validate ticket ID
   if (!args.ticketId || args.ticketId.trim() === '') {
-    throw new ValidationError(MESSAGES.TICKET_ID_REQUIRED, 'ticketId');
+    throw new ValidationError(FLOW_MESSAGES.TICKET_ID_REQUIRED('GREEN'), 'ticketId');
   }
 
   const { ticketId, strict = true, verbose = false, target } = args;
@@ -61,11 +39,11 @@ export async function greenPhase(
 
   // Check ticket status
   if (ticket.status === 'done') {
-    throw new ValidationError(MESSAGES.TICKET_ALREADY_COMPLETED(ticketId));
+    throw new ValidationError(FLOW_MESSAGES.TICKET_ALREADY_COMPLETED(ticketId));
   }
 
   if (ticket.status !== 'doing') {
-    throw new ValidationError(MESSAGES.TICKET_NOT_IN_PROGRESS(ticketId));
+    throw new ValidationError(FLOW_MESSAGES.TICKET_NOT_IN_PROGRESS(ticketId));
   }
 
   // Check for test modifications in strict mode
@@ -73,8 +51,8 @@ export async function greenPhase(
     return {
       success: false,
       message: `
-${STYLES.error('⚠️  ' + MESSAGES.TEST_MODIFICATION_WARNING)}
-   File: ${STYLES.path(args._testModified)}
+${FLOW_STYLES.error('⚠️  ' + FLOW_MESSAGES.TEST_MODIFICATION_WARNING)}
+   File: ${FLOW_STYLES.path(args._testModified)}
    
    In GREEN phase, tests should not be modified.
    If tests need changes, please:
@@ -91,7 +69,7 @@ ${STYLES.error('⚠️  ' + MESSAGES.TEST_MODIFICATION_WARNING)}
   if (target) {
     // In real implementation, would check if file exists
     if (target && !target.includes('example.test.ts') && !args._forceTestError) {
-      throw new ValidationError(MESSAGES.TARGET_TEST_NOT_FOUND(target));
+      throw new ValidationError(FLOW_MESSAGES.TARGET_TEST_NOT_FOUND(target));
     }
   }
 
@@ -100,27 +78,27 @@ ${STYLES.error('⚠️  ' + MESSAGES.TEST_MODIFICATION_WARNING)}
     return {
       success: false,
       message: `
-${STYLES.error('❌ Test execution failed')}
+${FLOW_STYLES.error('❌ Test execution failed')}
 
-${STYLES.warning('⚠️  Error')}: Unable to run tests
-${STYLES.dim('Please check your test configuration and try again')}
+${FLOW_STYLES.warning('⚠️  Error')}: Unable to run tests
+${FLOW_STYLES.dim('Please check your test configuration and try again')}
 
-${STYLES.info('💡 Check test configuration and ensure all dependencies are installed')}
+${FLOW_STYLES.info('💡 Check test configuration and ensure all dependencies are installed')}
 `
     };
   }
 
   // Generate appropriate output based on mode and options
   const strictModeInfo = strict 
-    ? `${STYLES.info('🔒 Strict mode enabled')} - Test files are immutable`
-    : `${STYLES.warning('⚠️  Strict mode disabled')} - Test modifications allowed (not recommended)`;
+    ? `${FLOW_STYLES.info('🔒 Strict mode enabled')} - Test files are immutable`
+    : `${FLOW_STYLES.warning('⚠️  Strict mode disabled')} - Test modifications allowed (not recommended)`;
 
   const verboseModeInfo = verbose
     ? generateVerboseOutput(ticket, target)
     : '';
 
   const targetInfo = target
-    ? `\n${STYLES.info('🎯 Targeting specific test')}: ${STYLES.path(target)}`
+    ? `\n${FLOW_STYLES.info('🎯 Targeting specific test')}: ${FLOW_STYLES.path(target)}`
     : '';
 
   // Generate test progress display
@@ -132,7 +110,7 @@ ${STYLES.info('💡 Check test configuration and ensure all dependencies are ins
   return {
     success: true,
     message: `
-${STYLES.title('🟢 GREEN Phase')} - Making tests pass for ticket #${ticketId}
+${FLOW_STYLES.title('🟢 GREEN Phase')} - Making tests pass for ticket #${ticketId}
 
 ${strictModeInfo}${targetInfo}
 
@@ -142,50 +120,50 @@ ${implementationStatus}
 
 ${verboseModeInfo}
 
-${STYLES.dim('Next step: ait3 flow refactor')}
+${FLOW_STYLES.dim('Next step: ait3 flow refactor')}
 `
   };
 }
 
 function generateProgressDisplay(): string {
   // Simulate test progress
-  return `${STYLES.title('📊 Test Progress')}:
+  return `${FLOW_STYLES.title('📊 Test Progress')}:
 ├─ Total: 27 tests
 ├─ Passing: 15 (↑ from 0)
 ├─ Failing: 12
-└─ Progress: ${STYLES.progress('████████')}░░░░░░░░ 55%
+└─ Progress: ${FLOW_STYLES.progress('████████')}░░░░░░░░ 55%
 
-${STYLES.info('📍 Initial test status')}:
+${FLOW_STYLES.info('📍 Initial test status')}:
 ├─ Failing: 27 tests
 └─ 0% pass rate`;
 }
 
 function generateImplementationStatus(): string {
-  return `${STYLES.title('📝 Implementation plan')}:
+  return `${FLOW_STYLES.title('📝 Implementation plan')}:
 ├─ Found test files related to ticket
 ├─ Analyzing test requirements
 └─ Functions to implement: 5
 
-${STYLES.success('✅ Generated implementation')}:
+${FLOW_STYLES.success('✅ Generated implementation')}:
 ├─ Following patterns from existing codebase
 ├─ Pure functions with service injection
 └─ Minimal code to pass tests
 
-${STYLES.info('🏁 Final test results')}:
-├─ ${STYLES.success('100% passing')} (goal achieved)
-└─ ${STYLES.success('All tests green')}`;
+${FLOW_STYLES.info('🏁 Final test results')}:
+├─ ${FLOW_STYLES.success('100% passing')} (goal achieved)
+└─ ${FLOW_STYLES.success('All tests green')}`;
 }
 
 function generateVerboseOutput(ticket: any, target?: string): string {
   return `
-${STYLES.title('📋 Verbose mode')} - Detailed test analysis
+${FLOW_STYLES.title('📋 Verbose mode')} - Detailed test analysis
 
-${STYLES.info('🔍 Test Detection')}:
+${FLOW_STYLES.info('🔍 Test Detection')}:
 ├─ Scanning for test files...
 ├─ Found 3 test files related to ticket
 └─ Analyzing test patterns...
 
-${STYLES.info('📊 Detailed test analysis')}:
+${FLOW_STYLES.info('📊 Detailed test analysis')}:
 ├─ Test case: "should validate ticketId is required"
 │  └─ Implementation: Added validation check
 ├─ Test case: "should show progress for valid ticket"
@@ -193,7 +171,7 @@ ${STYLES.info('📊 Detailed test analysis')}:
 └─ Test case: "should enable strict mode by default"
    └─ Implementation: Set strict=true as default
 
-${STYLES.info('📈 Step-by-step progress')}:
+${FLOW_STYLES.info('📈 Step-by-step progress')}:
 1. ✅ Added input validation
 2. ✅ Implemented ticket status checks
 3. ✅ Added progress display

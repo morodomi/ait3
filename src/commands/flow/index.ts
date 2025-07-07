@@ -3,6 +3,7 @@ import { planPhase } from './plan.js';
 import { redPhase } from './red.js';
 import { greenPhase } from './green.js';
 import { refactorPhase } from './refactor.js';
+import { squashPhase } from './squash.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
@@ -29,6 +30,8 @@ Examples:
   $ ait3 flow green 0001 --verbose --strict
   $ ait3 flow refactor 0001
   $ ait3 flow refactor 0001 --verbose --focus mocks,duplication
+  $ ait3 flow squash 0001
+  $ ait3 flow squash 0001 --pr --no-squash
   
 Philosophy:
   Claude proposes → Gemini refutes → Human decides
@@ -179,6 +182,44 @@ flowCommand
         console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
       } else {
         console.error(chalk.red('❌ Error in REFACTOR phase:'), error instanceof Error ? error.message : String(error));
+      }
+      process.exit(1);
+    }
+  });
+
+// flow squash subcommand
+flowCommand
+  .command('squash <ticketId>')
+  .description('SQUASH Phase - Git command suggestions for clean commit history')
+  .option('--pr', 'Include PR creation commands')
+  .option('--no-squash', 'Skip squash suggestions, only show merge commands')
+  .option('--dry-run', 'Show what would be suggested without analysis')
+  .action(async (ticketId: string, options) => {
+    try {
+      const result = await squashPhase(
+        {
+          ticketId,
+          pr: options.pr || false,
+          noSquash: options.squash === false, // Commander sets squash: false for --no-squash
+          dryRun: options.dryRun || false
+        },
+        services
+      );
+      
+      console.log(result.message);
+      process.exit(result.success ? 0 : 1);
+    } catch (error) {
+      // Enhanced error handling
+      if (error instanceof ValidationError) {
+        console.error(chalk.red('❌ Validation Error:'), error.message);
+        if (error.field === 'ticketId') {
+          console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
+        }
+      } else if (error instanceof TicketNotFoundError) {
+        console.error(chalk.red('❌ Ticket Not Found:'), error.message);
+        console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
+      } else {
+        console.error(chalk.red('❌ Error in SQUASH phase:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }

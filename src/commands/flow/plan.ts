@@ -1,25 +1,7 @@
 import type { Services, CLIResult } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
-import chalk from 'chalk';
-
-// Constants for consistent styling and messaging
-const STYLES = {
-  title: chalk.bold,
-  feature: chalk.green,
-  section: chalk.bold,
-  command: chalk.cyan,
-  option: chalk.cyan,
-  info: chalk.blue,
-  warning: chalk.yellow,
-  error: chalk.red,
-  dim: chalk.dim
-} as const;
-
-const MESSAGES = {
-  FEATURE_REQUIRED: 'Feature name is required for planning phase',
-  TICKET_NOT_FOUND: (id: string) => `Ticket #${id} not found`,
-  PHILOSOPHY: 'Claude proposes → Gemini refutes → Human decides'
-} as const;
+import { FLOW_STYLES } from '../../common/styles.js';
+import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 
 export interface PlanArgs {
   featureName?: string;
@@ -34,7 +16,7 @@ export async function planPhase(
 ): Promise<CLIResult> {
   // Validate feature name
   if (!args.featureName) {
-    throw new ValidationError(MESSAGES.FEATURE_REQUIRED, 'featureName');
+    throw new ValidationError(FLOW_MESSAGES.FEATURE_REQUIRED, 'featureName');
   }
 
   const { featureName, mode = 'guided', requirements, ticketId } = args;
@@ -45,12 +27,12 @@ export async function planPhase(
     try {
       const ticket = await services.ticketService.getTicket(ticketId);
       if (ticket) {
-        ticketInfo = `\n${STYLES.info('📋 Ticket #' + ticketId)}: ${ticket.title}`;
+        ticketInfo = `\n${FLOW_STYLES.info('📋 Ticket #' + ticketId)}: ${ticket.title}`;
       } else {
-        ticketInfo = `\n${STYLES.warning('⚠️  Warning')}: ${MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
+        ticketInfo = `\n${FLOW_STYLES.warning('⚠️  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
       }
     } catch (error) {
-      ticketInfo = `\n${STYLES.warning('⚠️  Warning')}: ${MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
+      ticketInfo = `\n${FLOW_STYLES.warning('⚠️  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
     }
   }
 
@@ -67,21 +49,21 @@ export async function planPhase(
 
 function expressPlan(featureName: string, requirements?: string[], ticketInfo?: string): CLIResult {
   const requirementsText = requirements?.length 
-    ? `\n${STYLES.command('📋 Requirements')}: ${requirements.join(', ')}`
+    ? `\n${FLOW_STYLES.command('📋 Requirements')}: ${requirements.join(', ')}`
     : '';
 
   return {
     success: true,
     message: `
-${STYLES.title('🚀 Express Planning')} for "${STYLES.feature(featureName)}"${ticketInfo}${requirementsText}
+${FLOW_STYLES.title('🚀 Express Planning')} for "${FLOW_STYLES.feature(featureName)}"${ticketInfo}${requirementsText}
 
-${STYLES.section('📝 Quick Implementation Guide')}:
+${FLOW_STYLES.section('📝 Quick Implementation Guide')}:
 ├─ Analyze existing codebase patterns
 ├─ Identify minimal viable implementation
 ├─ Follow pure function + service injection architecture
-└─ Proceed to: ${STYLES.command('ait3 flow red')} for test creation
+└─ Proceed to: ${FLOW_STYLES.command('ait3 flow red')} for test creation
 
-${STYLES.dim('💡 For detailed planning, use: ait3 flow plan "' + featureName + '" --mode guided')}
+${FLOW_STYLES.dim('💡 For detailed planning, use: ait3 flow plan "' + featureName + '" --mode guided')}
 `
   };
 }
@@ -90,28 +72,28 @@ function manualPlan(featureName: string, ticketInfo?: string): CLIResult {
   return {
     success: true,
     message: `
-${STYLES.title('🎭 AIT³ Philosophy')} - Manual Planning for "${STYLES.feature(featureName)}"${ticketInfo}
+${FLOW_STYLES.title('🎭 AIT³ Philosophy')} - Manual Planning for "${FLOW_STYLES.feature(featureName)}"${ticketInfo}
 
-${STYLES.section('🔄 Dialectical Process')}:
-├─ ${STYLES.info('Claude proposes')} → Generate technical approach with clear rationale
-├─ ${STYLES.error('Gemini refutes')} → Challenge assumptions and identify alternatives  
-└─ ${STYLES.feature('Human decides')} → Synthesize evidence and make informed decisions
+${FLOW_STYLES.section('🔄 Dialectical Process')}:
+├─ ${FLOW_STYLES.info('Claude proposes')} → Generate technical approach with clear rationale
+├─ ${FLOW_STYLES.error('Gemini refutes')} → Challenge assumptions and identify alternatives  
+└─ ${FLOW_STYLES.feature('Human decides')} → Synthesize evidence and make informed decisions
 
-${STYLES.section('📋 Manual Planning Steps')}:
+${FLOW_STYLES.section('📋 Manual Planning Steps')}:
 1. Define requirements and constraints
 2. Research existing approaches and patterns
-3. Consult: ${STYLES.command('gemini -p "@src/ @CLAUDE.md Critique approach for ' + featureName + '"')}
+3. Consult: ${FLOW_STYLES.command('gemini -p "@src/ @CLAUDE.md Critique approach for ' + featureName + '"')}
 4. Document architectural decisions
 5. Update ticket with reasoning
 
-${STYLES.section('⚡ Next Phase')}: ${STYLES.command('ait3 flow red')} for test-driven implementation
+${FLOW_STYLES.section('⚡ Next Phase')}: ${FLOW_STYLES.command('ait3 flow red')} for test-driven implementation
 `
   };
 }
 
 function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: string): CLIResult {
   const requirementsSection = requirements?.length 
-    ? `\n${STYLES.command('📋 Requirements')}: ${requirements.join(', ')}`
+    ? `\n${FLOW_STYLES.command('📋 Requirements')}: ${requirements.join(', ')}`
     : '';
 
   // Generate Claude's proposal based on feature name and requirements
@@ -123,21 +105,21 @@ function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: s
   return {
     success: true,
     message: `
-${STYLES.title('🎭 AIT³ PLANNING Phase')} (guided mode) for "${STYLES.feature(featureName)}"${ticketInfo}${requirementsSection}
+${FLOW_STYLES.title('🎭 AIT³ PLANNING Phase')} (guided mode) for "${FLOW_STYLES.feature(featureName)}"${ticketInfo}${requirementsSection}
 
-${STYLES.section('💡 Claude\'s Proposal')}:
+${FLOW_STYLES.section('💡 Claude\'s Proposal')}:
 ${proposal.details}
 
-${STYLES.section('🔍 Prepared Gemini Analysis')}:
-${STYLES.command('$ ' + geminiCommand)}
+${FLOW_STYLES.section('🔍 Prepared Gemini Analysis')}:
+${FLOW_STYLES.command('$ ' + geminiCommand)}
 
-${STYLES.section('❓ Choose next action')}:
-${STYLES.option('[1]')} ✅ Accept proposal and update ticket
-${STYLES.option('[2]')} 🔍 Run Gemini analysis (copy command to clipboard)
-${STYLES.option('[3]')} ✏️  Refine proposal manually
-${STYLES.option('[4]')} 💾 Save draft and continue later
+${FLOW_STYLES.section('❓ Choose next action')}:
+${FLOW_STYLES.option('[1]')} ✅ Accept proposal and update ticket
+${FLOW_STYLES.option('[2]')} 🔍 Run Gemini analysis (copy command to clipboard)
+${FLOW_STYLES.option('[3]')} ✏️  Refine proposal manually
+${FLOW_STYLES.option('[4]')} 💾 Save draft and continue later
 
-${STYLES.dim('💡 Philosophy: ' + MESSAGES.PHILOSOPHY)}
+${FLOW_STYLES.dim('💡 Philosophy: ' + FLOW_MESSAGES.PHILOSOPHY)}
 `
   };
 }
@@ -211,7 +193,7 @@ function formatProposalDetails(items: [string, string][]): string {
   return items
     .map(([label, desc], index, array) => {
       const prefix = index === array.length - 1 ? '└─' : '├─';
-      return `${prefix} ${STYLES.info(label)}: ${desc}`;
+      return `${prefix} ${FLOW_STYLES.info(label)}: ${desc}`;
     })
     .join('\n');
 }

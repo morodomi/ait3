@@ -1,26 +1,7 @@
 import type { Services, CLIResult } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
-import chalk from 'chalk';
-
-// Constants for consistent styling and messaging
-const STYLES = {
-  title: chalk.bold,
-  success: chalk.green,
-  warning: chalk.yellow,
-  error: chalk.red,
-  info: chalk.blue,
-  path: chalk.cyan,
-  count: chalk.magenta,
-  dim: chalk.dim
-} as const;
-
-const MESSAGES = {
-  TICKET_ID_REQUIRED: 'Ticket ID is required for RED phase',
-  TICKET_NOT_FOUND: (id: string) => `Ticket #${id} not found`,
-  TICKET_ALREADY_COMPLETED: (id: string) => `Ticket #${id} is already completed`,
-  TEST_GENERATION_SUCCESS: 'Test files generated successfully',
-  DRY_RUN_PREFIX: 'DRY RUN - No files will be created'
-} as const;
+import { FLOW_STYLES } from '../../common/styles.js';
+import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 
 export interface RedArgs {
   ticketId: string;
@@ -35,7 +16,7 @@ export async function redPhase(
 ): Promise<CLIResult> {
   // Validate ticket ID
   if (!args.ticketId || args.ticketId.trim() === '') {
-    throw new ValidationError(MESSAGES.TICKET_ID_REQUIRED, 'ticketId');
+    throw new ValidationError(FLOW_MESSAGES.TICKET_ID_REQUIRED('RED'), 'ticketId');
   }
 
   const { ticketId, type = 'unit', interactive = false, dryRun = false } = args;
@@ -56,13 +37,13 @@ export async function redPhase(
 
   // Check ticket status
   if (ticket.status === 'done') {
-    throw new ValidationError(MESSAGES.TICKET_ALREADY_COMPLETED(ticketId));
+    throw new ValidationError(FLOW_MESSAGES.TICKET_ALREADY_COMPLETED(ticketId));
   }
 
   // Generate warning for tickets already in progress
   let statusWarning = '';
   if (ticket.status === 'doing') {
-    statusWarning = `\n${STYLES.warning('⚠️  Warning: Ticket is already in progress')}`;
+    statusWarning = `\n${FLOW_STYLES.warning('⚠️  Warning: Ticket is already in progress')}`;
   }
 
   // Parse acceptance criteria from ticket description
@@ -84,34 +65,34 @@ export async function redPhase(
   
   if (type === 'unit' || type === 'both') {
     const unitPath = generateUnitTestPath(ticket);
-    results.push(`${STYLES.success('✓')} Unit test generated: ${STYLES.path(unitPath)}`);
+    results.push(`${FLOW_STYLES.success('✓')} Unit test generated: ${FLOW_STYLES.path(unitPath)}`);
   }
 
   if (type === 'integration' || type === 'both') {
     const integrationPath = generateIntegrationTestPath(ticket);
-    results.push(`${STYLES.success('✓')} Integration test generated: ${STYLES.path(integrationPath)}`);
+    results.push(`${FLOW_STYLES.success('✓')} Integration test generated: ${FLOW_STYLES.path(integrationPath)}`);
   }
 
   // Add test case count
   const testCount = testCases.length > 0 ? testCases.length : 3; // Default 3 basic tests
-  results.push(`${STYLES.info('ℹ')} ${STYLES.count(testCount + ' test cases generated')}${testCases.length > 0 ? ' from acceptance criteria' : ''}`);
+  results.push(`${FLOW_STYLES.info('ℹ')} ${FLOW_STYLES.count(testCount + ' test cases generated')}${testCases.length > 0 ? ' from acceptance criteria' : ''}`);
 
   // Add API pattern note if applicable
   if (hasApiLabel) {
-    results.push(`${STYLES.info('ℹ')} API test pattern applied`);
+    results.push(`${FLOW_STYLES.info('ℹ')} API test pattern applied`);
   }
 
   // Add pass rate
-  results.push(`${STYLES.error('✗')} Current pass rate: ${STYLES.error('0% pass rate')} ${STYLES.dim('(all tests failing as expected)')}`);
+  results.push(`${FLOW_STYLES.error('✗')} Current pass rate: ${FLOW_STYLES.error('0% pass rate')} ${FLOW_STYLES.dim('(all tests failing as expected)')}`);
 
   return {
     success: true,
     message: `
-${STYLES.title('🔴 RED Phase')} - Failing tests generated for ticket #${ticketId}${statusWarning}
+${FLOW_STYLES.title('🔴 RED Phase')} - Failing tests generated for ticket #${ticketId}${statusWarning}
 
 ${results.join('\n')}
 
-${STYLES.dim('Next step: Implement functionality to make tests pass')}
+${FLOW_STYLES.dim('Next step: Implement functionality to make tests pass')}
 `
   };
 }
@@ -150,23 +131,23 @@ function generateIntegrationTestPath(ticket: any): string {
 }
 
 function generateInteractiveOutput(ticket: any, testCases: string[], dryRun: boolean): CLIResult {
-  const prefix = dryRun ? `${STYLES.warning('[DRY RUN]')} ` : '';
+  const prefix = dryRun ? `${FLOW_STYLES.warning('[DRY RUN]')} ` : '';
   
   return {
     success: true,
     message: `
-${prefix}${STYLES.title('🔴 RED Phase - Interactive mode')}
+${prefix}${FLOW_STYLES.title('🔴 RED Phase - Interactive mode')}
 
-${STYLES.info('📋 Ticket')}: #${ticket.id} - ${ticket.title}
-${STYLES.info('📝 Test cases identified')}: ${testCases.length || 3}
+${FLOW_STYLES.info('📋 Ticket')}: #${ticket.id} - ${ticket.title}
+${FLOW_STYLES.info('📝 Test cases identified')}: ${testCases.length || 3}
 
-${STYLES.title('Choose test generation options')}:
-${STYLES.info('[1]')} Generate all test cases automatically
-${STYLES.info('[2]')} Review and customize test cases
-${STYLES.info('[3]')} Add additional edge cases
-${STYLES.info('[4]')} Skip and write tests manually
+${FLOW_STYLES.title('Choose test generation options')}:
+${FLOW_STYLES.info('[1]')} Generate all test cases automatically
+${FLOW_STYLES.info('[2]')} Review and customize test cases
+${FLOW_STYLES.info('[3]')} Add additional edge cases
+${FLOW_STYLES.info('[4]')} Skip and write tests manually
 
-${STYLES.dim('Select an option to continue...')}
+${FLOW_STYLES.dim('Select an option to continue...')}
 `
   };
 }
@@ -185,16 +166,16 @@ function generateDryRunOutput(ticket: any, type: string, testCases: string[]): C
   return {
     success: true,
     message: `
-${STYLES.warning('DRY RUN')} - No files will be created
+${FLOW_STYLES.warning('DRY RUN')} - No files will be created
 
-${STYLES.title('Would generate')}:
+${FLOW_STYLES.title('Would generate')}:
 ${files.join('\n')}
 
-${STYLES.info('Test cases')}: ${testCases.length || 3}
-${STYLES.info('Test type')}: ${type}
-${STYLES.info('Expected pass rate')}: 0%
+${FLOW_STYLES.info('Test cases')}: ${testCases.length || 3}
+${FLOW_STYLES.info('Test type')}: ${type}
+${FLOW_STYLES.info('Expected pass rate')}: 0%
 
-${STYLES.dim('Run without --dry-run to create files')}
+${FLOW_STYLES.dim('Run without --dry-run to create files')}
 `
   };
 }

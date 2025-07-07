@@ -1,25 +1,9 @@
 import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
-import chalk from 'chalk';
+import { FLOW_STYLES } from '../../common/styles.js';
+import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 
-// Constants for consistent styling and messaging
-const STYLES = {
-  title: chalk.bold,
-  success: chalk.green,
-  warning: chalk.yellow,
-  error: chalk.red,
-  info: chalk.blue,
-  path: chalk.cyan,
-  count: chalk.magenta,
-  code: chalk.gray,
-  dim: chalk.dim
-} as const;
-
-const MESSAGES = {
-  TICKET_ID_REQUIRED: 'Ticket ID is required for REFACTOR phase',
-  TICKET_NOT_FOUND: (id: string) => `Ticket with ID '${id}' not found`,
-  TICKET_NOT_IN_PROGRESS: (id: string) => `Ticket #${id} must be in progress (doing status)`,
-  TICKET_ALREADY_COMPLETED: (id: string) => `Ticket #${id} is already completed`,
+const REFACTOR_MESSAGES = {
   INVALID_FOCUS_AREA: (area: string) => `Invalid focus area: ${area}`
 } as const;
 
@@ -39,7 +23,7 @@ export async function refactorPhase(
 ): Promise<CLIResult> {
   // Validate ticket ID
   if (!args.ticketId || args.ticketId.trim() === '') {
-    throw new ValidationError(MESSAGES.TICKET_ID_REQUIRED, 'ticketId');
+    throw new ValidationError(FLOW_MESSAGES.TICKET_ID_REQUIRED('REFACTOR'), 'ticketId');
   }
 
   const { ticketId, verbose = false } = args;
@@ -54,7 +38,7 @@ export async function refactorPhase(
     // Validate focus areas
     for (const area of requestedAreas) {
       if (!VALID_FOCUS_AREAS.includes(area as FocusArea)) {
-        throw new ValidationError(MESSAGES.INVALID_FOCUS_AREA(area), 'focus');
+        throw new ValidationError(REFACTOR_MESSAGES.INVALID_FOCUS_AREA(area), 'focus');
       }
     }
     focusAreas = requestedAreas as FocusArea[];
@@ -76,11 +60,11 @@ export async function refactorPhase(
 
   // Check ticket status
   if (ticket.status === 'done') {
-    throw new ValidationError(MESSAGES.TICKET_ALREADY_COMPLETED(ticketId));
+    throw new ValidationError(FLOW_MESSAGES.TICKET_ALREADY_COMPLETED(ticketId));
   }
 
   if (ticket.status !== 'doing') {
-    throw new ValidationError(MESSAGES.TICKET_NOT_IN_PROGRESS(ticketId));
+    throw new ValidationError(FLOW_MESSAGES.TICKET_NOT_IN_PROGRESS(ticketId));
   }
 
   // Handle analysis error for testing
@@ -88,12 +72,12 @@ export async function refactorPhase(
     return {
       success: false,
       message: `
-${STYLES.error('❌ Analysis failed')}
+${FLOW_STYLES.error('❌ Analysis failed')}
 
-${STYLES.warning('⚠️  Error')}: Unable to analyze project structure
-${STYLES.dim('Check your project structure and ensure source files are accessible')}
+${FLOW_STYLES.warning('⚠️  Error')}: Unable to analyze project structure
+${FLOW_STYLES.dim('Check your project structure and ensure source files are accessible')}
 
-${STYLES.info('💡 Tip')}: Make sure you're running from the project root directory
+${FLOW_STYLES.info('💡 Tip')}: Make sure you're running from the project root directory
 `
     };
   }
@@ -203,7 +187,7 @@ function formatAnalysisOutput(
   const sections: string[] = [];
 
   // Header
-  sections.push(`${STYLES.title('🔧 REFACTOR Phase')} - Analysis for ticket #${analysis.filesAnalyzed > 0 ? '0001' : '0001'}`);
+  sections.push(`${FLOW_STYLES.title('🔧 REFACTOR Phase')} - Analysis for ticket #${analysis.filesAnalyzed > 0 ? '0001' : '0001'}`);
   
   // Focus indicator
   if (focusAreas) {
@@ -212,7 +196,7 @@ function formatAnalysisOutput(
 
   // Code Quality Summary
   sections.push(`
-${STYLES.title('📊 Code Quality Summary')}:
+${FLOW_STYLES.title('📊 Code Quality Summary')}:
 ├─ Files analyzed: ${analysis.filesAnalyzed}
 ├─ Improvement opportunities: ${analysis.improvements}
 ├─ Estimated effort: ${analysis.estimatedEffort}
@@ -220,40 +204,40 @@ ${STYLES.title('📊 Code Quality Summary')}:
 
   // Limited analysis message if no files
   if (analysis.filesAnalyzed === 0) {
-    sections.push(`\n${STYLES.warning('⚠️  Limited analysis')} - No source files found in project`);
+    sections.push(`\n${FLOW_STYLES.warning('⚠️  Limited analysis')} - No source files found in project`);
   }
 
   // Refactoring Suggestions
-  sections.push(`\n${STYLES.title('📋 Refactoring Suggestions')}:`);
+  sections.push(`\n${FLOW_STYLES.title('📋 Refactoring Suggestions')}:`);
 
   // Code Duplication
   if (!focusAreas || focusAreas.includes('duplication')) {
-    sections.push(`\n${STYLES.info('## 1. Code Duplication')} (${analysis.duplication.length} issues)`);
+    sections.push(`\n${FLOW_STYLES.info('## 1. Code Duplication')} (${analysis.duplication.length} issues)`);
     if (analysis.duplication.length > 0) {
       analysis.duplication.forEach(dup => {
         sections.push(`- ${dup.description} in:`);
         dup.locations.forEach(loc => {
-          sections.push(`  ${STYLES.path(`• ${loc}`)}`);
+          sections.push(`  ${FLOW_STYLES.path(`• ${loc}`)}`);
         });
-        sections.push(`  ${STYLES.success('→')} ${dup.suggestion}`);
+        sections.push(`  ${FLOW_STYLES.success('→')} ${dup.suggestion}`);
       });
     }
   }
 
   // Mock Implementations
   if (!focusAreas || focusAreas.includes('mocks')) {
-    sections.push(`\n${STYLES.info('## 2. Mock Implementations')} (${analysis.mocks.length} found)`);
+    sections.push(`\n${FLOW_STYLES.info('## 2. Mock Implementations')} (${analysis.mocks.length} found)`);
     if (analysis.mocks.length > 0) {
       analysis.mocks.forEach(mock => {
-        sections.push(`- ${STYLES.code(mock.name)} at ${STYLES.path(mock.location)}`);
-        sections.push(`  ${STYLES.success('→')} Create ticket: "${mock.name.replace('Service', ' Service').trim()}"`);
+        sections.push(`- ${FLOW_STYLES.code(mock.name)} at ${FLOW_STYLES.path(mock.location)}`);
+        sections.push(`  ${FLOW_STYLES.success('→')} Create ticket: "${mock.name.replace('Service', ' Service').trim()}"`);
       });
     }
   }
 
   // Type Improvements
   if (!focusAreas || focusAreas.includes('types')) {
-    sections.push(`\n${STYLES.info('## 3. Type Improvements')} (${analysis.types.reduce((sum, t) => sum + t.count, 0)} suggestions)`);
+    sections.push(`\n${FLOW_STYLES.info('## 3. Type Improvements')} (${analysis.types.reduce((sum, t) => sum + t.count, 0)} suggestions)`);
     if (analysis.types.length > 0) {
       analysis.types.forEach(type => {
         sections.push(`- ${type.issue} in ${type.count} functions`);
@@ -263,25 +247,25 @@ ${STYLES.title('📊 Code Quality Summary')}:
 
   // Code Organization
   if (!focusAreas || focusAreas.includes('organization')) {
-    sections.push(`\n${STYLES.info('## 4. Code Organization')}`);
+    sections.push(`\n${FLOW_STYLES.info('## 4. Code Organization')}`);
     if (analysis.organization.length > 0) {
       analysis.organization.forEach(org => {
         sections.push(`- ${org.issue}`);
-        sections.push(`  ${STYLES.success('→')} ${org.suggestion}`);
+        sections.push(`  ${FLOW_STYLES.success('→')} ${org.suggestion}`);
       });
     }
   }
 
   // Verbose mode additions
   if (verbose) {
-    sections.push(`\n${STYLES.title('📋 Detailed Analysis')}:`);
-    sections.push(`├─ ${STYLES.info('Line-by-line analysis')}: Available`);
-    sections.push(`├─ ${STYLES.info('Complexity metrics')}: Calculated`);
-    sections.push(`└─ ${STYLES.info('Performance hints')}: Identified`);
+    sections.push(`\n${FLOW_STYLES.title('📋 Detailed Analysis')}:`);
+    sections.push(`├─ ${FLOW_STYLES.info('Line-by-line analysis')}: Available`);
+    sections.push(`├─ ${FLOW_STYLES.info('Complexity metrics')}: Calculated`);
+    sections.push(`└─ ${FLOW_STYLES.info('Performance hints')}: Identified`);
   }
 
   // Next steps
-  sections.push(`\n${STYLES.title('💡 Next steps')}:
+  sections.push(`\n${FLOW_STYLES.title('💡 Next steps')}:
 1. Review suggestions above
 2. Apply changes manually or with AI assistance
 3. Run tests to ensure 100% pass rate
@@ -289,14 +273,14 @@ ${STYLES.title('📊 Code Quality Summary')}:
 
   // Mock ticket creation commands
   if (analysis.mocks.length > 0) {
-    sections.push(`\n${STYLES.dim('# Mock ticket creation commands:')}`);
+    sections.push(`\n${FLOW_STYLES.dim('# Mock ticket creation commands:')}`);
     analysis.mocks.forEach(mock => {
-      sections.push(STYLES.dim(mock.ticketSuggestion));
+      sections.push(FLOW_STYLES.dim(mock.ticketSuggestion));
     });
   }
 
   // Next phase hint
-  sections.push(`\n${STYLES.dim('Next step: ait3 flow squash')}`);
+  sections.push(`\n${FLOW_STYLES.dim('Next step: ait3 flow squash')}`);
 
   return sections.join('\n');
 }

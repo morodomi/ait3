@@ -29,7 +29,7 @@
 - **RED Phase**: Purpose-driven test creation with 100% intention alignment
 - **GREEN Phase**: Implementation with 100% test pass requirement
 - **REFACTOR Phase**: Code optimization with mock identification and ticketing
-- **SQUASH Phase**: Clean commit history with automated PR/merge
+- **SQUASH Phase**: Git command suggestions for clean commit history
 
 ### 🛠️ Claude Code Integration
 - **Auto Setup**: Automatic `.claude/commands` installation
@@ -320,27 +320,30 @@ Code Quality: similarity-ts analysis shows clean codebase with no problematic du
 Tests: 47/47 passing (maintained 100%)"
 ```
 
-### 📦 Phase 5: SQUASH (Integration)
+### 📦 Phase 5: SQUASH (Git Command Suggestions)
 
-**Purpose**: Create clean commit history and integrate with main branch.
+**Purpose**: Provide Git command suggestions for clean commit history and integration.
 
 ```bash
-# Consolidate development commits into meaningful history
-ait3 flow squash 123 "Complete user authentication system"
+# Generate Git command suggestions for clean history management
+ait3 flow squash 123
 
-# Automated process:
-# 1. Backup current state with tags
-# 2. Squash PLANNING → RED → GREEN → REFACTOR into logical commits
-# 3. Generate comprehensive commit message with:
-#    - Feature summary and business value
-#    - Technical implementation highlights  
-#    - Test coverage metrics
-#    - Performance impact
-#    - Breaking changes (if any)
-# 4. Create Pull Request or merge to main
-# 5. Update ticket status to 'done'
+# Command suggestions include:
+# 1. Interactive rebase commands with commit grouping guidance
+# 2. Comprehensive commit message templates
+# 3. Safe push commands with --force-with-lease
+# 4. Pull request creation commands (with --pr flag)
+# 5. Merge workflow with safety checks
 
-# Result: Clean commit history ready for code review
+# Options:
+ait3 flow squash 123 --pr           # Include PR creation commands
+ait3 flow squash 123 --no-squash    # Skip squash, show merge only
+ait3 flow squash 123 --dry-run      # Preview suggestions
+
+# Human execution required:
+# - Review suggested commands
+# - Execute manually with adjustments
+# - Complete ticket: ait3 ticket complete 123
 ```
 
 ## 🤖 AI Integration Patterns

@@ -60,6 +60,50 @@ ait3 flow red 0010 --type both
 ait3 flow red 0010 --interactive
 ```
 
+#### GREEN Phase
+```bash
+# Implement code to make tests pass
+ait3 flow green <ticketId> [options]
+  Options:
+    --strict             Enable strict mode (test files are immutable) [default: true]
+    --verbose            Show detailed implementation progress
+    --target <file>      Target specific test file
+
+# Examples:
+ait3 flow green 0010
+ait3 flow green 0010 --verbose
+ait3 flow green 0010 --target tests/example.test.ts
+```
+
+#### REFACTOR Phase  
+```bash
+# Analyze and optimize code while maintaining 100% test coverage
+ait3 flow refactor <ticketId> [options]
+  Options:
+    --verbose            Show detailed analysis information
+    --focus <areas>      Focus on specific areas (duplication,mocks,types,organization)
+
+# Examples:
+ait3 flow refactor 0010
+ait3 flow refactor 0010 --verbose
+ait3 flow refactor 0010 --focus duplication,mocks
+```
+
+#### SQUASH Phase
+```bash
+# Generate Git command suggestions for clean commit history
+ait3 flow squash <ticketId> [options]
+  Options:
+    --pr                 Include PR creation commands
+    --no-squash         Skip squash suggestions, only show merge commands
+    --dry-run           Show what would be suggested without analysis
+
+# Examples:
+ait3 flow squash 0010
+ait3 flow squash 0010 --pr
+ait3 flow squash 0010 --no-squash --dry-run
+```
+
 ## Usage Examples
 
 ### Complete Feature Development Flow
@@ -76,13 +120,16 @@ ait3 flow plan "user-authentication" --ticket 0001 --requirements "jwt,oauth,sec
 # 4. Generate failing tests
 ait3 flow red 0001 --type both
 
-# 5. Implement to pass tests (green phase - coming soon)
-# ait3 flow green 0001
+# 5. Implement to pass tests (green phase)
+ait3 flow green 0001 --verbose
 
-# 6. Refactor the code (refactor phase - coming soon)
-# ait3 flow refactor 0001
+# 6. Refactor the code (refactor phase)
+ait3 flow refactor 0001 --focus duplication,mocks
 
-# 7. Complete the ticket
+# 7. Clean commit history (squash phase)
+ait3 flow squash 0001 --pr
+
+# 8. Complete the ticket
 ait3 ticket complete 0001
 ```
 
@@ -109,7 +156,7 @@ AIT³ follows a structured development approach:
 2. **RED**: Write failing tests that define expected behavior
 3. **GREEN**: Implement minimal code for 100% test pass rate
 4. **REFACTOR**: Optimize while maintaining 100% test coverage
-5. **SQUASH**: Create clean commit history
+5. **SQUASH**: Git command suggestions for clean commit history and PR creation
 
 ## Project Structure
 
