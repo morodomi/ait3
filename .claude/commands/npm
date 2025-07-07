@@ -1,0 +1,313 @@
+# NPM Scripts for Synapse - AI-Driven Development Platform
+
+This guide explains the npm scripts available in the Synapse project and how they integrate with our TiDD (Test-Intelligence-Driven Development) workflow and AI-driven development philosophy.
+
+## 🎭 TiDD Workflow Integration
+
+Synapse follows a **Test-Intelligence-Driven Development** methodology with 5 phases. Each npm script supports specific phases of this workflow.
+
+### PLANNING Phase (Socratic Dialogue)
+```bash
+# No specific npm script - use dialectical reasoning:
+# 1. Claude proposes approach
+# 2. Gemini challenges (use: gemini -p "@src/ critique this approach")
+# 3. Human synthesizes final decision
+```
+
+### RED Phase (Test Creation)
+```bash
+# Create failing tests that define expected behavior
+npm run test:watch    # Real-time feedback while writing tests
+npm run type-check    # Ensure test types are correct
+
+# Goal: 0% pass rate initially (all red tests)
+# Tests must reflect ticket purpose, not implementation details
+```
+
+### GREEN Phase (Implementation)
+```bash
+# Implement minimal code to achieve 100% test pass rate
+npm run dev          # Auto-compile TypeScript during development
+npm run test:watch   # Continuous test feedback
+npm run type-check   # Verify type safety during implementation
+
+# Goal: 100% test pass rate (non-negotiable)
+```
+
+### REFACTOR Phase (Optimization)
+```bash
+# Improve code quality while maintaining 100% test coverage
+npm run lint         # Enforce code quality standards
+npm run type-check   # Maintain type safety
+npm run coverage     # Verify coverage remains at 100%
+npm run test:ci      # Final validation before refactor completion
+```
+
+### SQUASH Phase (Integration)
+```bash
+# Prepare for clean commit history and integration
+npm run ci           # Complete CI validation (type-check + test:ci)
+npm run build        # Ensure production build succeeds
+```
+
+## 🧠 Core NPM Scripts
+
+### Testing Commands
+
+#### `npm test`
+**Purpose**: Run tests in watch mode for active development
+**TiDD Phase**: RED, GREEN (primary development phases)
+**Usage**:
+```bash
+npm test
+# Equivalent to: vitest (watch mode)
+# Use during: Active development when writing/debugging tests or code
+```
+
+#### `npm run test:watch`
+**Purpose**: Explicit watch mode for test-driven development
+**TiDD Phase**: RED, GREEN
+**Usage**:
+```bash
+npm run test:watch
+# Best for: Continuous feedback loop during TDD cycles
+# Auto-reruns tests when files change
+```
+
+#### `npm run test:ci`
+**Purpose**: One-time test execution for automation/validation
+**TiDD Phase**: REFACTOR, SQUASH
+**Usage**:
+```bash
+npm run test:ci
+# Use for: Final validation, pre-commit checks, CI pipelines
+# Exits with success/failure status code
+```
+
+#### `npm run coverage`
+**Purpose**: Generate comprehensive test coverage reports
+**TiDD Phase**: REFACTOR (quality assurance)
+**Usage**:
+```bash
+npm run coverage
+# Validates: 100% test coverage requirement
+# Generates: Detailed coverage report for analysis
+```
+
+### Development Commands
+
+#### `npm run dev`
+**Purpose**: Continuous TypeScript compilation during development
+**TiDD Phase**: GREEN, REFACTOR
+**Usage**:
+```bash
+npm run dev
+# Auto-compiles TypeScript on file changes
+# Essential for: Real-time development feedback
+# Run alongside: npm run test:watch for complete TDD workflow
+```
+
+#### `npm run build`
+**Purpose**: Production TypeScript compilation
+**TiDD Phase**: SQUASH (pre-integration)
+**Usage**:
+```bash
+npm run build
+# Compiles to: ./dist directory
+# Validates: Production build succeeds
+# Required before: Integration and deployment
+```
+
+### Code Quality Commands
+
+#### `npm run type-check`
+**Purpose**: TypeScript strict type validation without compilation
+**TiDD Phase**: All phases (continuous validation)
+**Usage**:
+```bash
+npm run type-check
+# Validates: Type safety without generating files
+# Fast check for: Type errors and consistency
+# Use before: Commits and during development
+```
+
+#### `npm run lint`
+**Purpose**: ESLint code quality and style enforcement
+**TiDD Phase**: REFACTOR (code quality optimization)
+**Usage**:
+```bash
+npm run lint
+# Enforces: Project coding standards
+# Validates: Code style and potential errors
+# Run before: Code commits and during refactoring
+```
+
+### Integration Commands
+
+#### `npm run ci`
+**Purpose**: Complete CI pipeline validation
+**TiDD Phase**: SQUASH (final validation)
+**Usage**:
+```bash
+npm run ci
+# Executes: npm run type-check && npm run test:ci
+# Validates: Type safety + all tests pass
+# Use for: Pre-commit validation, CI/CD pipelines
+```
+
+## 🚀 AI-Driven Development Patterns
+
+### Continuous Validation Loop
+```bash
+# Terminal 1: Continuous development feedback
+npm run dev
+
+# Terminal 2: Continuous test feedback  
+npm run test:watch
+
+# This setup provides real-time validation of both compilation and tests
+# Essential for maintaining flow state during AI-assisted development
+```
+
+### Pre-Commit AI Validation
+```bash
+# 1. Validate implementation quality
+npm run ci
+
+# 2. If tests fail, use Gemini for analysis
+gemini -p "@src/ @tests/ Analyze test failures and suggest fixes"
+
+# 3. If successful, proceed with commit
+git add . && git commit -m "feat: implement feature with TDD"
+```
+
+### Code Quality Analysis
+```bash
+# Generate coverage report for AI analysis
+npm run coverage
+
+# Use Gemini to analyze coverage gaps
+gemini -p "@src/ @tests/ Analyze test coverage gaps and suggest improvements"
+
+# Lint check for AI-driven improvements
+npm run lint
+gemini -p "@src/ Review linting issues and suggest architectural improvements"
+```
+
+## 🎯 Workflow Examples
+
+### Starting New Feature Development
+```bash
+# 1. PLANNING: Use Claude/Gemini dialogue for approach
+# 2. RED: Start with failing tests
+npm run test:watch
+
+# 3. GREEN: Implement with continuous feedback
+npm run dev  # (in separate terminal)
+
+# 4. REFACTOR: Optimize with quality checks
+npm run lint
+npm run coverage
+
+# 5. SQUASH: Final validation
+npm run ci
+```
+
+### Debugging Failed Tests
+```bash
+# Run tests with detailed output
+npm run test:ci
+
+# If failures, analyze with Gemini
+gemini -p "@tests/ @src/ Analyze these test failures and suggest fixes"
+
+# Fix and validate
+npm run test:watch  # Real-time feedback during fixes
+```
+
+### Pre-Integration Checklist
+```bash
+# Complete validation before integration
+npm run ci           # Type safety + tests
+npm run build        # Production build
+npm run coverage     # Coverage validation
+npm run lint         # Code quality
+
+# All must pass before proceeding to SQUASH phase
+```
+
+## 🔍 Troubleshooting
+
+### Common Issues and Solutions
+
+**Tests stuck in watch mode:**
+```bash
+# Use CI mode for one-time execution
+npm run test:ci
+```
+
+**TypeScript compilation errors:**
+```bash
+# Check types without compilation
+npm run type-check
+
+# Get detailed error analysis
+gemini -p "@src/ @tsconfig.json Analyze TypeScript compilation errors"
+```
+
+**Coverage gaps:**
+```bash
+# Generate and analyze coverage
+npm run coverage
+gemini -p "@coverage/ @src/ Identify untested code paths and suggest test improvements"
+```
+
+**Lint failures:**
+```bash
+# Check specific issues
+npm run lint
+
+# Get architectural suggestions
+gemini -p "@src/ Review code quality issues and suggest improvements"
+```
+
+## 🧩 Integration with Synapse Architecture
+
+### Pure Functions + Service Injection
+All npm scripts support the project's architectural patterns:
+- **Pure Functions**: Easy to test with `npm run test:watch`
+- **Service Injection**: Type-safe with `npm run type-check`
+- **Dependency Injection**: Validated with `npm run ci`
+
+### Claude Code Integration
+These scripts are optimized for Claude Code development:
+- Real-time feedback during AI-assisted coding
+- Continuous validation of AI-generated code
+- Integration with dialectical reasoning workflow
+
+### Ticket-Driven Development
+Scripts support `.tickets/` workflow:
+- Test creation aligns with ticket acceptance criteria
+- Continuous validation ensures ticket completion
+- Quality gates prevent incomplete implementations
+
+## 📊 Best Practices
+
+### Development Flow
+1. **Always start with**: `npm run test:watch` and `npm run dev`
+2. **Continuously validate**: Run `npm run type-check` frequently
+3. **Before commits**: Always run `npm run ci`
+4. **After refactoring**: Verify with `npm run coverage`
+
+### AI Collaboration
+- Use `npm run test:ci` output for Gemini analysis
+- Run `npm run coverage` before architectural discussions
+- Combine `npm run lint` with AI code review
+
+### Quality Assurance
+- **100% test pass rate**: Non-negotiable requirement
+- **Type safety**: Zero TypeScript errors allowed
+- **Code quality**: All lint rules must pass
+- **Coverage**: Maintain comprehensive test coverage
+
+Remember: These scripts are tools in service of the Synapse philosophy - enabling thoughtful, evidence-based development through AI collaboration and systematic validation.
