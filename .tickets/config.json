@@ -4,7 +4,7 @@
   "numbering": {
     "format": "0000",
     "increment": 1,
-    "next": 7
+    "next": 8
   },
   "templates": {
     "feature": "templates/feature-ticket.md",
