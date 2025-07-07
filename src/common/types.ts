@@ -1,3 +1,5 @@
+import type { TicketService } from '../services/interfaces/TicketService.js';
+
 export interface Ticket {
   id: string;              // Format: "0001" (4-digit zero-padded)
   title: string;
@@ -37,4 +39,40 @@ export interface CLIResult {
   success: boolean;
   message: string;
   data?: any;
+  exitCode?: number;
+}
+
+// CLI Command Argument Types
+export interface CreateTicketArgs {
+  title: string;
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  assignee?: string;
+  labels?: string[];
+}
+
+// Service Container for Dependency Injection
+export interface Services {
+  ticketService: TicketService;
+  // Future services:
+  // gitService?: GitService;
+  // projectService?: ProjectService;
+}
+
+// Future command arguments (for extension)
+export interface ListTicketsArgs {
+  status?: 'todo' | 'doing' | 'done';
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  assignee?: string;
+}
+
+export interface ShowTicketArgs {
+  id: string;
+}
+
+export interface StartTicketArgs {
+  id: string;
+}
+
+export interface CompleteTicketArgs {
+  id: string;
 }

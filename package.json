@@ -26,5 +26,9 @@
     "typescript": "^5.8.3",
     "vitest": "^3.2.4",
     "zod": "^3.25.74"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0"
   }
 }

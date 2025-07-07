@@ -1,0 +1,337 @@
+# Using similarity-ts for Synapse Code Quality and Refactoring
+
+When working with the Synapse project during the REFACTOR phase of TiDD workflow, use `similarity-ts` to identify code duplication, maintain pattern consistency, and ensure architectural compliance across the TypeScript codebase.
+
+## Core similarity-ts Commands for Synapse
+
+### Basic Project Analysis
+```bash
+# Full project similarity analysis
+similarity-ts --threshold 0.8 --min-lines 5 src/
+
+# Focus on specific areas with better threshold
+similarity-ts --threshold 0.75 --min-lines 3 src/commands/
+```
+
+### TypeScript-Specific Analysis
+```bash
+# Enable experimental type similarity checking
+similarity-ts --experimental-types --threshold 0.85 src/
+
+# Include type literals and interfaces
+similarity-ts --include-types --include-type-literals --threshold 0.8 src/
+
+# Focus only on interfaces for service layer consistency
+similarity-ts --interfaces-only --threshold 0.9 src/services/interfaces/
+```
+
+## TiDD Workflow Integration
+
+### REFACTOR Phase - Code Duplication Detection
+The primary use case for similarity-ts in Synapse's TiDD workflow:
+
+```bash
+# Comprehensive refactoring analysis
+similarity-ts --threshold 0.75 --min-lines 4 --print src/
+
+# Focus on pure functions
+similarity-ts --threshold 0.8 --min-lines 3 --filter-function create src/commands/
+similarity-ts --threshold 0.8 --min-lines 3 --filter-function validate src/commands/
+
+# Service layer duplication detection
+similarity-ts --threshold 0.85 --min-lines 5 src/services/implementations/
+```
+
+### GREEN Phase - Pattern Validation
+Ensure new implementations follow established patterns:
+
+```bash
+# Validate new command follows existing patterns
+similarity-ts --threshold 0.7 --min-lines 3 src/commands/ticket/
+
+# Check service implementation consistency
+similarity-ts --threshold 0.8 --min-lines 4 src/services/implementations/
+```
+
+### SQUASH Phase - Final Consistency Check
+Before integration, ensure codebase consistency:
+
+```bash
+# Final consistency validation
+similarity-ts --threshold 0.7 --min-lines 3 --no-size-penalty src/
+
+# Type system consistency
+similarity-ts --experimental-types --threshold 0.9 src/common/types.ts src/services/interfaces/
+```
+
+## Synapse Architecture-Specific Analysis
+
+### Pure Function Pattern Consistency
+```bash
+# Check command function similarity (should be low - each command is unique)
+similarity-ts --threshold 0.6 --min-lines 5 --filter-function-body "CLIResult" src/commands/
+
+# Validate pure function signatures
+similarity-ts --threshold 0.8 --min-lines 2 --filter-function-body "args.*services" src/commands/
+
+# Check error handling patterns (should be similar)
+similarity-ts --threshold 0.8 --min-lines 3 --filter-function-body "ValidationError" src/commands/
+```
+
+### Service Layer Analysis
+```bash
+# Interface consistency checking
+similarity-ts --interfaces-only --threshold 0.8 src/services/interfaces/
+
+# Implementation pattern consistency
+similarity-ts --threshold 0.7 --min-lines 5 src/services/implementations/
+
+# Cross-service pattern analysis
+similarity-ts --threshold 0.6 --min-lines 4 --filter-function-body "async.*Promise" src/services/
+```
+
+### CLI Command Pattern Validation
+```bash
+# Command structure consistency
+similarity-ts --threshold 0.8 --min-lines 4 --filter-function-body "Command" src/commands/
+
+# Action handler patterns
+similarity-ts --threshold 0.7 --min-lines 3 --filter-function-body "action.*async" src/commands/
+
+# Error handling consistency in CLI
+similarity-ts --threshold 0.8 --min-lines 3 --filter-function-body "console.error" src/commands/
+```
+
+### TypeScript Interface and Type Analysis
+```bash
+# Type definition consistency
+similarity-ts --experimental-types --include-types --threshold 0.9 src/common/types.ts
+
+# Interface implementation consistency
+similarity-ts --interfaces-only --allow-cross-kind --threshold 0.8 src/services/interfaces/
+
+# Type literal similarity in function signatures
+similarity-ts --include-type-literals --threshold 0.8 --min-lines 2 src/
+```
+
+## Advanced Refactoring Patterns
+
+### Identifying Refactoring Opportunities
+```bash
+# Find high-similarity functions that should be extracted
+similarity-ts --threshold 0.85 --min-lines 6 --print src/commands/
+
+# Detect utility function candidates
+similarity-ts --threshold 0.8 --min-lines 3 --filter-function-body "trim\|validate\|format" src/
+
+# Find similar error handling that could be centralized
+similarity-ts --threshold 0.9 --min-lines 4 --filter-function-body "catch.*error" src/
+```
+
+### Cross-Module Consistency
+```bash
+# Check consistency between different command modules
+similarity-ts --threshold 0.6 --min-lines 4 src/commands/ticket/ src/commands/tdd/
+
+# Validate service layer consistency across implementations
+similarity-ts --threshold 0.7 --min-lines 5 src/services/implementations/
+
+# Common utilities identification
+similarity-ts --threshold 0.8 --min-lines 3 src/common/ src/commands/ src/services/
+```
+
+### Performance and Quality Analysis
+```bash
+# Identify performance-critical similar code
+similarity-ts --threshold 0.7 --min-lines 5 --filter-function-body "performance\|time\|async" src/
+
+# Find similar test patterns that could be abstracted
+similarity-ts --threshold 0.8 --min-lines 4 tests/unit/ tests/integration/
+
+# Memory usage patterns
+similarity-ts --threshold 0.7 --min-lines 3 --filter-function-body "Buffer\|stream\|large" src/
+```
+
+## Threshold Guidelines for Synapse
+
+### Recommended Thresholds by Use Case
+- **Pure Functions**: 0.6-0.7 (should be unique, low similarity expected)
+- **Service Implementations**: 0.7-0.8 (moderate similarity for consistent patterns)
+- **Error Handling**: 0.8-0.9 (high similarity desired for consistency)
+- **Type Definitions**: 0.9+ (very high similarity for type consistency)
+- **CLI Commands**: 0.7-0.8 (similar structure, different logic)
+- **Utilities**: 0.8-0.9 (high similarity may indicate extraction opportunity)
+
+### Min-Lines Guidelines
+- **Functions**: 3-5 lines (avoid trivial matches)
+- **Service Methods**: 4-6 lines (meaningful business logic)
+- **Error Handlers**: 2-4 lines (capture patterns)
+- **Type Definitions**: 2-3 lines (even small types matter)
+
+## Integration with TiDD Workflow
+
+### PLANNING Phase
+```bash
+# Analyze existing patterns before implementing new features
+similarity-ts --threshold 0.7 --min-lines 4 src/commands/
+
+# Understand service layer patterns
+similarity-ts --threshold 0.8 --min-lines 5 src/services/implementations/
+```
+
+### RED Phase
+```bash
+# Ensure test patterns are consistent
+similarity-ts --threshold 0.8 --min-lines 3 tests/unit/ tests/integration/
+
+# Validate test utilities aren't duplicated
+similarity-ts --threshold 0.9 --min-lines 4 tests/
+```
+
+### GREEN Phase
+```bash
+# Quick check that implementation follows patterns
+similarity-ts --threshold 0.7 --min-lines 3 src/commands/[new-command]/
+
+# Validate service layer consistency
+similarity-ts --threshold 0.8 --min-lines 4 src/services/implementations/[new-service]/
+```
+
+### REFACTOR Phase (Primary Usage)
+```bash
+# Comprehensive similarity analysis
+similarity-ts --threshold 0.75 --min-lines 4 --print src/
+
+# Identify extraction opportunities
+similarity-ts --threshold 0.85 --min-lines 6 --print src/commands/
+
+# Service layer refactoring analysis
+similarity-ts --threshold 0.8 --min-lines 5 src/services/
+
+# Common utility identification
+similarity-ts --threshold 0.9 --min-lines 4 src/common/
+```
+
+### SQUASH Phase
+```bash
+# Final consistency validation
+similarity-ts --threshold 0.7 --min-lines 3 src/
+
+# Type system final check
+similarity-ts --experimental-types --threshold 0.9 src/common/types.ts src/services/interfaces/
+```
+
+## Claude Code Integration
+
+### Pre-Commit Analysis
+```bash
+# Run before commits during REFACTOR phase
+similarity-ts --threshold 0.8 --min-lines 4 src/
+
+# Share results with Claude for refactoring suggestions
+echo "Analyze these similarity results and suggest refactoring opportunities"
+```
+
+### AI-Driven Refactoring Workflow
+1. **Run similarity-ts analysis**
+2. **Share results with Claude for interpretation**
+3. **Implement suggested refactoring**
+4. **Re-run similarity-ts to validate improvements**
+5. **Use Gemini to challenge refactoring decisions**
+
+## Common Refactoring Patterns Identified
+
+### Extract Common Utilities
+```bash
+# Find string manipulation patterns
+similarity-ts --threshold 0.8 --min-lines 3 --filter-function-body "toLowerCase\|replace\|trim" src/
+
+# Identify validation patterns
+similarity-ts --threshold 0.9 --min-lines 4 --filter-function-body "validation\|validate" src/
+```
+
+### Consolidate Error Handling
+```bash
+# Similar error handling patterns
+similarity-ts --threshold 0.85 --min-lines 4 --filter-function-body "catch.*Error" src/
+
+# Standardize error message formatting
+similarity-ts --threshold 0.8 --min-lines 3 --filter-function-body "console.error" src/
+```
+
+### Service Pattern Consistency
+```bash
+# Similar service method structures
+similarity-ts --threshold 0.7 --min-lines 5 src/services/implementations/
+
+# Common service utilities
+similarity-ts --threshold 0.8 --min-lines 4 --filter-function-body "private.*async" src/services/
+```
+
+## Exclusions for Synapse
+
+### Directories to Exclude
+```bash
+# Exclude common noise directories
+similarity-ts --exclude node_modules --exclude dist --exclude coverage src/
+
+# Focus analysis by excluding tests when analyzing implementation
+similarity-ts --exclude tests --threshold 0.8 --min-lines 4 src/
+```
+
+### When NOT to Use similarity-ts
+- **During PLANNING phase**: Focus on architecture, not implementation details
+- **Unique business logic**: Each command should have unique behavior
+- **Test assertions**: Similar test structure is expected and desired
+- **Configuration files**: Similarity is often intentional
+
+## Integration with Other Tools
+
+### Combine with Gemini Analysis
+```bash
+# Run similarity-ts then analyze with Gemini
+similarity-ts --threshold 0.8 --min-lines 4 --print src/ > similarity-report.txt
+gemini -p "@similarity-report.txt @src/ Analyze this similarity report and suggest refactoring priorities"
+```
+
+### Post-Refactoring Validation
+```bash
+# Before refactoring
+similarity-ts --threshold 0.8 --min-lines 4 src/ > before-refactor.txt
+
+# After refactoring
+similarity-ts --threshold 0.8 --min-lines 4 src/ > after-refactor.txt
+
+# Compare results to measure improvement
+gemini -p "@before-refactor.txt @after-refactor.txt Compare these similarity reports and assess refactoring effectiveness"
+```
+
+## Best Practices for Synapse
+
+1. **Use during REFACTOR phase**: Primary integration point in TiDD workflow
+2. **Adjust thresholds by component**: Different similarity expectations for different parts
+3. **Focus on patterns, not uniqueness**: Each command should be unique, utilities should be similar
+4. **Combine with AI analysis**: Use Claude/Gemini to interpret results
+5. **Document refactoring decisions**: Track why certain similarities were addressed or kept
+6. **Regular analysis**: Run similarity-ts after major changes to maintain code quality
+
+## Performance Considerations
+
+### Large Codebase Analysis
+```bash
+# Use fast mode for large codebases
+similarity-ts --threshold 0.8 --min-lines 4 src/
+
+# Disable fast mode for comprehensive analysis
+similarity-ts --no-fast --threshold 0.8 --min-lines 4 src/commands/
+```
+
+### Memory Usage
+```bash
+# For very large codebases, analyze in chunks
+similarity-ts --threshold 0.8 --min-lines 4 src/commands/
+similarity-ts --threshold 0.8 --min-lines 4 src/services/
+similarity-ts --threshold 0.8 --min-lines 4 src/common/
+```
+
+Remember: similarity-ts is a tool for maintaining code quality and consistency within the Synapse TiDD workflow. Use it to identify refactoring opportunities, not to enforce artificial uniformity where business logic should be unique.

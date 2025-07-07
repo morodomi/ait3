@@ -10,7 +10,10 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(npm run test:ci:*)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(npm run build:*)",
+      "Bash(grep:*)",
+      "Bash(similarity-ts:*)"
     ],
     "deny": []
   }

@@ -303,6 +303,7 @@ synapse tdd refactor 123
 # - Improve error handling and logging
 # - Enhance code readability and documentation
 # - Identify and ticket remaining mock implementations
+# - Use similarity-ts for code duplication analysis and refactoring opportunities
 
 git add . && git commit -m "refactor(#123): optimize authentication implementation
 
@@ -311,9 +312,11 @@ git add . && git commit -m "refactor(#123): optimize authentication implementati
 - Added comprehensive error logging with context
 - Optimized OAuth callback handling
 - Enhanced security headers middleware
+- Used similarity-ts analysis to identify and consolidate duplicate error handling patterns
 
 Performance: 40% faster auth response time
 Maintainability: Reduced cyclomatic complexity
+Code Quality: similarity-ts analysis shows clean codebase with no problematic duplications
 Tests: 47/47 passing (maintained 100%)"
 ```
 
@@ -724,11 +727,115 @@ While AI provides computational power and alternative perspectives, **human judg
 - **E2E Tests**: Complete CLI workflow testing
 - **Performance Tests**: Response time and resource usage validation
 
+### 🗂️ Test Directory Strategy (MANDATORY)
+
+#### **Real FS Testing with Isolation**
+All tests that interact with the file system MUST use isolated temporary directories to prevent project contamination.
+
+**✅ Required Pattern:**
+```typescript
+// ALWAYS use this pattern for file system tests
+import { mkdtemp, rm } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { randomBytes } from 'crypto';
+
+beforeEach(async () => {
+  // Create unique test directory with hash for parallel test safety
+  const hash = randomBytes(8).toString('hex');
+  const prefix = join(tmpdir(), `test-{description}-${hash}-`);
+  testDir = await mkdtemp(prefix);
+  
+  // Initialize services with test directory
+  service = new LocalTicketService(testDir);
+});
+
+afterEach(async () => {
+  // Clean up test directory completely
+  await rm(testDir, { recursive: true, force: true });
+});
+```
+
+**Directory Naming Convention:**
+- `test-synapse-{hash}-` - General Synapse tests
+- `test-synapse-cli-{hash}-` - CLI integration tests  
+- `test-synapse-create-{hash}-` - createTicket function tests
+- `test-{feature}-{hash}-` - Feature-specific tests
+
+#### **🚨 Project Directory Protection**
+- **NEVER write test files to project directories**
+- **NEVER use `.tickets/`, `src/`, or any project paths in tests**
+- **ALWAYS verify environment isolation in CI/CD**
+
+**❌ Forbidden Patterns:**
+```typescript
+// NEVER do this - contaminates project directory
+const service = new LocalTicketService('.tickets');  
+const service = new LocalTicketService('./test-data');
+
+// NEVER do this - unsafe parallel execution
+const testDir = '/tmp/synapse-test';  // Fixed path
+```
+
+**Environment Variables for CLI Tests:**
+```typescript
+// Set environment variables for CLI subprocess tests
+env: { ...process.env, TICKETS_DIR: testDir }
+```
+
 ### Quality Gates
 - **100% Test Pass Rate**: Non-negotiable requirement
 - **Code Coverage**: Minimum 90% line coverage, 100% for critical paths
 - **Type Safety**: TypeScript strict mode with zero `any` types
 - **Linting**: ESLint with strict rules for consistency
+
+### 🚨 Critical Testing Principles
+
+#### **Implementation Code Purity (MANDATORY)**
+- **NEVER add test-specific code to implementation files**
+- **NO conditional logic for test environments in production code**
+- **NO test-only imports or dependencies in src/**
+
+**❌ Forbidden Patterns:**
+```typescript
+// NEVER do this in implementation code
+if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+  chalk.level = 1; // Test-specific configuration
+}
+
+// NEVER do this in implementation code
+const config = process.env.TEST_MODE ? testConfig : prodConfig;
+```
+
+**✅ Correct Approach:**
+```typescript
+// Configure libraries in test setup files
+// vitest.setup.ts or individual test files
+import chalk from 'chalk';
+chalk.level = 1; // Force colors in tests
+
+// Use dependency injection for testability
+export function createService(config?: ServiceConfig) {
+  return new Service(config || defaultConfig);
+}
+```
+
+#### **Test Environment Configuration**
+- **Environment variables**: Set in test files or vitest configuration
+- **Library behavior**: Configure in test setup files (vitest.setup.ts)
+- **Mocking**: Use vitest mocks, never production code conditionals
+- **Test data**: Generate in test files, not implementation code
+
+#### **Separation of Concerns**
+- **Implementation code**: Focus solely on production behavior
+- **Test code**: Handle all test-specific configuration and setup
+- **Build systems**: Separate test and production build configurations
+
+**This principle ensures:**
+- Clean, maintainable production code
+- Clear separation between test and implementation concerns
+- Reduced risk of test code leaking into production
+- Better code quality and reliability
 
 ## 🚀 Installation & Setup
 

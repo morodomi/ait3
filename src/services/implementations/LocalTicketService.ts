@@ -24,7 +24,7 @@ const TicketSchema = z.object({
 export class LocalTicketService implements TicketService {
   private basePath: string;
 
-  constructor(basePath = TICKET_CONSTANTS.DEFAULT_BASE_PATH) {
+  constructor(basePath: string = TICKET_CONSTANTS.DEFAULT_BASE_PATH) {
     this.basePath = basePath;
   }
 
