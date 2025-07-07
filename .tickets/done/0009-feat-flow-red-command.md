@@ -1,16 +1,17 @@
 ---
 id: 0009
 title: 'feat: flow red command - 失敗テスト作成支援機能'
-status: doing
+status: done
 priority: high
 created: '2025-07-07T09:09:45.389Z'
-updated: '2025-07-07T11:15:10.608Z'
+updated: '2025-07-07T12:24:16.673Z'
 labels:
   - flow
   - tidd
   - red
   - testing
 started: '2025-07-07T11:15:10.608Z'
+completed: '2025-07-07T12:24:16.673Z'
 ---
 # Ticket #0009: feat: flow red command - 失敗テスト作成支援機能
 
