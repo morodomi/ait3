@@ -1,7 +1,7 @@
 ---
 id: '0003'
 title: 'feat: ticket list command - チケット一覧表示機能'
-status: todo
+status: done
 priority: high
 created: '2025-07-07T05:21:28.308Z'
 updated: '2025-07-07T05:21:28.308Z'

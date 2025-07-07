@@ -53,11 +53,15 @@ export const DEFAULT_TICKET_CONFIG = {
   }
 } as const;
 
+// Validation constants
+export const VALID_STATUSES = ['todo', 'doing', 'done'] as const;
+export const VALID_PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
+
 // Error messages
 export const ERROR_MESSAGES = {
   EMPTY_TITLE: 'Ticket title cannot be empty',
-  INVALID_PRIORITY: 'Invalid priority value',
-  INVALID_STATUS: 'Invalid status value',
+  INVALID_PRIORITY: `Invalid priority. Must be one of: ${VALID_PRIORITIES.join(', ')}`,
+  INVALID_STATUS: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`,
   CONFIG_READ_ERROR: 'Failed to read configuration file',
   CONFIG_WRITE_ERROR: 'Failed to write configuration file',
   DIRECTORY_CREATE_ERROR: 'Failed to create directory structure',

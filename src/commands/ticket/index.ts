@@ -1,5 +1,6 @@
 import { Command, Option } from 'commander';
 import { createTicket } from './create.js';
+import { listTickets } from './list.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
 import { ValidationError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
@@ -70,18 +71,38 @@ ticketCommand
     }
   });
 
-// Future subcommands will be added here:
-/*
+// ticket list subcommand
 ticketCommand
   .command('list')
-  .description('List all tickets')
-  .option('-s, --status <status>', 'Filter by status (todo|doing|done)')
-  .option('-p, --priority <priority>', 'Filter by priority')
+  .description('List tickets')
+  .addOption(new Option('-s, --status <status>', 'Filter by status').choices(['todo', 'doing', 'done']))
+  .addOption(new Option('-p, --priority <priority>', 'Filter by priority').choices(['low', 'medium', 'high', 'critical']))
   .action(async (options) => {
-    const result = await listTickets(options, services);
-    console.log(result.message);
-    process.exit(result.success ? 0 : 1);
+    try {
+      const result = await listTickets(options, services);
+      console.log(result.message);
+      process.exit(result.success ? 0 : 1);
+    } catch (error) {
+      // Enhanced error handling with better UX
+      if (error instanceof ValidationError) {
+        console.error(chalk.red('❌ Validation Error:'), error.message);
+        
+        // Provide helpful suggestions for common validation errors
+        if (error.field === 'status') {
+          console.error(chalk.yellow('💡 Valid statuses: todo, doing, done'));
+        }
+        if (error.field === 'priority') {
+          console.error(chalk.yellow('💡 Valid priorities: low, medium, high, critical'));
+        }
+      } else {
+        console.error(chalk.red('❌ Error listing tickets:'), error instanceof Error ? error.message : String(error));
+      }
+      process.exit(1);
+    }
   });
+
+// Future subcommands will be added here:
+/*
 
 ticketCommand
   .command('show <id>')

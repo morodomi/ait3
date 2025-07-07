@@ -1,4 +1,4 @@
-import { mkdir, writeFile, readFile, access } from 'fs/promises';
+import { mkdir, writeFile, readFile, access, readdir } from 'fs/promises';
 import { join } from 'path';
 import matter from 'gray-matter';
 import { z } from 'zod';
@@ -172,5 +172,60 @@ export class LocalTicketService implements TicketService {
     );
 
     return content;
+  }
+
+  async listTickets(options?: { status?: string; priority?: string }): Promise<Ticket[]> {
+    try {
+      await this.ensureDirectoryStructure();
+
+      const tickets: Ticket[] = [];
+      const directories = [
+        TICKET_CONSTANTS.DIRECTORIES.TODO,
+        TICKET_CONSTANTS.DIRECTORIES.DOING,
+        TICKET_CONSTANTS.DIRECTORIES.DONE
+      ];
+
+      for (const dir of directories) {
+        const dirPath = join(this.basePath, dir);
+        try {
+          const files = await readdir(dirPath);
+          
+          for (const file of files) {
+            if (file.endsWith('.md')) {
+              try {
+                const filePath = join(dirPath, file);
+                const content = await readFile(filePath, 'utf-8');
+                const { data } = matter(content);
+                
+                // Validate with Zod
+                const ticket = TicketSchema.parse(data);
+                tickets.push(ticket);
+              } catch (error) {
+                // Skip invalid ticket files
+                continue;
+              }
+            }
+          }
+        } catch (error) {
+          // Skip if directory doesn't exist or can't be read
+          continue;
+        }
+      }
+
+      // Apply filters
+      let filtered = tickets;
+      
+      if (options?.status) {
+        filtered = filtered.filter(ticket => ticket.status === options.status);
+      }
+      
+      if (options?.priority) {
+        filtered = filtered.filter(ticket => ticket.priority === options.priority);
+      }
+
+      return filtered;
+    } catch (error) {
+      throw new FileSystemError(`Failed to list tickets: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
+    }
   }
 }
