@@ -7,6 +7,8 @@ export interface Ticket {
   priority: 'low' | 'medium' | 'high' | 'critical';
   created: string;         // ISO 8601 timestamp
   updated: string;         // ISO 8601 timestamp
+  started?: string;        // ISO 8601 timestamp - when moved to 'doing'
+  completed?: string;      // ISO 8601 timestamp - when moved to 'done'
   assignee?: string;
   labels: string[];
   description?: string;    // Markdown body content

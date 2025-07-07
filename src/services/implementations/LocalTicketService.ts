@@ -1,4 +1,4 @@
-import { mkdir, writeFile, readFile, access, readdir } from 'fs/promises';
+import { mkdir, writeFile, readFile, access, readdir, rename, rm } from 'fs/promises';
 import { join } from 'path';
 import matter from 'gray-matter';
 import { z } from 'zod';
@@ -6,7 +6,7 @@ import { lock } from 'proper-lockfile';
 import type { TicketService } from '../interfaces/TicketService.js';
 import type { Ticket, CreateTicketOptions, TicketConfig } from '../../common/types.js';
 import { TICKET_CONSTANTS, DEFAULT_TICKET_CONFIG, ERROR_MESSAGES } from '../../common/constants.js';
-import { ValidationError, FileSystemError, ConfigurationError, LockError } from '../../common/errors.js';
+import { ValidationError, FileSystemError, ConfigurationError, LockError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError } from '../../common/errors.js';
 import { TimeUtils, IDUtils, FileUtils } from '../../common/utils.js';
 
 // Zod schema for validation
@@ -284,6 +284,112 @@ export class LocalTicketService implements TicketService {
       return null;
     } catch (error) {
       throw new FileSystemError(`Failed to get ticket: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
+    }
+  }
+
+  async startTicket(id: string): Promise<void> {
+    try {
+      await this.ensureDirectoryStructure();
+
+      // Find the ticket in all directories to check current status
+      const directories = [
+        TICKET_CONSTANTS.DIRECTORIES.TODO,
+        TICKET_CONSTANTS.DIRECTORIES.DOING,
+        TICKET_CONSTANTS.DIRECTORIES.DONE
+      ];
+
+      let currentStatus: string | null = null;
+      let currentFilePath: string | null = null;
+      let targetFilename: string | null = null;
+
+      // Search for the ticket across all status directories
+      for (const dir of directories) {
+        const dirPath = join(this.basePath, dir);
+        try {
+          const files = await readdir(dirPath);
+          const targetFile = files.find(file => 
+            file.endsWith('.md') && file.startsWith(`${id}-`)
+          );
+          
+          if (targetFile) {
+            currentStatus = dir;
+            currentFilePath = join(dirPath, targetFile);
+            targetFilename = targetFile;
+            break;
+          }
+        } catch (error) {
+          // Skip if directory doesn't exist or can't be read
+          continue;
+        }
+      }
+
+      // Check if ticket exists
+      if (!currentStatus || !currentFilePath || !targetFilename) {
+        throw new TicketNotFoundError(id);
+      }
+
+      // Validate current status - prevent starting already started or completed tickets
+      if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.DOING) {
+        throw new TicketAlreadyInProgressError(id);
+      }
+      
+      if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.DONE) {
+        throw new TicketAlreadyCompletedError(id);
+      }
+
+      // Only allow starting tickets from 'todo' status
+      if (currentStatus !== TICKET_CONSTANTS.DIRECTORIES.TODO) {
+        throw new ValidationError(`Cannot start ticket from '${currentStatus}' status`);
+      }
+
+      // Read and update ticket content
+      const content = await readFile(currentFilePath, 'utf-8');
+      const { data, content: markdownContent } = matter(content);
+
+      // Update metadata
+      const now = TimeUtils.now();
+      const updatedData = {
+        ...data,
+        status: 'doing',
+        updated: now,
+        started: now  // Use same timestamp
+      };
+
+      // Generate updated file content
+      const updatedContent = matter.stringify(markdownContent, updatedData);
+
+      // Move file from todo to doing directory atomically
+      const targetPath = join(this.basePath, TICKET_CONSTANTS.DIRECTORIES.DOING, targetFilename);
+      
+      // Write updated content to new location
+      await writeFile(targetPath, updatedContent, 'utf-8');
+      
+      // Remove original file - using unlink for atomic operation
+      try {
+        await rename(currentFilePath, `${currentFilePath}.tmp`);
+        await rm(`${currentFilePath}.tmp`, { force: true });
+      } catch (error) {
+        // If removal fails, try to clean up the target file
+        try {
+          await rm(targetPath, { force: true });
+        } catch {
+          // Ignore cleanup errors
+        }
+        throw new FileSystemError(`Failed to move ticket file: ${error instanceof Error ? error.message : String(error)}`, currentFilePath);
+      }
+
+    } catch (error) {
+      // Re-throw specific errors as-is
+      if (error instanceof TicketNotFoundError || 
+          error instanceof TicketAlreadyInProgressError ||
+          error instanceof TicketAlreadyCompletedError ||
+          error instanceof ValidationError ||
+          error instanceof FileSystemError) {
+        throw error;
+      }
+      
+      // Wrap other errors
+      throw new FileSystemError(`Failed to start ticket: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
     }
   }
 }

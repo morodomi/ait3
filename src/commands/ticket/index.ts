@@ -2,8 +2,9 @@ import { Command, Option } from 'commander';
 import { createTicket } from './create.js';
 import { listTickets } from './list.js';
 import { showTicket } from './show.js';
+import { startTicket } from './start.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
-import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
+import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
 import chalk from 'chalk';
 
@@ -121,6 +122,36 @@ ticketCommand
         console.error(chalk.yellow('💡 Use "synapse ticket list" to see available tickets'));
       } else {
         console.error(chalk.red('❌ Error showing ticket:'), error instanceof Error ? error.message : String(error));
+      }
+      process.exit(1);
+    }
+  });
+
+// ticket start subcommand
+ticketCommand
+  .command('start <id>')
+  .description('Start working on a ticket')
+  .action(async (id: string) => {
+    try {
+      const result = await startTicket({ id }, services);
+      console.log(result.message);
+      process.exit(result.success ? 0 : 1);
+    } catch (error) {
+      // Enhanced error handling with better UX
+      if (error instanceof ValidationError) {
+        console.error(chalk.red('❌ Validation Error:'), error.message);
+        console.error(chalk.yellow('💡 Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+      } else if (error instanceof TicketNotFoundError) {
+        console.error(chalk.red('❌ Ticket Not Found:'), error.message);
+        console.error(chalk.yellow('💡 Use "synapse ticket list" to see available tickets'));
+      } else if (error instanceof TicketAlreadyInProgressError) {
+        console.error(chalk.red('❌ Already In Progress:'), error.message);
+        console.error(chalk.yellow('💡 This ticket is already being worked on'));
+      } else if (error instanceof TicketAlreadyCompletedError) {
+        console.error(chalk.red('❌ Already Completed:'), error.message);
+        console.error(chalk.yellow('💡 This ticket has already been completed'));
+      } else {
+        console.error(chalk.red('❌ Error starting ticket:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
