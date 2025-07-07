@@ -68,3 +68,17 @@ export const ERROR_MESSAGES = {
   FILE_WRITE_ERROR: 'Failed to write ticket file',
   FILE_LOCK_ERROR: 'Failed to acquire file lock'
 } as const;
+
+// UI Display constants
+export const UI_CONSTANTS = {
+  EMOJIS: {
+    TICKET: '🎫',
+    DETAILS: '📊',
+    DESCRIPTION: '📝',
+    ERROR: '❌',
+    SUGGESTION: '💡'
+  },
+  SEPARATORS: {
+    SECTION: '────────────────────────────────────'
+  }
+} as const;

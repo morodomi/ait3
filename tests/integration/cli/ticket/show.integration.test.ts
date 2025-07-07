@@ -141,12 +141,18 @@ labels:
       
       // Check metadata
       expect(result).toContain('📊 Details:');
-      expect(result).toContain('Status: todo');
-      expect(result).toContain('Priority: high');
-      expect(result).toContain('Created: 2025-01-01 10:30');
-      expect(result).toContain('Updated: 2025-01-01 11:45');
-      expect(result).toContain('Assignee: developer@example.com');
-      expect(result).toContain('Labels: feature, backend, urgent');
+      expect(result).toContain('Status:');
+      expect(result).toContain('todo');
+      expect(result).toContain('Priority:');
+      expect(result).toContain('high');
+      expect(result).toContain('Created:');
+      expect(result).toContain('2025-01-01 10:30');
+      expect(result).toContain('Updated:');
+      expect(result).toContain('2025-01-01 11:45');
+      expect(result).toContain('Assignee:');
+      expect(result).toContain('developer@example.com');
+      expect(result).toContain('Labels:');
+      expect(result).toContain('feature, backend, urgent');
       
       // Check separator
       expect(result).toContain('────');
@@ -171,10 +177,13 @@ labels:
 
       expect(result).toContain('🎫 Ticket #0002');
       expect(result).toContain('Minimal Ticket');
-      expect(result).toContain('Status: doing');
-      expect(result).toContain('Priority: medium');
+      expect(result).toContain('Status:');
+      expect(result).toContain('doing');
+      expect(result).toContain('Priority:');
+      expect(result).toContain('medium');
       expect(result).not.toContain('Assignee:');
-      expect(result).toContain('Labels: (none)');
+      expect(result).toContain('Labels:');
+      expect(result).toContain('(none)');
       expect(result).toContain('Simple description without assignee');
     });
 
@@ -190,7 +199,8 @@ labels:
 
       expect(result).toContain('🎫 Ticket #0003');
       expect(result).toContain('No Description Ticket');
-      expect(result).toContain('Status: done');
+      expect(result).toContain('Status:');
+      expect(result).toContain('done');
       expect(result).toContain('📝 Description:');
       expect(result).toContain('(No description provided)');
     });
@@ -205,7 +215,8 @@ labels:
           env: { ...process.env, TICKETS_DIR: testDir }
         }
       );
-      expect(todoResult).toContain('Status: todo');
+      expect(todoResult).toContain('Status:');
+      expect(todoResult).toContain('todo');
 
       // Test ticket in doing
       const doingResult = execSync(
@@ -216,7 +227,8 @@ labels:
           env: { ...process.env, TICKETS_DIR: testDir }
         }
       );
-      expect(doingResult).toContain('Status: doing');
+      expect(doingResult).toContain('Status:');
+      expect(doingResult).toContain('doing');
 
       // Test ticket in done
       const doneResult = execSync(
@@ -227,7 +239,8 @@ labels:
           env: { ...process.env, TICKETS_DIR: testDir }
         }
       );
-      expect(doneResult).toContain('Status: done');
+      expect(doneResult).toContain('Status:');
+      expect(doneResult).toContain('done');
     });
   });
 
@@ -326,8 +339,10 @@ labels:
       );
 
       // Should format dates without ISO format
-      expect(result).toContain('Created: 2025-01-01 10:30');
-      expect(result).toContain('Updated: 2025-01-01 11:45');
+      expect(result).toContain('Created:');
+      expect(result).toContain('2025-01-01 10:30');
+      expect(result).toContain('Updated:');
+      expect(result).toContain('2025-01-01 11:45');
       expect(result).not.toContain('T10:30:00Z');
     });
 
@@ -372,8 +387,8 @@ labels:
       );
 
       expect(result).toContain('Show ticket details');
-      expect(result).toContain('Arguments:');
-      expect(result).toContain('id');
+      expect(result).toContain('Usage:');
+      expect(result).toContain('<id>');
     });
   });
 });

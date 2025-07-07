@@ -20,6 +20,20 @@ export class TimeUtils {
   static now(): string {
     return new Date().toISOString();
   }
+
+  /**
+   * Format ISO date string to human-readable format (YYYY-MM-DD HH:MM)
+   */
+  static formatDate(isoString: string): string {
+    const date = new Date(isoString);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  }
 }
 
 export class IDUtils {
@@ -28,6 +42,13 @@ export class IDUtils {
    */
   static formatTicketId(id: number, length: number = 4): string {
     return id.toString().padStart(length, '0');
+  }
+
+  /**
+   * Validate ticket ID format (4-digit number)
+   */
+  static isValidTicketId(id: string): boolean {
+    return /^\d{4}$/.test(id);
   }
 }
 

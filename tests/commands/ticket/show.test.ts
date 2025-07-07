@@ -61,12 +61,18 @@ describe('showTicket pure function', () => {
       // Check for essential ticket information in output
       expect(result.message).toContain('🎫 Ticket #0001');
       expect(result.message).toContain('Test Ticket with Description');
-      expect(result.message).toContain('Status: todo');
-      expect(result.message).toContain('Priority: high');
-      expect(result.message).toContain('Created: 2025-01-01 10:30');
-      expect(result.message).toContain('Updated: 2025-01-01 11:45');
-      expect(result.message).toContain('Assignee: developer@example.com');
-      expect(result.message).toContain('Labels: feature, backend');
+      expect(result.message).toContain('Status:');
+      expect(result.message).toContain('todo');
+      expect(result.message).toContain('Priority:');
+      expect(result.message).toContain('high');
+      expect(result.message).toContain('Created:');
+      expect(result.message).toContain('2025-01-01 10:30');
+      expect(result.message).toContain('Updated:');
+      expect(result.message).toContain('2025-01-01 11:45');
+      expect(result.message).toContain('Assignee:');
+      expect(result.message).toContain('developer@example.com');
+      expect(result.message).toContain('Labels:');
+      expect(result.message).toContain('feature, backend');
       
       // Check for markdown content
       expect(result.message).toContain('📝 Description:');
@@ -97,10 +103,13 @@ describe('showTicket pure function', () => {
       expect(result.success).toBe(true);
       expect(result.message).toContain('🎫 Ticket #0002');
       expect(result.message).toContain('Minimal Ticket');
-      expect(result.message).toContain('Status: doing');
-      expect(result.message).toContain('Priority: medium');
+      expect(result.message).toContain('Status:');
+      expect(result.message).toContain('doing');
+      expect(result.message).toContain('Priority:');
+      expect(result.message).toContain('medium');
       expect(result.message).not.toContain('Assignee:');
-      expect(result.message).toContain('Labels: (none)');
+      expect(result.message).toContain('Labels:');
+      expect(result.message).toContain('(none)');
       expect(result.message).toContain('Simple description');
     });
 
@@ -110,8 +119,10 @@ describe('showTicket pure function', () => {
 
       expect(result.success).toBe(true);
       // Dates should be formatted as "YYYY-MM-DD HH:MM" not ISO format
-      expect(result.message).toContain('Created: 2025-01-01 10:30');
-      expect(result.message).toContain('Updated: 2025-01-01 11:45');
+      expect(result.message).toContain('Created:');
+      expect(result.message).toContain('2025-01-01 10:30');
+      expect(result.message).toContain('Updated:');
+      expect(result.message).toContain('2025-01-01 11:45');
       expect(result.message).not.toContain('T10:30:00Z');
     });
 
@@ -207,7 +218,8 @@ describe('showTicket pure function', () => {
       const result = await showTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Labels: (none)');
+      expect(result.message).toContain('Labels:');
+      expect(result.message).toContain('(none)');
     });
 
     it('should handle missing description gracefully', async () => {

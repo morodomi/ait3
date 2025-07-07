@@ -228,4 +228,62 @@ export class LocalTicketService implements TicketService {
       throw new FileSystemError(`Failed to list tickets: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
     }
   }
+
+  async getTicket(id: string): Promise<Ticket | null> {
+    try {
+      await this.ensureDirectoryStructure();
+
+      // Efficient search: Check each status directory for file starting with ID
+      const directories = [
+        TICKET_CONSTANTS.DIRECTORIES.TODO,
+        TICKET_CONSTANTS.DIRECTORIES.DOING,
+        TICKET_CONSTANTS.DIRECTORIES.DONE
+      ];
+
+      for (const dir of directories) {
+        const dirPath = join(this.basePath, dir);
+        try {
+          const files = await readdir(dirPath);
+          
+          // Find file that starts with the given ID
+          const targetFile = files.find(file => 
+            file.endsWith('.md') && file.startsWith(`${id}-`)
+          );
+          
+          if (targetFile) {
+            try {
+              const filePath = join(dirPath, targetFile);
+              const content = await readFile(filePath, 'utf-8');
+              const { data, content: markdownContent } = matter(content);
+              
+              // Validate with Zod and add description from markdown content
+              const ticket = TicketSchema.parse(data);
+              
+              // Extract description from markdown content (everything after ## Description)
+              const descriptionMatch = markdownContent.match(/^# [^]*?\n\n## Description\n*\n*([\s\S]*?)$/);
+              const description = descriptionMatch 
+                ? descriptionMatch[1].trim()
+                : markdownContent.replace(/^# [^]*?\n\n/, '').trim();
+              
+              return {
+                ...ticket,
+                description: description || undefined
+              };
+            } catch (error) {
+              // Skip invalid ticket files
+              continue;
+            }
+          }
+        } catch (error) {
+          // Skip if directory doesn't exist or can't be read
+          continue;
+        }
+      }
+
+      // Ticket not found in any directory
+      return null;
+    } catch (error) {
+      throw new FileSystemError(`Failed to get ticket: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
+    }
+  }
 }

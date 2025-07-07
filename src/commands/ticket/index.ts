@@ -1,8 +1,9 @@
 import { Command, Option } from 'commander';
 import { createTicket } from './create.js';
 import { listTickets } from './list.js';
+import { showTicket } from './show.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
-import { ValidationError } from '../../common/errors.js';
+import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
 import chalk from 'chalk';
 
@@ -101,15 +102,26 @@ ticketCommand
     }
   });
 
-// Future subcommands will be added here:
-/*
-
+// ticket show subcommand
 ticketCommand
   .command('show <id>')
   .description('Show ticket details')
   .action(async (id: string) => {
-    const result = await showTicket({ id }, services);
-    console.log(result.message);
-    process.exit(result.success ? 0 : 1);
+    try {
+      const result = await showTicket({ id }, services);
+      console.log(result.message);
+      process.exit(result.success ? 0 : 1);
+    } catch (error) {
+      // Enhanced error handling with better UX
+      if (error instanceof ValidationError) {
+        console.error(chalk.red('❌ Validation Error:'), error.message);
+        console.error(chalk.yellow('💡 Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+      } else if (error instanceof TicketNotFoundError) {
+        console.error(chalk.red('❌ Ticket Not Found:'), error.message);
+        console.error(chalk.yellow('💡 Use "synapse ticket list" to see available tickets'));
+      } else {
+        console.error(chalk.red('❌ Error showing ticket:'), error instanceof Error ? error.message : String(error));
+      }
+      process.exit(1);
+    }
   });
-*/
