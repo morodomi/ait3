@@ -33,16 +33,12 @@ ait3 flow red <ticketId> --interactive     # 対話モードでカスタマイ�
 
 ## Architecture Decision
 
-### テスト配置戦略（Gemini推奨に基づく）
-**ハイブリッド方式**を採用：
-- **ユニットテスト**: 実装コードと隣接配置 (`src/commands/flow/red.test.ts`)
-- **統合テスト**: tests/integrationディレクトリに配置 (`tests/integration/cli/flow/red.integration.test.ts`)
+### テスト配置戦略
+**現行方式を継続**（将来的にハイブリッド方式へ移行予定）：
+- **ユニットテスト**: `tests/commands/flow/red.test.ts`
+- **統合テスト**: `tests/integration/cli/flow/red.integration.test.ts`
 
-**採用理由**:
-1. 開発者体験(DX)の大幅向上 - テストと実装の往復が容易
-2. AIT³のTDD哲学との高い親和性 - Red-Green-Refactorサイクルの高速化
-3. 論理的な責務分離 - ユニットテストは機能の一部、統合テストはシステムテスト
-4. 保守性と発見しやすさの向上
+**注記**: Gemini分析によりハイブリッド方式が推奨されたが、既存コードベースとの一貫性を保つため、このチケットでは現行のtestsフォルダ配置を維持。ハイブリッド方式への移行は別チケットで対応予定。
 
 ## Acceptance Criteria
 
@@ -96,15 +92,16 @@ export async function redPhase(
 
 ## Implementation Notes
 
-1. **設定変更が必要**:
-   - `tsconfig.json`: `**/*.test.ts`をexcludeに追加
-   - `vitest.config.ts`: srcとtests両方のテストを対象に
+1. **テスト配置**:
+   - このチケットでは現行のtestsフォルダ構造を維持
+   - ハイブリッド方式への移行は別チケット（#0013）で対応
 
-2. **既存テストの移行**:
-   - このチケットでは新規実装のみ
-   - 既存テストの移行は別チケットで対応
-
-3. **エラーハンドリング**:
+2. **エラーハンドリング**:
    - チケットが見つからない場合
    - テストファイルが既に存在する場合
    - 無効なチケット状態の場合
+
+3. **生成されるテストの品質**:
+   - 必ず失敗するアサーションを含める
+   - 既存のテストパターンを踏襲
+   - チケットの受け入れ条件を反映
