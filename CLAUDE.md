@@ -2,7 +2,7 @@
 
 ## 📋 Project Overview
 
-**AIT³** is an AI-driven development platform that revolutionizes software engineering through intelligent collaboration between Claude Code, Gemini, and human developers. By implementing a 4-Phase TiDD (Test-Intelligence-Driven Development) workflow, AIT³ facilitates thoughtful decision-making through dialectical reasoning, where human judgment remains supreme.
+**AIT³** is an AI-driven development platform that revolutionizes software engineering through intelligent collaboration between Claude Code, Gemini, and human developers. By implementing a 4-Phase AIT³ (AI + Ticket + Test + Tool driven development) workflow, AIT³ facilitates thoughtful decision-making through dialectical reasoning, where human judgment remains supreme.
 
 **Mission**: Transform development from isolated coding to collaborative intelligence, where AI assists in exploring possibilities, challenging assumptions, and discovering optimal solutions through reasoned discourse.
 
@@ -24,7 +24,7 @@
 - **Smart Workflows**: create → start → complete → squash → PR/merge
 - **Commands**: `create`, `start`, `complete`, `list`, `show`, `delete`
 
-### 🔬 TiDD Methodology (Test-Intelligence-Driven Development)
+### 🔬 AIT³ Methodology (AI + Ticket + Test + Tool driven development)
 - **PLANNING Phase**: Socratic dialogue for approach validation
 - **RED Phase**: Purpose-driven test creation with 100% intention alignment
 - **GREEN Phase**: Implementation with 100% test pass requirement
@@ -66,7 +66,7 @@
 │   │   │   ├── show.ts         ← showTicket(args, services) → CLIResult
 │   │   │   └── delete.ts       ← deleteTicket(args, services) → CLIResult
 │   │   │
-│   │   ├── tdd/                ← TiDD workflow
+│   │   ├── flow/               ← AIT³ workflow
 │   │   │   ├── plan.ts         ← planPhase(args, services) → CLIResult
 │   │   │   ├── red.ts          ← redPhase(args, services) → CLIResult
 │   │   │   ├── green.ts        ← greenPhase(args, services) → CLIResult
@@ -119,7 +119,7 @@
 │   └── assets/                ← Templates and resources
 │       ├── templates/         ← CLAUDE.md templates
 │       ├── commands/          ← .claude/commands templates
-│       └── workflows/         ← TiDD workflow definitions
+│       └── workflows/         ← AIT³ workflow definitions
 │
 ├── .claude/                   ← Claude Code integration (auto-installed)
 │   ├── commands/              ← Command templates
@@ -140,7 +140,7 @@
 │
 └── docs/                     ← Documentation
     ├── PHILOSOPHY.md         ← Socratic methodology
-    ├── WORKFLOW.md           ← TiDD process guide
+    ├── WORKFLOW.md           ← AIT³ process guide
     └── INTEGRATION.md        ← Project integration guide
 ```
 
@@ -168,13 +168,13 @@ ait3 ticket complete 001                      # Complete ticket
 ait3 ticket delete 001                        # Delete ticket
 ```
 
-#### 🧠 TiDD Workflow
+#### 🧠 AIT³ Workflow
 ```bash
-ait3 tdd plan "feature-name"                  # PLANNING: Socratic dialogue
-ait3 tdd red 001                              # RED: Create failing tests
-ait3 tdd green 001                            # GREEN: Implement feature
-ait3 tdd refactor 001                         # REFACTOR: Optimize code
-ait3 tdd squash 001                           # SQUASH: Clean commits & PR
+ait3 flow plan "feature-name"                 # PLANNING: Socratic dialogue
+ait3 flow red 001                             # RED: Create failing tests
+ait3 flow green 001                           # GREEN: Implement feature
+ait3 flow refactor 001                        # REFACTOR: Optimize code
+ait3 flow squash 001                          # SQUASH: Clean commits & PR
 ```
 
 #### 🔍 Project Analysis
@@ -206,7 +206,7 @@ ait3 status --tickets                        # Include ticket statistics
 ait3 status --detailed                       # Detailed system information
 ```
 
-## 🔄 TiDD Workflow (Test-Intelligence-Driven Development)
+## 🔄 AIT³ Workflow (AI + Ticket + Test + Tool driven development)
 
 ### 🎭 Phase 1: PLANNING (Socratic Dialogue)
 
@@ -214,7 +214,7 @@ ait3 status --detailed                       # Detailed system information
 
 ```bash
 # 1. Claude proposes approach
-ait3 tdd plan "user-authentication" --requirements "security,oauth,persistence"
+ait3 flow plan "user-authentication" --requirements "security,oauth,persistence"
 
 # 2. Human reviews Claude's proposal, then challenges with Gemini
 gemini -p "Critique Claude's approach for user authentication: [proposal-details]"
@@ -243,7 +243,7 @@ Human decision: Implement with secure httpOnly cookies + additional CSRF protect
 
 ```bash
 # Create failing tests that define expected behavior
-ait3 tdd red 123
+ait3 flow red 123
 
 # Tests must:
 # - Reflect ticket purpose and acceptance criteria
@@ -268,7 +268,7 @@ Coverage: 47 test cases, 0% passing (intentionally red)"
 
 ```bash
 # Implement feature with strict test compliance
-ait3 tdd green 123
+ait3 flow green 123
 
 # Requirements:
 # - 100% test pass rate (non-negotiable)
@@ -295,7 +295,7 @@ Tests: 47/47 passing (100% green)"
 
 ```bash
 # Optimize structure, performance, and maintainability
-ait3 tdd refactor 123
+ait3 flow refactor 123
 
 # Focus areas:
 # - Extract common patterns and utilities
@@ -326,7 +326,7 @@ Tests: 47/47 passing (maintained 100%)"
 
 ```bash
 # Consolidate development commits into meaningful history
-ait3 tdd squash 123 "Complete user authentication system"
+ait3 flow squash 123 "Complete user authentication system"
 
 # Automated process:
 # 1. Backup current state with tags
@@ -502,7 +502,7 @@ ait3 install all
 ```markdown
 # AIT³ - AI-Driven Development Platform
 
-AIT³ provides TiDD (Test-Intelligence-Driven Development) workflow with local ticket management and Claude Code integration.
+AIT³ provides AIT³ (AI + Ticket + Test + Tool driven development) workflow with local ticket management and Claude Code integration.
 
 ## Core Commands
 
@@ -515,13 +515,13 @@ ait3 ticket complete 001                 # Complete ticket
 ait3 ticket show 001                     # Show ticket details
 ```
 
-### TiDD Workflow
+### AIT³ Workflow
 ```bash
-ait3 tdd plan "feature-name"             # PLANNING: Socratic dialogue
-ait3 tdd red 001                         # RED: Create failing tests
-ait3 tdd green 001                       # GREEN: Implement feature
-ait3 tdd refactor 001                    # REFACTOR: Optimize code
-ait3 tdd squash 001                      # SQUASH: Clean commits
+ait3 flow plan "feature-name"            # PLANNING: Socratic dialogue
+ait3 flow red 001                        # RED: Create failing tests
+ait3 flow green 001                      # GREEN: Implement feature
+ait3 flow refactor 001                   # REFACTOR: Optimize code
+ait3 flow squash 001                     # SQUASH: Clean commits
 ```
 
 ### Project Analysis
@@ -531,7 +531,7 @@ ait3 generate claude-md                  # Generate CLAUDE.md
 ait3 status                             # System status
 ```
 
-## TiDD Philosophy
+## AIT³ Philosophy
 
 1. **PLANNING**: Use Claude for proposal, Gemini for critique, Human for decision
 2. **RED**: Write failing tests that define expected behavior
@@ -860,7 +860,7 @@ ait3 generate claude-md
 # Start first ticket
 ait3 ticket create "Setup project structure"
 ait3 ticket start 001
-ait3 tdd plan "project-setup"
+ait3 flow plan "project-setup"
 ```
 
 ### Integration with Existing Projects
@@ -874,15 +874,15 @@ ait3 install all
 # Setup ticket system
 ait3 ticket create "Integrate AIT³ workflow"
 
-# Begin TiDD process
-ait3 tdd plan "ait3-integration"
+# Begin AIT³ process
+ait3 flow plan "ait3-integration"
 ```
 
 ## 📋 Roadmap
 
 ### ✅ Current Features (v1.0)
 - Local ticket management with fixed markdown format
-- TiDD workflow implementation (PLANNING → RED → GREEN → REFACTOR → SQUASH)
+- AIT³ workflow implementation (PLANNING → RED → GREEN → REFACTOR → SQUASH)
 - Pure functions + service injection architecture
 - Claude Code integration via MCP server
 - Project analysis and CLAUDE.md generation
@@ -912,28 +912,28 @@ ait3 ticket create "User profile management"
 ait3 ticket start 001
 
 # 2. PLANNING phase with AI collaboration
-ait3 tdd plan "user-profile" --requirements "crud,validation,security"
+ait3 flow plan "user-profile" --requirements "crud,validation,security"
 # → Claude proposes approach
 # → Challenge with Gemini for alternatives
 # → Human decides on final approach
 
 # 3. RED phase - create comprehensive tests
-ait3 tdd red 001
+ait3 flow red 001
 # → Creates failing tests for all requirements
 # → Tests define behavior, not implementation
 
 # 4. GREEN phase - implement to pass tests
-ait3 tdd green 001  
+ait3 flow green 001  
 # → Minimal implementation for 100% test pass
 # → Mock external services, create tickets for real implementations
 
 # 5. REFACTOR phase - optimize and clean
-ait3 tdd refactor 001
+ait3 flow refactor 001
 # → Improve performance and maintainability
 # → Maintain 100% test coverage
 
 # 6. SQUASH phase - clean integration
-ait3 tdd squash 001 "Complete user profile management"
+ait3 flow squash 001 "Complete user profile management"
 # → Clean commit history
 # → Create PR or merge to main
 # → Mark ticket as complete
@@ -958,8 +958,8 @@ ait3 generate interactive
 # 4. Begin systematic improvement
 ait3 ticket create "Migrate to AIT³ workflow"
 ait3 ticket start 001
-ait3 tdd plan "ait3-migration"
-# → Continue with TiDD workflow
+ait3 flow plan "ait3-migration"
+# → Continue with AIT³ workflow
 ```
 
 ---
@@ -987,7 +987,7 @@ ait3 tdd plan "ait3-migration"
 
 ### Development Methodology - MANDATORY
 
-**YOU MUST embrace the TiDD methodology:**
+**YOU MUST embrace the AIT³ methodology:**
 
 #### Phase 1: PLANNING - Socratic Dialogue (REQUIRED)
 1. **Claude's Role**: YOU propose approaches with clear reasoning

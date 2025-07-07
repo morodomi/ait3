@@ -1,7 +1,7 @@
 ---
 id: '0004'
 title: 'feat: ticket show command - チケット詳細表示機能'
-status: doing
+status: done
 priority: high
 created: '2025-07-07T05:21:39.369Z'
 updated: '2025-07-07T05:21:39.369Z'

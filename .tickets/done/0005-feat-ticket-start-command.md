@@ -1,7 +1,7 @@
 ---
 id: '0005'
 title: 'feat: ticket start command - チケット開始機能'
-status: todo
+status: done
 priority: high
 created: '2025-07-07T05:21:47.928Z'
 updated: '2025-07-07T05:21:47.928Z'
