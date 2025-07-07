@@ -63,3 +63,13 @@ export class TicketAlreadyCompletedError extends TicketError {
     this.ticketId = ticketId;
   }
 }
+
+export class TicketNotStartedError extends TicketError {
+  public readonly ticketId: string;
+
+  constructor(ticketId: string, message?: string) {
+    super(message || `Ticket with ID '${ticketId}' has not been started yet`, 'TICKET_NOT_STARTED');
+    this.name = 'TicketNotStartedError';
+    this.ticketId = ticketId;
+  }
+}

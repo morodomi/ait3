@@ -1,14 +1,15 @@
 ---
 id: '0006'
 title: 'feat: ticket complete command - チケット完了機能'
-status: todo
+status: done
 priority: high
 created: '2025-07-07T05:21:54.109Z'
-updated: '2025-07-07T05:21:54.109Z'
+updated: '2025-07-07T07:08:04.282Z'
 labels:
   - cli
   - ticket
   - complete
+completed: '2025-07-07T07:08:04.282Z'
 ---
 # Ticket #0006: feat: ticket complete command - チケット完了機能
 

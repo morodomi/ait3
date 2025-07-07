@@ -5,7 +5,8 @@ export interface TicketService {
   listTickets(options?: { status?: string; priority?: string }): Promise<Ticket[]>;
   getTicket(id: string): Promise<Ticket | null>;
   startTicket(id: string): Promise<void>;
-  // Future methods for CORE-6 and beyond:
+  completeTicket(id: string): Promise<void>;
+  // Future methods:
   // updateTicket(id: string, updates: Partial<Ticket>): Promise<Ticket>;
   // deleteTicket(id: string): Promise<void>;
 }
