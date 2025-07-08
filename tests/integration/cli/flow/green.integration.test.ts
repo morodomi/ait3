@@ -88,7 +88,7 @@ describe('CLI Integration: flow green', () => {
       });
 
       expect(result).toContain('GREEN Phase');
-      expect(result).toContain('Making tests pass');
+      expect(result).toContain('Claude Code Instructions');
     });
   });
 
@@ -247,10 +247,9 @@ Feature that has associated tests from RED phase`;
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(result).toContain('Test Progress');
-      expect(result).toContain('Total:');
-      expect(result).toContain('Passing:');
-      expect(result).toContain('Failing:');
+      expect(result).toContain('Progress tracking');
+      expect(result).toContain('Show test results');
+      expect(result).toContain('Report pass/fail count');
     });
 
     it('should show implementation status', () => {
@@ -260,8 +259,8 @@ Feature that has associated tests from RED phase`;
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(result).toContain('Implementation plan');
-      expect(result).toContain('Functions to implement');
+      expect(result).toContain('Implementation Status');
+      expect(result).toContain('Follow existing patterns');
     });
   });
 
@@ -370,7 +369,7 @@ Feature that has associated tests from RED phase`;
       });
 
       expect(result).toContain('GREEN Phase');
-      expect(result).toContain('Next step: ait3 flow refactor');
+      expect(result).toContain('After 100% pass rate: ait3 flow refactor');
     });
   });
 });

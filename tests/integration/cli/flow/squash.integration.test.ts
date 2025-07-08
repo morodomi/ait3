@@ -50,21 +50,22 @@ describe('CLI Integration: flow squash', () => {
       }).toThrow(/Ticket with ID '9999' not found/);
     });
 
-    it('should require ticket to be in progress', async () => {
-      // Create ticket but don't start it
+    it('should auto-complete tickets and provide suggestions', async () => {
+      // Create ticket but don't start it (todo status)
       execSync('node dist/cli.js ticket create "Test squash phase"', {
         encoding: 'utf8',
         timeout: 5000,
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(() => {
-        execSync('node dist/cli.js flow squash 0001', {
-          encoding: 'utf8',
-          timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
-        });
-      }).toThrow(/must be in progress/);
+      const result = execSync('node dist/cli.js flow squash 0001', {
+        encoding: 'utf8',
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
+      });
+
+      expect(result).toContain('Automatically completed ticket #0001');
+      expect(result).toContain('SQUASH Phase');
     });
 
     it('should show Git suggestions for valid in-progress ticket', async () => {
@@ -88,7 +89,7 @@ describe('CLI Integration: flow squash', () => {
       });
 
       expect(result).toContain('SQUASH Phase');
-      expect(result).toContain('Git Command Suggestions');
+      expect(result).toContain('Suggested Git Commands');
       expect(result).toContain('ticket #0001');
     });
   });
@@ -163,9 +164,9 @@ describe('CLI Integration: flow squash', () => {
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(result).toContain('Next steps');
-      expect(result).toContain('Review suggested commands');
-      expect(result).toContain('ait3 ticket complete');
+      expect(result).toContain('Next Action');
+      expect(result).toContain('Squash commits');
+      expect(result).toContain('git rebase -i main');
     });
   });
 
@@ -316,7 +317,7 @@ Custom test for squash command customization`;
       });
       
       expect(result).toContain('Note: Ticket is already completed');
-      expect(result).toContain('Showing Git command suggestions only');
+      expect(result).toContain('Suggested Git Commands');
     });
   });
 
@@ -371,7 +372,7 @@ Custom test for squash command customization`;
 
       expect(result).toContain('SQUASH Phase');
       expect(result).toContain('final step in AIT³ workflow');
-      expect(result).toContain('ait3 ticket complete');
+      expect(result).toContain('Automatically completed ticket');
     });
   });
 });

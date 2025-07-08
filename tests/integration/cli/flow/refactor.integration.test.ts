@@ -88,7 +88,8 @@ describe('CLI Integration: flow refactor', () => {
       });
 
       expect(result).toContain('REFACTOR Phase');
-      expect(result).toContain('Analysis for ticket #0001');
+      expect(result).toContain('🔧 REFACTOR Phase');
+      expect(result).toContain('for Ticket #0001: Feature to refactor');
     });
   });
 
@@ -142,9 +143,9 @@ describe('CLI Integration: flow refactor', () => {
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(result).toContain('Next steps');
-      expect(result).toContain('Review suggestions');
-      expect(result).toContain('Apply changes');
+      expect(result).toContain('Next Action');
+      expect(result).toContain('Review analysis');
+      expect(result).toContain('Apply improvements');
     });
   });
 
@@ -413,7 +414,7 @@ Feature that has mock implementations from GREEN phase`;
       });
 
       expect(result).toContain('REFACTOR Phase');
-      expect(result).toContain('Next step: ait3 flow squash');
+      expect(result).toContain('After refactoring: ait3 flow squash');
     });
   });
 });

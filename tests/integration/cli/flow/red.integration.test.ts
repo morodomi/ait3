@@ -153,7 +153,7 @@ describe('CLI Integration: flow red', () => {
       });
 
       expect(result).toContain('DRY RUN');
-      expect(result).toContain('Would generate');
+      expect(result).toContain('Would execute');
     });
   });
 

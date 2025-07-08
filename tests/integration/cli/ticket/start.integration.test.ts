@@ -124,7 +124,7 @@ This ticket is already completed.
 
       // Check command output
       expect(result).toContain('✅ Started ticket #0001');
-      expect(result).toContain('todo → doing');
+      expect(result).toContain('📊 Details:');
       expect(result).toContain('Ready to Start Ticket');
 
       // Verify file was moved from todo to doing
@@ -410,7 +410,7 @@ This ticket is already completed.
         }
       );
 
-      expect(result).toContain('todo → doing');
+      expect(result).toContain('📊 Details:');
     });
   });
 

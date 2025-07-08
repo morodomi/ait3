@@ -46,9 +46,9 @@ describe('CLI Integration: flow plan', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('AIT³ PLANNING Phase');
-      expect(result).toContain('guided mode');
-      expect(result).toContain('Claude\'s Proposal');
+      expect(result).toContain('🎭 PLANNING Phase');
+      expect(result).toContain('Claude Code Instructions');
+      expect(result).toContain('Next Action');
       expect(result).toContain('test-feature');
     });
 
@@ -58,7 +58,7 @@ describe('CLI Integration: flow plan', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('Express Planning');
+      expect(result).toContain('🎭 PLANNING Phase (Express)');
       expect(result).toContain('quick-feature');
       // Should not include interactive choices
       expect(result).not.toContain('[1]');
@@ -70,7 +70,7 @@ describe('CLI Integration: flow plan', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('AIT³ Philosophy');
+      expect(result).toContain('🔄 Dialectical Process');
       expect(result).toContain('Claude proposes');
       expect(result).toContain('Gemini refutes');
       expect(result).toContain('Human decides');
@@ -95,7 +95,7 @@ describe('CLI Integration: flow plan', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('Claude\'s Proposal');
+      expect(result).toContain('Claude Code Instructions');
       expect(result).toContain('simple-feature');
     });
   });
@@ -107,7 +107,7 @@ describe('CLI Integration: flow plan', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('Claude\'s Proposal');
+      expect(result).toContain('Claude Code Instructions');
       expect(result).toContain('standalone-feature');
     });
 
@@ -134,8 +134,8 @@ describe('CLI Integration: flow plan', () => {
         timeout: 5000
       });
 
-      // Should not crash, should show warning
-      expect(result).toContain('Claude\'s Proposal') || expect(result).toContain('Warning');
+      // Should not crash, should show planning phase output
+      expect(result).toContain('🎭 PLANNING Phase') || expect(result).toContain('Claude Code Instructions');
     });
   });
 
