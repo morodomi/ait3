@@ -4,6 +4,7 @@ import { listTickets } from './list.js';
 import { showTicket } from './show.js';
 import { startTicket } from './start.js';
 import { completeTicket } from './complete.js';
+import { undoTicket } from './undo.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
 import { SimpleGitService } from '../../services/implementations/SimpleGitService.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError, TicketNotStartedError } from '../../common/errors.js';
@@ -13,10 +14,11 @@ import { STYLES } from '../../common/styles.js';
 // Service container - centralized dependency injection
 // Support test environment override with TICKETS_DIR
 const ticketsPath = process.env.TICKETS_DIR || '.tickets';
+const gitService = process.env.NODE_ENV !== 'test' && !process.env.VITEST ? new SimpleGitService() : undefined;
 const services: Services = {
-  ticketService: new LocalTicketService(ticketsPath),
+  ticketService: new LocalTicketService(ticketsPath, gitService),
   // GitService is optional - disable in test environments to avoid git conflicts
-  gitService: process.env.NODE_ENV !== 'test' && !process.env.VITEST ? new SimpleGitService() : undefined
+  gitService
 };
 
 export const ticketCommand = new Command('ticket')
@@ -186,6 +188,31 @@ ticketCommand
         console.error(STYLES.warning('TIP: This ticket has already been completed'));
       } else {
         console.error(STYLES.danger('ERROR completing ticket:'), error instanceof Error ? error.message : String(error));
+      }
+      process.exit(1);
+    }
+  });
+
+// ticket undo subcommand
+ticketCommand
+  .command('undo <id>')
+  .description('Undo ticket to previous state')
+  .option('--dry-run', 'Preview changes without executing')
+  .action(async (id: string, options) => {
+    try {
+      const result = await undoTicket({ id, dryRun: options.dryRun }, services);
+      console.log(result.message);
+      process.exit(result.success ? 0 : 1);
+    } catch (error) {
+      // Enhanced error handling with better UX
+      if (error instanceof ValidationError) {
+        console.error(STYLES.danger('ERROR:'), error.message);
+        console.error(STYLES.warning('TIP: Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+      } else if (error instanceof TicketNotFoundError) {
+        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
+        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
+      } else {
+        console.error(STYLES.danger('ERROR undoing ticket:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }

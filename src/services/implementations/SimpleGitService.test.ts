@@ -254,4 +254,30 @@ describe('SimpleGitService', () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe('moveFile', () => {
+    it('should move file using git mv', async () => {
+      mockGit.raw.mockResolvedValue('');
+
+      await service.moveFile('old/path.md', 'new/path.md');
+
+      expect(mockGit.raw).toHaveBeenCalledWith(['mv', 'old/path.md', 'new/path.md']);
+    });
+
+    it('should throw error when git mv fails', async () => {
+      mockGit.raw.mockRejectedValue(new Error('File not found'));
+
+      await expect(service.moveFile('nonexistent.md', 'new.md'))
+        .rejects.toThrow('File not found');
+
+      expect(mockGit.raw).toHaveBeenCalledWith(['mv', 'nonexistent.md', 'new.md']);
+    });
+
+    it('should handle permission errors gracefully', async () => {
+      mockGit.raw.mockRejectedValue(new Error('Permission denied'));
+
+      await expect(service.moveFile('readonly.md', 'new.md'))
+        .rejects.toThrow('Permission denied');
+    });
+  });
 });

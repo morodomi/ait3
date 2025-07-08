@@ -79,3 +79,8 @@ export interface StartTicketArgs {
 export interface CompleteTicketArgs {
   id: string;
 }
+
+export interface UndoTicketArgs {
+  id: string;
+  dryRun?: boolean;
+}

@@ -66,4 +66,29 @@ export class SimpleGitService implements GitService {
       message: commit.message
     }));
   }
+
+  async moveFile(oldPath: string, newPath: string): Promise<void> {
+    try {
+      await this.git.raw(['mv', oldPath, newPath]);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // Enhanced error classification for better debugging
+      if (errorMessage.includes('does not exist in index')) {
+        throw new Error(`Git file not tracked: ${oldPath} is not under version control`);
+      }
+      if (errorMessage.includes('Permission denied')) {
+        throw new Error(`Permission denied: Cannot move ${oldPath} to ${newPath}`);
+      }
+      if (errorMessage.includes('destination already exists')) {
+        throw new Error(`Destination exists: ${newPath} already exists`);
+      }
+      if (errorMessage.includes('fatal: not a git repository')) {
+        throw new Error(`Not a Git repository: Cannot use git mv outside a Git repository`);
+      }
+      
+      // Re-throw original error with additional context
+      throw new Error(`Git move failed: ${errorMessage}`);
+    }
+  }
 }

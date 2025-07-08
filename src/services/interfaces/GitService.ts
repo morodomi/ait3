@@ -60,4 +60,12 @@ export interface GitService {
    * @returns Array of commits with hash and message
    */
   getCommits(base: string): Promise<Array<{ hash: string; message: string }>>;
+
+  /**
+   * Move a file using git mv command
+   * @param oldPath - Source file path
+   * @param newPath - Destination file path
+   * @throws Error if git mv fails
+   */
+  moveFile(oldPath: string, newPath: string): Promise<void>;
 }

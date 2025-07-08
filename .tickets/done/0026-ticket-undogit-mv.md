@@ -1,15 +1,16 @@
 ---
 id: '0026'
 title: ticket undoコマンドとgit mv連携実装
-status: doing
+status: done
 priority: high
 created: '2025-07-08T10:33:44.158Z'
-updated: '2025-07-08T10:34:58.397Z'
+updated: '2025-07-08T11:33:47.003Z'
 labels:
   - feature
   - git
   - command
 started: '2025-07-08T10:34:58.397Z'
+completed: '2025-07-08T11:33:47.003Z'
 ---
 # Ticket #0026: ticket undoコマンドとgit mv連携実装
 
@@ -69,25 +70,30 @@ interface GitService {
 }
 ```
 
-### ファイル移動処理の統一
+### LocalTicketService直接連携
 ```typescript
-async function moveTicketFile(
-  oldPath: string, 
-  newPath: string, 
-  gitService?: GitService
-): Promise<void> {
-  if (gitService && await gitService.isRepository()) {
-    try {
-      await gitService.moveFile(oldPath, newPath);
-      return;
-    } catch (error) {
-      // Git操作失敗時はフォールバック
-      console.warn('Git move failed, using file system operation');
-    }
-  }
+class LocalTicketService {
+  constructor(private basePath: string, private gitService?: GitService) {}
   
-  // フォールバック: 通常のファイル操作
-  await fs.rename(oldPath, newPath);
+  async moveTicketState(ticket: Ticket, newStatus: string): Promise<void> {
+    const oldPath = this.getTicketPath(ticket.id, ticket.status);
+    const newPath = this.getTicketPath(ticket.id, newStatus);
+    
+    // Git操作を最優先で試行
+    if (this.gitService && await this.gitService.isRepository()) {
+      try {
+        await this.gitService.moveFile(oldPath, newPath);
+        // Git履歴を保持してファイル移動完了
+        return;
+      } catch (error) {
+        // Git操作失敗時はフォールバック
+        console.warn('Git move failed, using file system operation');
+      }
+    }
+    
+    // フォールバック: 通常のファイル操作
+    await this.fallbackFileMove(oldPath, newPath);
+  }
 }
 ```
 
@@ -144,7 +150,7 @@ async function moveTicketFile(
 
 ## 実装順序
 1. GitService.moveFile()メソッド追加
-2. ファイル移動ユーティリティ関数作成
+2. LocalTicketService.moveTicketState()にGit連携を直接実装
 3. ticket start/complete コマンドのGit連携改善
 4. ticket undoコマンド実装
 5. 包括的テスト追加
@@ -197,34 +203,37 @@ async moveFile(oldPath: string, newPath: string): Promise<void> {
 }
 ```
 
-#### 2. ファイル移動ユーティリティ作成
+#### 2. LocalTicketService改善（Git連携直接実装）
 ```typescript
-// src/common/file-utils.ts
-export async function moveTicketFile(
-  oldPath: string, 
-  newPath: string, 
-  gitService?: GitService
-): Promise<void> {
-  if (gitService && await gitService.isRepository()) {
-    try {
-      await gitService.moveFile(oldPath, newPath);
-      return;
-    } catch (error) {
-      console.warn('Git move failed, using file system operation');
-    }
-  }
+// LocalTicketService.moveTicketState()に直接Git連携を実装
+class LocalTicketService {
+  constructor(private basePath: string, private gitService?: GitService) {}
   
-  // フォールバック: 既存の実装
-  await writeFile(newPath, await readFile(oldPath, 'utf-8'), 'utf-8');
-  await rename(oldPath, `${oldPath}.tmp`);
-  await rm(`${oldPath}.tmp`, { force: true });
+  async moveTicketState(ticket: Ticket, newStatus: string): Promise<void> {
+    const oldPath = this.getTicketPath(ticket.id, ticket.status);
+    const newPath = this.getTicketPath(ticket.id, newStatus);
+    
+    // Git操作を最優先で試行
+    if (this.gitService && await this.gitService.isRepository()) {
+      try {
+        await this.gitService.moveFile(oldPath, newPath);
+        await this.updateTicketMetadata(newPath, ticket, newStatus);
+        return;
+      } catch (error) {
+        console.warn('Git move failed, falling back to file system operation');
+      }
+    }
+    
+    // フォールバック: 従来のファイル操作
+    await this.fallbackFileMove(oldPath, newPath, ticket, newStatus);
+  }
 }
 ```
 
-#### 3. LocalTicketService改善
-- `moveTicketState()`メソッドでGit連携ファイル移動を使用
+#### 3. 既存コマンド動作確認
+- `ticket start`/`complete`で新しいGit連携が自動使用される
 - 既存の状態管理ロジックは維持
-- エラーハンドリングとフォールバック対応
+- エラーハンドリングとフォールバック対応確認
 
 #### 4. ticket undoコマンド実装
 ```typescript
@@ -267,8 +276,10 @@ interface TicketService {
   // 既存メソッドは改善
 }
 
-// Utilities (Pure Functions)
-export async function moveTicketFile(oldPath, newPath, gitService) → void
+// LocalTicketService (Implementation Layer)
+class LocalTicketService {
+  moveTicketState(ticket, newStatus) → Promise<void>  // Git連携改善
+}
 ```
 
 #### 依存関係注入
@@ -306,9 +317,9 @@ describe('GitService.moveFile', () => {
   // Git操作のモックテスト
 });
 
-// src/common/file-utils.test.ts
-describe('moveTicketFile', () => {
-  // Git環境/非Git環境のテスト
+// src/services/implementations/LocalTicketService.test.ts
+describe('LocalTicketService.moveTicketState', () => {
+  // Git連携とフォールバック動作のテスト
 });
 ```
 
@@ -326,15 +337,15 @@ describe('moveTicketFile', () => {
 2. `SimpleGitService.moveFile()`実装
 3. Unit tests作成
 
-#### Phase 2: ファイル移動ユーティリティ
-1. `moveTicketFile()`ユーティリティ作成
+#### Phase 2: LocalTicketService改善
+1. `moveTicketState()`にGit連携を直接実装
 2. Git/非Git環境のテスト
 3. エラーハンドリングテスト
 
-#### Phase 3: 既存コマンド改善
-1. `LocalTicketService.moveTicketState()`でGit連携使用
-2. `ticket start`/`complete`の動作確認
-3. 既存テストの更新
+#### Phase 3: 既存コマンド動作確認
+1. `ticket start`/`complete`で新Git連携の動作確認
+2. 既存テストの更新（必要に応じて）
+3. パフォーマンス確認
 
 #### Phase 4: ticket undoコマンド
 1. `undoTicket()`コマンド実装

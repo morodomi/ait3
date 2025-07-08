@@ -148,8 +148,7 @@
 
 ### Development Commands
 ```bash
-npm run test:ci       # Run comprehensive test suite in CI mode (no watch)
-npm test              # Run tests in watch mode (development)
+npm run test:ci       # Run comprehensive test suite in CI mode
 npm run type-check    # TypeScript strict type checking
 npm run lint          # Code quality checks
 npm run build         # Build for production
@@ -732,7 +731,7 @@ While AI provides computational power and alternative perspectives, **human judg
 ### Test Execution Rules
 - **Always use `npm run test:ci`** for running tests in AIT³ workflow
 - **CI mode is required** to avoid watch mode interference
-- **Test command**: `npm run test:ci` (NOT `npm test` which runs in watch mode)
+- **Test command**: `npm run test:ci`
 - **Specific test files**: `npm run test:ci -- path/to/test.ts`
 
 ### Test Categories
@@ -1035,7 +1034,7 @@ Follow RED → GREEN → REFACTOR → SQUASH with documented reasoning for archi
 - Create tickets for mock implementations that need real code
 - Use TypeScript strict mode with zero `any` types
 - Follow established patterns in existing codebase
-- **ALWAYS use `npm run test:ci` for running tests** (NOT `npm test` which runs in watch mode)
+- **ALWAYS use `npm run test:ci` for running tests**
 - Run specific tests with: `npm run test:ci -- path/to/test.ts`
 
 ### Current Architecture Status
