@@ -1,14 +1,15 @@
 ---
 id: '0020'
 title: ProjectAnalyzer基盤実装 - 言語検出とプロジェクト分析
-status: todo
+status: doing
 priority: high
 created: '2025-07-08T02:11:16.037Z'
-updated: '2025-07-08T02:11:16.037Z'
+updated: '2025-07-08T13:35:55.587Z'
 labels:
   - core
   - analyzer
   - architecture
+started: '2025-07-08T13:35:55.587Z'
 ---
 # Ticket #0020: ProjectAnalyzer基盤実装 - 言語検出とプロジェクト分析
 
@@ -94,3 +95,62 @@ const LANGUAGE_COMMANDS = {
 - [ ] 適切なテスト・リンターコマンドの提案
 - [ ] flow green/refactorコマンドでの活用
 - [ ] 拡張可能なアーキテクチャ
+
+## PLANNING Phase (2025-07-08)
+
+### なぜProjectAnalyzerを作成するのか
+
+1. **多言語対応**: 現在TypeScript固定 → Python、PHP、Ruby、Go等に対応
+2. **自動設定**: テスト・リンターコマンドの自動検出
+3. **導入時間短縮**: 新規プロジェクトへの導入を30分→5分に
+
+### 修正版設計（人間承認済み）
+
+#### インターフェース分離設計
+```typescript
+// src/services/interfaces/LanguageDetector.ts
+export interface LanguageDetector {
+  detectLanguages(path?: string): Promise<LanguageResult[]>;
+  getPrimaryLanguage(path?: string): Promise<LanguageResult | null>;
+}
+
+// src/services/interfaces/CommandDetector.ts
+export interface CommandDetector {
+  detectTestCommand(path?: string, language?: string): Promise<CommandInfo>;
+  detectLintCommand(path?: string, language?: string): Promise<CommandInfo>;
+  detectFormatCommand(path?: string, language?: string): Promise<CommandInfo>;
+  detectBuildCommand(path?: string, language?: string): Promise<CommandInfo>;
+}
+
+// src/services/interfaces/StructureAnalyzer.ts
+export interface StructureAnalyzer {
+  analyzeStructure(path?: string): Promise<StructureAnalysis>;
+  detectFramework(path?: string, language?: string): Promise<FrameworkInfo>;
+}
+
+// src/services/interfaces/ProjectAnalyzer.ts (Facade)
+export interface ProjectAnalyzer {
+  analyzeProject(path?: string): Promise<ProjectAnalysis>;
+}
+```
+
+#### 実装優先順位
+1. analyze language (FileBasedLanguageDetector)
+2. analyze command (ConfigBasedCommandDetector)
+3. analyze structure (DirectoryStructureAnalyzer)
+
+#### 言語サポート優先順位
+1. TypeScript
+2. Python/Flask
+3. PHP/Laravel
+
+#### キャッシュ戦略
+- JSON形式で `.ait3/cache/analysis.json` に保存
+- 単一プロジェクトのみ対応（モノレポは将来対応）
+
+### Gemini批判への対応
+- ✅ インターフェース分離（責務ごとに分割）
+- ✅ 設定の外部化（言語別定義ファイル）
+- ✅ キャッシュ戦略の具体化（JSON形式）
+- ✅ 単一プロジェクト対応（モノレポは将来）
+- ✅ 信頼度スコア導入（0.8以上で自動実行）

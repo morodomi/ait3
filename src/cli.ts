@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { ticketCommand } from './commands/ticket/index.js';
 import { flowCommand } from './commands/flow/index.js';
 import { installCommand } from './commands/install/index.js';
+import { analyzeCommand } from './commands/analyze/index.js';
 
 const program = new Command();
 
@@ -15,8 +16,8 @@ program
 program.addCommand(ticketCommand);
 program.addCommand(flowCommand);
 program.addCommand(installCommand);
+program.addCommand(analyzeCommand);
 
 // Future command groups will be added here:
-// program.addCommand(analyzeCommand);
 
 program.parse();

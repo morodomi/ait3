@@ -1,5 +1,6 @@
 import type { TicketService } from '../services/interfaces/TicketService.js';
 import type { GitService } from '../services/interfaces/GitService.js';
+import type { ProjectAnalyzer } from '../services/interfaces/ProjectAnalyzer.js';
 
 export interface Ticket {
   id: string;              // Format: "0001" (4-digit zero-padded)
@@ -57,6 +58,7 @@ export interface CreateTicketArgs {
 export interface Services {
   ticketService: TicketService;
   gitService?: GitService;
+  projectAnalyzer?: ProjectAnalyzer;
   // Future services:
   // projectService?: ProjectService;
 }
