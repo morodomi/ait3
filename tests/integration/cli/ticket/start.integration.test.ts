@@ -123,8 +123,8 @@ This ticket is already completed.
       );
 
       // Check command output
-      expect(result).toContain('✅ Started ticket #0001');
-      expect(result).toContain('📊 Details:');
+      expect(result).toContain('SUCCESS: Started ticket #0001');
+      expect(result).toContain('Details:');
       expect(result).toContain('Ready to Start Ticket');
 
       // Verify file was moved from todo to doing
@@ -395,7 +395,7 @@ This ticket is already completed.
         }
       );
 
-      expect(result).toContain('✅');
+      expect(result).toContain('SUCCESS:');
       expect(result).toContain('Started');
       expect(result).toContain('#0001');
     });
@@ -410,7 +410,7 @@ This ticket is already completed.
         }
       );
 
-      expect(result).toContain('📊 Details:');
+      expect(result).toContain('Details:');
     });
   });
 

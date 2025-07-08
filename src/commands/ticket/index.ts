@@ -58,17 +58,17 @@ ticketCommand
     } catch (error) {
       // Enhanced error handling with better UX
       if (error instanceof ValidationError) {
-        console.error(chalk.red('❌ Validation Error:'), error.message);
+        console.error(chalk.red('ERROR:'), error.message);
         
         // Provide helpful suggestions for common validation errors
         if (error.field === 'priority') {
-          console.error(chalk.yellow('💡 Valid priorities: low, medium, high, critical'));
+          console.error(chalk.yellow('TIP: Valid priorities: low, medium, high, critical'));
         }
         if (error.field === 'title') {
-          console.error(chalk.yellow('💡 Provide a descriptive title for your ticket'));
+          console.error(chalk.yellow('TIP: Provide a descriptive title for your ticket'));
         }
       } else {
-        console.error(chalk.red('❌ Error creating ticket:'), error instanceof Error ? error.message : String(error));
+        console.error(chalk.red('ERROR creating ticket:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
@@ -88,17 +88,17 @@ ticketCommand
     } catch (error) {
       // Enhanced error handling with better UX
       if (error instanceof ValidationError) {
-        console.error(chalk.red('❌ Validation Error:'), error.message);
+        console.error(chalk.red('ERROR:'), error.message);
         
         // Provide helpful suggestions for common validation errors
         if (error.field === 'status') {
-          console.error(chalk.yellow('💡 Valid statuses: todo, doing, done'));
+          console.error(chalk.yellow('TIP: Valid statuses: todo, doing, done'));
         }
         if (error.field === 'priority') {
-          console.error(chalk.yellow('💡 Valid priorities: low, medium, high, critical'));
+          console.error(chalk.yellow('TIP: Valid priorities: low, medium, high, critical'));
         }
       } else {
-        console.error(chalk.red('❌ Error listing tickets:'), error instanceof Error ? error.message : String(error));
+        console.error(chalk.red('ERROR listing tickets:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
@@ -116,13 +116,13 @@ ticketCommand
     } catch (error) {
       // Enhanced error handling with better UX
       if (error instanceof ValidationError) {
-        console.error(chalk.red('❌ Validation Error:'), error.message);
-        console.error(chalk.yellow('💡 Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+        console.error(chalk.red('ERROR:'), error.message);
+        console.error(chalk.yellow('TIP: Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
       } else if (error instanceof TicketNotFoundError) {
-        console.error(chalk.red('❌ Ticket Not Found:'), error.message);
-        console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
+        console.error(chalk.red('TICKET NOT FOUND:'), error.message);
+        console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
       } else {
-        console.error(chalk.red('❌ Error showing ticket:'), error instanceof Error ? error.message : String(error));
+        console.error(chalk.red('ERROR showing ticket:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
@@ -140,19 +140,19 @@ ticketCommand
     } catch (error) {
       // Enhanced error handling with better UX
       if (error instanceof ValidationError) {
-        console.error(chalk.red('❌ Validation Error:'), error.message);
-        console.error(chalk.yellow('💡 Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+        console.error(chalk.red('ERROR:'), error.message);
+        console.error(chalk.yellow('TIP: Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
       } else if (error instanceof TicketNotFoundError) {
-        console.error(chalk.red('❌ Ticket Not Found:'), error.message);
-        console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
+        console.error(chalk.red('TICKET NOT FOUND:'), error.message);
+        console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
       } else if (error instanceof TicketAlreadyInProgressError) {
-        console.error(chalk.red('❌ Already In Progress:'), error.message);
-        console.error(chalk.yellow('💡 This ticket is already being worked on'));
+        console.error(chalk.red('ALREADY IN PROGRESS:'), error.message);
+        console.error(chalk.yellow('TIP: This ticket is already being worked on'));
       } else if (error instanceof TicketAlreadyCompletedError) {
-        console.error(chalk.red('❌ Already Completed:'), error.message);
-        console.error(chalk.yellow('💡 This ticket has already been completed'));
+        console.error(chalk.red('ALREADY COMPLETED:'), error.message);
+        console.error(chalk.yellow('TIP: This ticket has already been completed'));
       } else {
-        console.error(chalk.red('❌ Error starting ticket:'), error instanceof Error ? error.message : String(error));
+        console.error(chalk.red('ERROR starting ticket:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
@@ -170,19 +170,19 @@ ticketCommand
     } catch (error) {
       // Enhanced error handling with better UX
       if (error instanceof ValidationError) {
-        console.error(chalk.red('❌ Validation Error:'), error.message);
-        console.error(chalk.yellow('💡 Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+        console.error(chalk.red('ERROR:'), error.message);
+        console.error(chalk.yellow('TIP: Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
       } else if (error instanceof TicketNotFoundError) {
-        console.error(chalk.red('❌ Ticket Not Found:'), error.message);
-        console.error(chalk.yellow('💡 Use "ait3 ticket list" to see available tickets'));
+        console.error(chalk.red('TICKET NOT FOUND:'), error.message);
+        console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
       } else if (error instanceof TicketNotStartedError) {
-        console.error(chalk.red('❌ Not Started:'), error.message);
-        console.error(chalk.yellow('💡 You must start the ticket before completing it'));
+        console.error(chalk.red('NOT STARTED:'), error.message);
+        console.error(chalk.yellow('TIP: You must start the ticket before completing it'));
       } else if (error instanceof TicketAlreadyCompletedError) {
-        console.error(chalk.red('❌ Already Completed:'), error.message);
-        console.error(chalk.yellow('💡 This ticket has already been completed'));
+        console.error(chalk.red('ALREADY COMPLETED:'), error.message);
+        console.error(chalk.yellow('TIP: This ticket has already been completed'));
       } else {
-        console.error(chalk.red('❌ Error completing ticket:'), error instanceof Error ? error.message : String(error));
+        console.error(chalk.red('ERROR completing ticket:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }

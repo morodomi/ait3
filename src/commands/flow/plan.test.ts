@@ -215,7 +215,7 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('📍 Ticket location: .tickets/doing/0001-');
+      expect(result.message).toContain('Location: .tickets/doing/0001-');
     });
 
     it('should include structured Next Action section', async () => {

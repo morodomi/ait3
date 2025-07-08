@@ -53,7 +53,7 @@ export async function greenPhase(
     return {
       success: false,
       message: `
-${FLOW_STYLES.error('⚠️  ' + FLOW_MESSAGES.TEST_MODIFICATION_WARNING)}
+${FLOW_STYLES.error('WARNING:  ' + FLOW_MESSAGES.TEST_MODIFICATION_WARNING)}
    File: ${FLOW_STYLES.path(args._testModified)}
    
    In GREEN phase, tests should not be modified.
@@ -80,27 +80,27 @@ ${FLOW_STYLES.error('⚠️  ' + FLOW_MESSAGES.TEST_MODIFICATION_WARNING)}
     return {
       success: false,
       message: `
-${FLOW_STYLES.error('❌ Test execution failed')}
+${FLOW_STYLES.error('ERROR: Test execution failed')}
 
-${FLOW_STYLES.warning('⚠️  Error')}: Unable to run tests
+${FLOW_STYLES.warning('WARNING:  Error')}: Unable to run tests
 ${FLOW_STYLES.dim('Please check your test configuration and try again')}
 
-${FLOW_STYLES.info('💡 Check test configuration and ensure all dependencies are installed')}
+${FLOW_STYLES.info('TIP: Check test configuration and ensure all dependencies are installed')}
 `
     };
   }
 
   // Generate appropriate output based on mode and options
   const strictModeInfo = strict 
-    ? `${FLOW_STYLES.info('🔒 Strict mode enabled')} - Test files are immutable`
-    : `${FLOW_STYLES.warning('⚠️  Strict mode disabled')} - Test modifications allowed (not recommended)`;
+    ? `${FLOW_STYLES.info('LOCK: Strict mode enabled')} - Test files are immutable`
+    : `${FLOW_STYLES.warning('WARNING:  Strict mode disabled')} - Test modifications allowed (not recommended)`;
 
   const verboseModeInfo = verbose
     ? generateVerboseOutput(ticket, target)
     : '';
 
   const targetInfo = target
-    ? `\n${FLOW_STYLES.info('🎯 Targeting specific test')}: ${FLOW_STYLES.path(target)}`
+    ? `\n${FLOW_STYLES.info('TARGET: Targeting specific test')}: ${FLOW_STYLES.path(target)}`
     : '';
 
   // Generate test progress display
@@ -116,9 +116,9 @@ ${FLOW_STYLES.info('💡 Check test configuration and ensure all dependencies ar
   return {
     success: true,
     message: `
-${formatTicketHeader(ticketId, ticketTitle, '🟢 GREEN Phase')}
+${formatTicketHeader(ticketId, ticketTitle, 'GREEN Phase')}
 
-${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
+${FLOW_STYLES.section('Claude Code Instructions')}:
 1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Run tests and analyze failures
 3. Implement minimal code to pass tests:
@@ -127,7 +127,7 @@ ${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
    ├─ Keep implementation minimal
    └─ Create tickets for mock implementations
 
-${FLOW_STYLES.warning('⚡ Constraints')}:
+${FLOW_STYLES.warning('CONSTRAINT: Constraints')}:
 - Avoid modifying tests to fit implementation
 - Tests should drive implementation, not vice versa
 - If tests have fundamental issues → return to RED phase
@@ -158,7 +158,7 @@ ${FLOW_STYLES.dim('After 100% pass rate: ait3 flow refactor')}
 
 function generateProgressDisplay(): string {
   // Simulate test progress
-  return `${FLOW_STYLES.title('📊 Progress tracking')}:
+  return `${FLOW_STYLES.title('STATS: Progress tracking')}:
 - Show test results after each run
 - Report pass/fail count
 
@@ -169,7 +169,7 @@ ${FLOW_STYLES.info('Example progress')}:
 }
 
 function generateImplementationStatus(): string {
-  return `${FLOW_STYLES.title('📝 Implementation Status')}:
+  return `${FLOW_STYLES.title('MEMO: Implementation Status')}:
 ├─ Follow existing patterns
 ├─ Pure functions + service injection
 ├─ Minimal code for test satisfaction
@@ -178,14 +178,14 @@ function generateImplementationStatus(): string {
 
 function generateVerboseOutput(ticket: any, target?: string): string {
   return `
-${FLOW_STYLES.title('📋 Verbose mode')} - Detailed test analysis
+${FLOW_STYLES.title('LIST: Verbose mode')} - Detailed test analysis
 
-${FLOW_STYLES.info('🔍 Test Detection')}:
+${FLOW_STYLES.info('SEARCH: Test Detection')}:
 ├─ Scanning for test files...
 ├─ Found 3 test files related to ticket
 └─ Analyzing test patterns...
 
-${FLOW_STYLES.info('📊 Detailed test analysis')}:
+${FLOW_STYLES.info('STATS: Detailed test analysis')}:
 ├─ Test case: "should validate ticketId is required"
 │  └─ Implementation: Added validation check
 ├─ Test case: "should show progress for valid ticket"
@@ -193,10 +193,10 @@ ${FLOW_STYLES.info('📊 Detailed test analysis')}:
 └─ Test case: "should enable strict mode by default"
    └─ Implementation: Set strict=true as default
 
-${FLOW_STYLES.info('📈 Step-by-step progress')}:
-1. ✅ Added input validation
-2. ✅ Implemented ticket status checks
-3. ✅ Added progress display
-4. ✅ Implemented strict mode logic
-5. 🔄 Working on verbose output...`;
+${FLOW_STYLES.info('CHART: Step-by-step progress')}:
+1. SUCCESS: Added input validation
+2. SUCCESS: Implemented ticket status checks
+3. SUCCESS: Added progress display
+4. SUCCESS: Implemented strict mode logic
+5. CYCLE: Working on verbose output...`;
 }

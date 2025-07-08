@@ -43,7 +43,7 @@ describe('CLI Integration: ticket create', () => {
       );
 
       // Assert CLI output format
-      expect(result).toContain('✅ Ticket created successfully');
+      expect(result).toContain('SUCCESS: Ticket created successfully');
       expect(result).toContain('Integration Test Ticket');
       expect(result).toMatch(/ID: #\d{4}/); // Flexible ID matching
       expect(result).toContain('Priority: medium');
@@ -61,7 +61,7 @@ describe('CLI Integration: ticket create', () => {
       );
 
       // Assert CLI output includes all specified options
-      expect(result).toContain('✅ Ticket created successfully');
+      expect(result).toContain('SUCCESS: Ticket created successfully');
       expect(result).toContain('High Priority Feature');
       expect(result).toContain('Priority: high');
       expect(result).toContain('Assignee: john@example.com');

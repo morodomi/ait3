@@ -38,7 +38,7 @@ describe('createTicket Pure Function', () => {
       const result = await createTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅ Ticket created successfully');
+      expect(result.message).toContain('SUCCESS: Ticket created successfully');
       expect(result.message).toContain('Test Ticket Creation');
       expect(result.message).toContain('ID: #0001');
       expect(result.message).toContain('Priority: medium');
@@ -106,7 +106,7 @@ describe('createTicket Pure Function', () => {
       const result = await createTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅ Ticket created successfully');
+      expect(result.message).toContain('SUCCESS: Ticket created successfully');
       expect(result.message).toContain('Complete Feature Task');
       expect(result.message).toContain('Priority: critical');
       expect(result.message).toContain('Assignee: admin@example.com');
@@ -177,7 +177,7 @@ describe('createTicket Pure Function', () => {
       const result = await createTicket(args, services);
 
       // Focus on message content, not color codes
-      expect(result.message).toContain('✅ Ticket created successfully');
+      expect(result.message).toContain('SUCCESS: Ticket created successfully');
       expect(result.message).toContain('ID: #');
       expect(result.message).toContain('Title: Formatting Test');
       expect(result.message).toContain('Priority: medium');

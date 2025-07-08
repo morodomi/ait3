@@ -32,7 +32,7 @@ export async function installCommand(
     // Invalid command name
     return {
       success: false,
-      message: `${FLOW_STYLES.error('❌ Unknown command')}: ${name}\n${FLOW_STYLES.info('Available commands')}: ${Object.keys(commandGuides).join(', ')}`
+      message: `${FLOW_STYLES.error('ERROR: Unknown command')}: ${name}\n${FLOW_STYLES.info('Available commands')}: ${Object.keys(commandGuides).join(', ')}`
     };
   }
   
@@ -43,7 +43,7 @@ export async function installCommand(
   
   // Show intent
   if (!name || name === 'all') {
-    messages.push(`${FLOW_STYLES.info('📦 Installing all command guides')}...`);
+    messages.push(`${FLOW_STYLES.info('PACKAGE: Installing all command guides')}...`);
   }
   
   // Process each file
@@ -57,7 +57,7 @@ export async function installCommand(
         await access(targetDir);
       } catch {
         await mkdir(targetDir, { recursive: true });
-        messages.push(`${FLOW_STYLES.success('✓')} Created directory: ${FLOW_STYLES.path(targetDir)}`);
+        messages.push(`${FLOW_STYLES.success('SUCCESS:')} Created directory: ${FLOW_STYLES.path(targetDir)}`);
       }
       
       // Check if file exists
@@ -82,14 +82,14 @@ export async function installCommand(
         
         // Write file
         await writeFile(targetPath, templateContent, 'utf-8');
-        messages.push(`${FLOW_STYLES.success('✓')} Installed: ${FLOW_STYLES.path(targetPath)}`);
+        messages.push(`${FLOW_STYLES.success('SUCCESS:')} Installed: ${FLOW_STYLES.path(targetPath)}`);
         installedCount++;
       }
       
     } catch (error) {
       return {
         success: false,
-        message: `${FLOW_STYLES.error('❌ Failed to create')}: ${targetPath}\n${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `${FLOW_STYLES.error('ERROR: Failed to create')}: ${targetPath}\n${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
@@ -104,7 +104,7 @@ export async function installCommand(
   
   // Summary
   messages.push('');
-  messages.push(`${FLOW_STYLES.success('✅ Installation complete')}: ${installedCount} file(s) installed${skippedCount > 0 ? `, ${skippedCount} skipped` : ''}`);
+  messages.push(`${FLOW_STYLES.success('SUCCESS: Installation complete')}: ${installedCount} file(s) installed${skippedCount > 0 ? `, ${skippedCount} skipped` : ''}`);
   
   return {
     success: true,

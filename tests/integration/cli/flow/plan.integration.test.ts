@@ -46,7 +46,7 @@ describe('CLI Integration: flow plan', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('🎭 PLANNING Phase');
+      expect(result).toContain('PLANNING Phase');
       expect(result).toContain('Claude Code Instructions');
       expect(result).toContain('Next Action');
       expect(result).toContain('test-feature');
@@ -58,7 +58,7 @@ describe('CLI Integration: flow plan', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('🎭 PLANNING Phase (Express)');
+      expect(result).toContain('PLANNING Phase (Express)');
       expect(result).toContain('quick-feature');
       // Should not include interactive choices
       expect(result).not.toContain('[1]');
@@ -70,7 +70,7 @@ describe('CLI Integration: flow plan', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('🔄 Dialectical Process');
+      expect(result).toContain('Dialectical Process');
       expect(result).toContain('Claude proposes');
       expect(result).toContain('Gemini refutes');
       expect(result).toContain('Human decides');
@@ -135,7 +135,7 @@ describe('CLI Integration: flow plan', () => {
       });
 
       // Should not crash, should show planning phase output
-      expect(result).toContain('🎭 PLANNING Phase') || expect(result).toContain('Claude Code Instructions');
+      expect(result).toContain('PLANNING Phase') || expect(result).toContain('Claude Code Instructions');
     });
   });
 

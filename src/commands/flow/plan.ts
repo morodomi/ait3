@@ -29,12 +29,12 @@ export async function planPhase(
     try {
       const ticket = await services.ticketService.getTicket(ticketId);
       if (ticket) {
-        ticketInfo = `\n${FLOW_STYLES.info('📋 Ticket #' + ticketId)}: ${ticket.title}`;
+        ticketInfo = `\n${FLOW_STYLES.info('LIST: Ticket #' + ticketId)}: ${ticket.title}`;
       } else {
-        ticketInfo = `\n${FLOW_STYLES.warning('⚠️  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
+        ticketInfo = `\n${FLOW_STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
       }
     } catch (error) {
-      ticketInfo = `\n${FLOW_STYLES.warning('⚠️  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
+      ticketInfo = `\n${FLOW_STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
     }
   }
 
@@ -51,7 +51,7 @@ export async function planPhase(
 
 function expressPlan(featureName: string, requirements?: string[], ticketInfo?: string): CLIResult {
   const requirementsText = requirements?.length 
-    ? `\n${FLOW_STYLES.command('📋 Requirements')}: ${requirements.join(', ')}`
+    ? `\n${FLOW_STYLES.command('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
 
   // Find ticket ID from ticketInfo if available
@@ -62,9 +62,9 @@ function expressPlan(featureName: string, requirements?: string[], ticketInfo?: 
   return {
     success: true,
     message: `
-${formatTicketHeader(ticketId, featureName, '🎭 PLANNING Phase (Express)')}${requirementsText}
+${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Express)')}${requirementsText}
 
-${FLOW_STYLES.section('🧠 Claude Code Quick Analysis')}:
+${FLOW_STYLES.section('BRAIN: Claude Code Quick Analysis')}:
 1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Analyze existing patterns in codebase
 3. Propose minimal viable implementation
@@ -92,14 +92,14 @@ function manualPlan(featureName: string, ticketInfo?: string): CLIResult {
   return {
     success: true,
     message: `
-${formatTicketHeader(ticketId, featureName, '🎭 PLANNING Phase (Manual)')}
+${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Manual)')}
 
-${FLOW_STYLES.section('🔄 Dialectical Process')}:
+${FLOW_STYLES.section('CYCLE: Dialectical Process')}:
 ├─ ${FLOW_STYLES.info('Claude proposes')} → Generate technical approach with clear rationale
 ├─ ${FLOW_STYLES.error('Gemini refutes')} → Challenge assumptions and identify alternatives  
 └─ ${FLOW_STYLES.feature('Human decides')} → Synthesize evidence and make informed decisions
 
-${FLOW_STYLES.section('📋 Manual Planning Steps')}:
+${FLOW_STYLES.section('LIST: Manual Planning Steps')}:
 1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Research existing approaches and patterns
 3. Consult: ${FLOW_STYLES.command(`gemini -p "@src/ @CLAUDE.md @.tickets/doing/${ticketId}-*.md Critique approach"`)}
@@ -125,7 +125,7 @@ ${FLOW_STYLES.dim('Manual mode: Proceed to ait3 flow red after decision')}
 
 function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: string): CLIResult {
   const requirementsSection = requirements?.length 
-    ? `\n${FLOW_STYLES.command('📋 Requirements')}: ${requirements.join(', ')}`
+    ? `\n${FLOW_STYLES.command('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
 
   // Find ticket ID from ticketInfo if available
@@ -136,9 +136,9 @@ function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: s
   return {
     success: true,
     message: `
-${formatTicketHeader(ticketId, featureName, '🎭 PLANNING Phase')}${requirementsSection}
+${formatTicketHeader(ticketId, featureName, 'PLANNING Phase')}${requirementsSection}
 
-${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
+${FLOW_STYLES.section('Claude Code Instructions')}:
 1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Analyze and propose:
    ├─ Purpose & Goals

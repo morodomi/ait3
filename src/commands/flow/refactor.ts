@@ -74,12 +74,12 @@ export async function refactorPhase(
     return {
       success: false,
       message: `
-${FLOW_STYLES.error('❌ Analysis failed')}
+${FLOW_STYLES.error('ERROR: Analysis failed')}
 
-${FLOW_STYLES.warning('⚠️  Error')}: Unable to analyze project structure
+${FLOW_STYLES.warning('WARNING:  Error')}: Unable to analyze project structure
 ${FLOW_STYLES.dim('Check your project structure and ensure source files are accessible')}
 
-${FLOW_STYLES.info('💡 Tip')}: Make sure you're running from the project root directory
+${FLOW_STYLES.info('TIP: Tip')}: Make sure you're running from the project root directory
 `
     };
   }
@@ -194,10 +194,10 @@ function formatAnalysisOutput(
 
   // Header
   const ticketLocation = getTicketLocation(ticketId, ticketTitle, 'doing');
-  sections.push(`${formatTicketHeader(ticketId, ticketTitle, '🔧 REFACTOR Phase')}`);
+  sections.push(`${formatTicketHeader(ticketId, ticketTitle, 'REFACTOR Phase')}`);
   
   // Claude Code Instructions
-  sections.push(`\n${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
+  sections.push(`\n${FLOW_STYLES.section('Claude Code Instructions')}:
 1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Run quality checks (project-specific):
    - Linter (e.g., eslint, ruff, rubocop)
@@ -216,16 +216,16 @@ function formatAnalysisOutput(
    - Suggest creating tickets
    - Human decides whether to create
 
-${FLOW_STYLES.warning('⚡ Requirement')}: Maintain 100% test pass rate`);
+${FLOW_STYLES.warning('CONSTRAINT: Requirement')}: Maintain 100% test pass rate`);
   
   // Focus indicator
   if (focusAreas) {
-    sections.push(`\n🎯 Focused Analysis: ${focusAreas.join(', ')}`);
+    sections.push(`\nTARGET: Focused Analysis: ${focusAreas.join(', ')}`);
   }
 
   // Code Quality Summary
   sections.push(`
-${FLOW_STYLES.title('📊 Code Quality Summary')}:
+${FLOW_STYLES.title('STATS: Code Quality Summary')}:
 ├─ Files analyzed: ${analysis.filesAnalyzed}
 ├─ Improvement opportunities: ${analysis.improvements}
 ├─ Estimated effort: ${analysis.estimatedEffort}
@@ -233,11 +233,11 @@ ${FLOW_STYLES.title('📊 Code Quality Summary')}:
 
   // Limited analysis message if no files
   if (analysis.filesAnalyzed === 0) {
-    sections.push(`\n${FLOW_STYLES.warning('⚠️  Limited analysis')} - No source files found in project`);
+    sections.push(`\n${FLOW_STYLES.warning('WARNING:  Limited analysis')} - No source files found in project`);
   }
 
   // Refactoring Suggestions
-  sections.push(`\n${FLOW_STYLES.title('📋 Refactoring Suggestions')}:`);
+  sections.push(`\n${FLOW_STYLES.title('LIST: Refactoring Suggestions')}:`);
 
   // Code Duplication
   if (!focusAreas || focusAreas.includes('duplication')) {
@@ -287,7 +287,7 @@ ${FLOW_STYLES.title('📊 Code Quality Summary')}:
 
   // Verbose mode additions
   if (verbose) {
-    sections.push(`\n${FLOW_STYLES.title('📋 Detailed Analysis')}:`);
+    sections.push(`\n${FLOW_STYLES.title('LIST: Detailed Analysis')}:`);
     sections.push(`├─ ${FLOW_STYLES.info('Line-by-line analysis')}: Available`);
     sections.push(`├─ ${FLOW_STYLES.info('Complexity metrics')}: Calculated`);
     sections.push(`└─ ${FLOW_STYLES.info('Performance hints')}: Identified`);

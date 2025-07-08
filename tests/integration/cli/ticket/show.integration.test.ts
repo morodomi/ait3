@@ -136,11 +136,11 @@ labels:
       );
 
       // Check header
-      expect(result).toContain('🎫 Ticket #0001');
+      expect(result).toContain('Ticket #0001');
       expect(result).toContain('Comprehensive Test Ticket');
       
       // Check metadata
-      expect(result).toContain('📊 Details:');
+      expect(result).toContain('DETAILS Details:');
       expect(result).toContain('Status:');
       expect(result).toContain('todo');
       expect(result).toContain('Priority:');
@@ -158,7 +158,7 @@ labels:
       expect(result).toContain('────');
       
       // Check content
-      expect(result).toContain('📝 Description:');
+      expect(result).toContain('DESCRIPTION Description:');
       expect(result).toContain('This is a **comprehensive** test ticket');
       expect(result).toContain('Requirements');
       expect(result).toContain('Technical Notes');
@@ -175,7 +175,7 @@ labels:
         }
       );
 
-      expect(result).toContain('🎫 Ticket #0002');
+      expect(result).toContain('Ticket #0002');
       expect(result).toContain('Minimal Ticket');
       expect(result).toContain('Status:');
       expect(result).toContain('doing');
@@ -197,11 +197,11 @@ labels:
         }
       );
 
-      expect(result).toContain('🎫 Ticket #0003');
+      expect(result).toContain('Ticket #0003');
       expect(result).toContain('No Description Ticket');
       expect(result).toContain('Status:');
       expect(result).toContain('done');
-      expect(result).toContain('📝 Description:');
+      expect(result).toContain('DESCRIPTION Description:');
       expect(result).toContain('(No description provided)');
     });
 
@@ -370,9 +370,9 @@ labels:
         }
       );
 
-      expect(result).toContain('📊 Details:');
+      expect(result).toContain('DETAILS Details:');
       expect(result).toContain('────');
-      expect(result).toContain('📝 Description:');
+      expect(result).toContain('DESCRIPTION Description:');
     });
   });
 

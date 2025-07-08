@@ -71,7 +71,7 @@ describe('completeTicket pure function', () => {
       const result = await completeTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅ Completed ticket #0001');
+      expect(result.message).toContain('SUCCESS: Completed ticket #0001');
       expect(result.message).toContain('Moved from doing → done');
     });
 
@@ -255,7 +255,7 @@ describe('completeTicket pure function', () => {
       const result = await completeTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅');
+      expect(result.message).toContain('SUCCESS:');
       expect(result.message).toContain('Completed');
     });
   });

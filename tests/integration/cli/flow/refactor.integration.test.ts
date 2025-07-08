@@ -88,7 +88,7 @@ describe('CLI Integration: flow refactor', () => {
       });
 
       expect(result).toContain('REFACTOR Phase');
-      expect(result).toContain('🔧 REFACTOR Phase');
+      expect(result).toContain('REFACTOR Phase');
       expect(result).toContain('for Ticket #0001: Feature to refactor');
     });
   });

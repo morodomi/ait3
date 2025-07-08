@@ -124,7 +124,7 @@ This ticket is already completed.
       );
 
       // Check command output
-      expect(result).toContain('✅ Completed ticket #0002');
+      expect(result).toContain('SUCCESS: Completed ticket #0002');
       expect(result).toContain('doing → done');
       expect(result).toContain('Ready to Complete');
 
@@ -394,7 +394,7 @@ This ticket is already completed.
         }
       );
 
-      expect(result).toContain('✅');
+      expect(result).toContain('SUCCESS:');
       expect(result).toContain('Completed');
       expect(result).toContain('#0002');
     });

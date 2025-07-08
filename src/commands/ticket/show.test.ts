@@ -59,7 +59,7 @@ describe('showTicket pure function', () => {
       expect(result.success).toBe(true);
       
       // Check for essential ticket information in output
-      expect(result.message).toContain('🎫 Ticket #0001');
+      expect(result.message).toContain('Ticket #0001');
       expect(result.message).toContain('Test Ticket with Description');
       expect(result.message).toContain('Status:');
       expect(result.message).toContain('todo');
@@ -75,7 +75,7 @@ describe('showTicket pure function', () => {
       expect(result.message).toContain('feature, backend');
       
       // Check for markdown content
-      expect(result.message).toContain('📝 Description:');
+      expect(result.message).toContain('Description:');
       expect(result.message).toContain('This is a **sample** ticket');
       expect(result.message).toContain('Requirements');
       
@@ -101,7 +101,7 @@ describe('showTicket pure function', () => {
       const result = await showTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('🎫 Ticket #0002');
+      expect(result.message).toContain('Ticket #0002');
       expect(result.message).toContain('Minimal Ticket');
       expect(result.message).toContain('Status:');
       expect(result.message).toContain('doing');
@@ -136,7 +136,7 @@ describe('showTicket pure function', () => {
       
       // Description section should come after separator
       const separatorIndex = result.message.indexOf('────');
-      const descriptionIndex = result.message.indexOf('📝 Description:');
+      const descriptionIndex = result.message.indexOf('Description:');
       expect(descriptionIndex).toBeGreaterThan(separatorIndex);
     });
   });
@@ -240,7 +240,7 @@ describe('showTicket pure function', () => {
       const result = await showTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('📝 Description:');
+      expect(result.message).toContain('Description:');
       expect(result.message).toContain('(No description provided)');
     });
   });

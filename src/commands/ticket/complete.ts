@@ -31,7 +31,7 @@ export async function completeTicket(
 
     // Generate formatted success output
     const messageParts = [
-      chalk.green(`✅ Completed ticket #${id}`) + (ticket ? `: ${ticketTitle}` : ''),
+      chalk.green(`SUCCESS: Completed ticket #${id}`) + (ticket ? `: ${ticketTitle}` : ''),
       '',
       chalk.gray('   Status updated: ') + chalk.yellow('doing') + chalk.gray(' → ') + chalk.green('done'),
       chalk.gray('   Moved from doing → done'),

@@ -253,7 +253,7 @@ describe('squashPhase Pure Function', () => {
       const result = await squashPhase({ ticketId: '0001' }, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅ Automatically completed ticket #0001');
+      expect(result.message).toContain('SUCCESS: Automatically completed ticket #0001');
       
       // Verify ticket is now in done status
       const ticket = await services.ticketService.getTicket('0001');
@@ -267,7 +267,7 @@ describe('squashPhase Pure Function', () => {
       const result = await squashPhase({ ticketId: '0001' }, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅ Automatically completed ticket #0001');
+      expect(result.message).toContain('SUCCESS: Automatically completed ticket #0001');
       
       // Verify ticket is now in done status
       const ticket = await services.ticketService.getTicket('0001');

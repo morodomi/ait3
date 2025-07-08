@@ -33,7 +33,7 @@ export async function listTickets(
     if (tickets.length === 0) {
       return {
         success: true,
-        message: chalk.yellow('📋 No tickets found'),
+        message: chalk.yellow('LIST: No tickets found'),
         data: tickets
       };
     }
@@ -47,7 +47,7 @@ export async function listTickets(
     ];
 
     const messageParts = [
-      chalk.green(`📋 Found ${tickets.length} tickets`),
+      chalk.green(`LIST: Found ${tickets.length} tickets`),
       '',
       ...createTableHeader(columns)
     ];

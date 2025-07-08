@@ -40,7 +40,7 @@ export async function squashPhase(
   // Handle ticket completion
   let statusMessage = '';
   if (ticket.status === 'done') {
-    statusMessage = `\n${FLOW_STYLES.warning('⚠️  Note: Ticket is already completed')}\n`;
+    statusMessage = `\n${FLOW_STYLES.warning('WARNING:  Note: Ticket is already completed')}\n`;
   } else {
     // Auto-complete the ticket if not done
     try {
@@ -49,7 +49,7 @@ export async function squashPhase(
         await services.ticketService.startTicket(ticketId);
       }
       await services.ticketService.completeTicket(ticketId);
-      statusMessage = `\n${FLOW_STYLES.success('✅ Automatically completed ticket #' + ticketId)}\n`;
+      statusMessage = `\n${FLOW_STYLES.success('SUCCESS: Automatically completed ticket #' + ticketId)}\n`;
       
       // Update ticket status for display
       ticket.status = 'done';
@@ -68,8 +68,8 @@ export async function squashPhase(
   const ticketSlug = SlugUtils.titleToSlug(ticket.title);
   const ticketLocation = `.tickets/done/${ticketId}-${ticketSlug}.md`;
   
-  const locationInfo = `${FLOW_STYLES.title('📦 SQUASH Phase')} for Ticket #${ticketId}: ${ticket.title}\n` +
-                      `${FLOW_STYLES.info('📍 Ticket location')}: ${FLOW_STYLES.path(ticketLocation)}\n`;
+  const locationInfo = `${FLOW_STYLES.title('SQUASH Phase')} for Ticket #${ticketId}: ${ticket.title}\n` +
+                      `${FLOW_STYLES.info('LOCATION: Ticket location')}: ${FLOW_STYLES.path(ticketLocation)}\n`;
   
   const suggestions = generateGitSuggestions(ticket, args);
 
@@ -82,9 +82,9 @@ export async function squashPhase(
 function generateDryRunOutput(ticket: Ticket, args: SquashArgs): CLIResult {
   const sections: string[] = [];
   
-  sections.push(`${FLOW_STYLES.warning('🔍 DRY RUN')} - Preview mode`);
-  sections.push(`\n${FLOW_STYLES.title('🎯 SQUASH Phase')} - Git Command Suggestions for ticket #${ticket.id}`);
-  sections.push(`\n${FLOW_STYLES.info('📋 Would suggest')}:`);
+  sections.push(`${FLOW_STYLES.warning('SEARCH: DRY RUN')} - Preview mode`);
+  sections.push(`\n${FLOW_STYLES.title('TARGET: SQUASH Phase')} - Git Command Suggestions for ticket #${ticket.id}`);
+  sections.push(`\n${FLOW_STYLES.info('LIST: Would suggest')}:`);
   
   if (!args.noSquash) {
     sections.push('├─ Git rebase commands for squashing commits');
@@ -115,7 +115,7 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   // Header is now added in the main function, so we don't need it here
   
   if (args.dryRun) {
-    sections.push(`\n${FLOW_STYLES.warning('🔍 DRY RUN MODE')}`);
+    sections.push(`\n${FLOW_STYLES.warning('SEARCH: DRY RUN MODE')}`);
   }
 
   // Add related commits section
@@ -125,7 +125,7 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   sections.push(`├─ ${FLOW_STYLES.dim('xxxxxxx feat(#' + ticketId + '): implement feature')}`);
   sections.push(`└─ ${FLOW_STYLES.dim('xxxxxxx refactor(#' + ticketId + '): optimize implementation')}`);
 
-  sections.push(`\n${FLOW_STYLES.title('📋 Suggested Git Commands')}:`);
+  sections.push(`\n${FLOW_STYLES.title('LIST: Suggested Git Commands')}:`);
 
   let stepNumber = 1;
 
@@ -148,15 +148,15 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   sections.push('');
   sections.push(generateCommitBody(ticket));
   sections.push('');
-  sections.push(FLOW_STYLES.success('✅') + ' All tests passing');
-  sections.push(FLOW_STYLES.success('📚') + ' Docs updated');
-  sections.push(FLOW_STYLES.success('🔧') + ' No breaking changes');
+  sections.push(FLOW_STYLES.success('SUCCESS:') + ' All tests passing');
+  sections.push(FLOW_STYLES.success('DOCS:') + ' Docs updated');
+  sections.push(FLOW_STYLES.success('TOOLS:') + ' No breaking changes');
   stepNumber++;
 
   // Step 3: Push to remote
   sections.push(`\n${FLOW_STYLES.info(`## ${stepNumber}. Push to remote:`)}`);
   sections.push(`${FLOW_STYLES.code(`git push origin ${featureName} --force-with-lease`)}`);
-  sections.push(`${FLOW_STYLES.warning('⚠️  --force-with-lease ensures safe force push')}`);
+  sections.push(`${FLOW_STYLES.warning('WARNING:  --force-with-lease ensures safe force push')}`);
   stepNumber++;
 
   // Step 4: Create Pull Request (if --pr flag)
@@ -175,11 +175,11 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   sections.push(`${FLOW_STYLES.code('git pull origin main')}`);
   sections.push(`${FLOW_STYLES.code(`git merge --no-ff ${featureName}`)}`);
   sections.push(`${FLOW_STYLES.code('git push origin main')}`);
-  sections.push(`${FLOW_STYLES.warning('⚠️  Use --no-ff to preserve feature branch history')}`);
+  sections.push(`${FLOW_STYLES.warning('WARNING:  Use --no-ff to preserve feature branch history')}`);
   stepNumber++;
   
   // If PR was rejected info
-  sections.push(`\n${FLOW_STYLES.info('💡 If PR rejected')}:`);
+  sections.push(`\n${FLOW_STYLES.info('TIP: If PR rejected')}:`);
   sections.push(`${FLOW_STYLES.code(`ait3 ticket reopen ${ticketId}`)}`);
   sections.push(`${FLOW_STYLES.dim('This will move ticket from done → doing')}`);
 
@@ -202,14 +202,14 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   }
 
   // Safety warnings
-  sections.push(`\n${FLOW_STYLES.warning('⚠️  Safety reminders')}:`);
+  sections.push(`\n${FLOW_STYLES.warning('WARNING:  Safety reminders')}:`);
   sections.push(`├─ ${FLOW_STYLES.dim('Review all commands before execution')}`);
   sections.push(`├─ ${FLOW_STYLES.dim('Ensure tests pass before merging')}`);
   sections.push(`├─ ${FLOW_STYLES.dim('Backup important changes')}`);
   sections.push(`└─ ${FLOW_STYLES.dim('Use --force-with-lease instead of --force')}`);
 
   // Educational note
-  sections.push(`\n${FLOW_STYLES.dim('💡 This is the final step in AIT³ workflow: PLANNING → RED → GREEN → REFACTOR → SQUASH')}`);
+  sections.push(`\n${FLOW_STYLES.dim('TIP: This is the final step in AIT³ workflow: PLANNING → RED → GREEN → REFACTOR → SQUASH')}`);
 
   return sections.join('\n');
 }

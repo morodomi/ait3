@@ -2,7 +2,6 @@ import type { ShowTicketArgs, Services, CLIResult } from '../../common/types.js'
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { getStatusColor, getPriorityColor } from '../../common/table-utils.js';
 import { TimeUtils, IDUtils } from '../../common/utils.js';
-import { UI_CONSTANTS } from '../../common/constants.js';
 import chalk from 'chalk';
 
 // Force colors for consistent output in tests
@@ -31,11 +30,11 @@ export async function showTicket(
     // Generate formatted output
     const messageParts = [
       // Header
-      chalk.bold(`${UI_CONSTANTS.EMOJIS.TICKET} Ticket #${ticket.id}: ${ticket.title}`),
+      chalk.bold(`Ticket #${ticket.id}: ${ticket.title}`),
       '',
       
       // Metadata section
-      chalk.bold(`${UI_CONSTANTS.EMOJIS.DETAILS} Details:`),
+      chalk.bold('Details:'),
       formatMetadataField('Status', ticket.status, getStatusColor(ticket.status)),
       formatMetadataField('Priority', ticket.priority, getPriorityColor(ticket.priority)),
       formatMetadataField('Created', TimeUtils.formatDate(ticket.created)),
@@ -54,11 +53,11 @@ export async function showTicket(
 
     // Separator
     messageParts.push('');
-    messageParts.push(chalk.gray(UI_CONSTANTS.SEPARATORS.SECTION));
+    messageParts.push(chalk.gray('────────────────────────────────────'));
     
     // Description section
     messageParts.push('');
-    messageParts.push(chalk.bold(`${UI_CONSTANTS.EMOJIS.DESCRIPTION} Description:`));
+    messageParts.push(chalk.bold('Description:'));
     messageParts.push('');
 
     const description = ticket.description || '(No description provided)';

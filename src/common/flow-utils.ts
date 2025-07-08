@@ -41,7 +41,7 @@ export function generateCommitMessage(phase: FlowPhase, ticketId: string, title:
  */
 export function formatTicketHeader(ticketId: string, title: string, phase: string, status: TicketStatus = 'doing'): string {
   const ticketLocation = getTicketLocation(ticketId, title, status);
-  return `${FLOW_STYLES.title(phase)} for Ticket #${ticketId}: ${title}\n${FLOW_STYLES.info('📍 Ticket location')}: ${FLOW_STYLES.path(ticketLocation)}`;
+  return `${FLOW_STYLES.title(phase)} for Ticket #${ticketId}: ${title}\n${FLOW_STYLES.info('Location')}: ${FLOW_STYLES.path(ticketLocation)}`;
 }
 
 /**

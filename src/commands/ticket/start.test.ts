@@ -156,7 +156,7 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅ Started ticket #0001');
+      expect(result.message).toContain('SUCCESS: Started ticket #0001');
       expect(result.message).toContain('Status:');
       expect(result.message).toContain('doing');
       expect(result.message).toContain('Location:');
@@ -345,7 +345,7 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅');
+      expect(result.message).toContain('SUCCESS:');
       expect(result.message).toContain('Started');
     });
   });
@@ -363,7 +363,7 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅ Started ticket #0001');
+      expect(result.message).toContain('SUCCESS: Started ticket #0001');
       expect(result.message).toContain('Created and switched to branch: feature/0001-test-ticket');
       expect(await mockGitService.getCurrentBranch()).toBe('feature/0001-test-ticket');
     });
@@ -416,7 +416,7 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅ Started ticket #0001');
+      expect(result.message).toContain('SUCCESS: Started ticket #0001');
       expect(result.message).toContain('Manual Git steps');
       expect(result.message).toContain('git checkout -b feature/0001-test-ticket');
       expect(result.message).not.toContain('Created and switched to branch');
@@ -429,7 +429,7 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('⚠️  Git is not initialized');
+      expect(result.message).toContain('WARNING: Git is not initialized');
       expect(result.message).toContain('git init');
       expect(result.message).toContain('git checkout -b feature/0001-test-ticket');
     });
@@ -441,7 +441,7 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('⚠️  Warning: Could not fetch remote branches');
+      expect(result.message).toContain('WARNING: Warning: Could not fetch remote branches');
       expect(result.message).toContain('Created and switched to branch: feature/0001-test-ticket');
     });
 
@@ -460,7 +460,7 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('⚠️  Could not switch to existing branch');
+      expect(result.message).toContain('WARNING: Could not switch to existing branch');
       expect(result.message).toContain('Error: Branch has conflicts');
       expect(result.message).toContain('Manual resolution required');
     });
@@ -563,8 +563,8 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('✅ Started ticket #0001');
-      expect(result.message).toContain('⚠️  Git operations failed');
+      expect(result.message).toContain('SUCCESS: Started ticket #0001');
+      expect(result.message).toContain('WARNING: Git operations failed');
       expect(result.message).toContain('Manual Git steps');
     });
 

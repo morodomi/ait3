@@ -41,7 +41,7 @@ export async function createTicket(
 
     // Create user-friendly colored output
     const messageParts = [
-      chalk.green('✅ Ticket created successfully'),
+      chalk.green('SUCCESS: Ticket created successfully'),
       chalk.white(`   ID: #${ticket.id}`),
       chalk.white(`   Title: ${ticket.title}`),
       chalk.white(`   Priority: ${ticket.priority}`),
