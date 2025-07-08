@@ -1,6 +1,6 @@
 import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
-import { FLOW_STYLES } from '../../common/styles.js';
+import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';
 
@@ -40,7 +40,7 @@ export async function squashPhase(
   // Handle ticket completion
   let statusMessage = '';
   if (ticket.status === 'done') {
-    statusMessage = `\n${FLOW_STYLES.warning('WARNING:  Note: Ticket is already completed')}\n`;
+    statusMessage = `\n${STYLES.warning('WARNING:  Note: Ticket is already completed')}\n`;
   } else {
     // Auto-complete the ticket if not done
     try {
@@ -49,7 +49,7 @@ export async function squashPhase(
         await services.ticketService.startTicket(ticketId);
       }
       await services.ticketService.completeTicket(ticketId);
-      statusMessage = `\n${FLOW_STYLES.success('SUCCESS: Automatically completed ticket #' + ticketId)}\n`;
+      statusMessage = `\n${STYLES.success('SUCCESS: Automatically completed ticket #' + ticketId)}\n`;
       
       // Update ticket status for display
       ticket.status = 'done';
@@ -68,8 +68,8 @@ export async function squashPhase(
   const ticketSlug = SlugUtils.titleToSlug(ticket.title);
   const ticketLocation = `.tickets/done/${ticketId}-${ticketSlug}.md`;
   
-  const locationInfo = `${FLOW_STYLES.title('SQUASH Phase')} for Ticket #${ticketId}: ${ticket.title}\n` +
-                      `${FLOW_STYLES.info('LOCATION: Ticket location')}: ${FLOW_STYLES.path(ticketLocation)}\n`;
+  const locationInfo = `${STYLES.bold('SQUASH Phase')} for Ticket #${ticketId}: ${ticket.title}\n` +
+                      `${STYLES.info('LOCATION: Ticket location')}: ${STYLES.info(ticketLocation)}\n`;
   
   const suggestions = generateGitSuggestions(ticket, args);
 
@@ -82,9 +82,9 @@ export async function squashPhase(
 function generateDryRunOutput(ticket: Ticket, args: SquashArgs): CLIResult {
   const sections: string[] = [];
   
-  sections.push(`${FLOW_STYLES.warning('SEARCH: DRY RUN')} - Preview mode`);
-  sections.push(`\n${FLOW_STYLES.title('TARGET: SQUASH Phase')} - Git Command Suggestions for ticket #${ticket.id}`);
-  sections.push(`\n${FLOW_STYLES.info('LIST: Would suggest')}:`);
+  sections.push(`${STYLES.warning('SEARCH: DRY RUN')} - Preview mode`);
+  sections.push(`\n${STYLES.bold('TARGET: SQUASH Phase')} - Git Command Suggestions for ticket #${ticket.id}`);
+  sections.push(`\n${STYLES.info('LIST: Would suggest')}:`);
   
   if (!args.noSquash) {
     sections.push('├─ Git rebase commands for squashing commits');
@@ -98,7 +98,7 @@ function generateDryRunOutput(ticket: Ticket, args: SquashArgs): CLIResult {
   
   sections.push('└─ Merge workflow commands');
   
-  sections.push(`\n${FLOW_STYLES.dim('Run without --dry-run to see full suggestions')}`);
+  sections.push(`\n${STYLES.muted('Run without --dry-run to see full suggestions')}`);
 
   return {
     success: true,
@@ -115,101 +115,101 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   // Header is now added in the main function, so we don't need it here
   
   if (args.dryRun) {
-    sections.push(`\n${FLOW_STYLES.warning('SEARCH: DRY RUN MODE')}`);
+    sections.push(`\n${STYLES.warning('SEARCH: DRY RUN MODE')}`);
   }
 
   // Add related commits section
-  sections.push(`\n${FLOW_STYLES.info('Related commits to squash')}:`);
-  sections.push(`├─ ${FLOW_STYLES.dim('xxxxxxx planning(#' + ticketId + '): design approach')}`);
-  sections.push(`├─ ${FLOW_STYLES.dim('xxxxxxx test(#' + ticketId + '): create failing tests')}`);
-  sections.push(`├─ ${FLOW_STYLES.dim('xxxxxxx feat(#' + ticketId + '): implement feature')}`);
-  sections.push(`└─ ${FLOW_STYLES.dim('xxxxxxx refactor(#' + ticketId + '): optimize implementation')}`);
+  sections.push(`\n${STYLES.info('Related commits to squash')}:`);
+  sections.push(`├─ ${STYLES.muted('xxxxxxx planning(#' + ticketId + '): design approach')}`);
+  sections.push(`├─ ${STYLES.muted('xxxxxxx test(#' + ticketId + '): create failing tests')}`);
+  sections.push(`├─ ${STYLES.muted('xxxxxxx feat(#' + ticketId + '): implement feature')}`);
+  sections.push(`└─ ${STYLES.muted('xxxxxxx refactor(#' + ticketId + '): optimize implementation')}`);
 
-  sections.push(`\n${FLOW_STYLES.title('LIST: Suggested Git Commands')}:`);
+  sections.push(`\n${STYLES.bold('LIST: Suggested Git Commands')}:`);
 
   let stepNumber = 1;
 
   // Step 1: Squash commits (unless --no-squash)
   if (!args.noSquash) {
-    sections.push(`\n${FLOW_STYLES.info(`## ${stepNumber}. Squash commits into logical units:`)}`);
-    sections.push(`${FLOW_STYLES.code('git rebase -i main')}`);
-    sections.push(`${FLOW_STYLES.dim('# Mark commits to squash (s) or fixup (f)')}`);
-    sections.push(`${FLOW_STYLES.dim('# Suggested grouping:')}`);
-    sections.push(`${FLOW_STYLES.dim(`#   - Planning phase commits → "planning(#${ticketId}): ${ticket.title.toLowerCase()}"`)}`);
-    sections.push(`${FLOW_STYLES.dim(`#   - Test commits → "test(#${ticketId}): comprehensive test suite"`)}`);
-    sections.push(`${FLOW_STYLES.dim(`#   - Implementation → "${commitTitle}"`)}`);
-    sections.push(`${FLOW_STYLES.dim(`#   - Refactoring → "refactor(#${ticketId}): optimize implementation"`)}`);
+    sections.push(`\n${STYLES.info(`## ${stepNumber}. Squash commits into logical units:`)}`);
+    sections.push(`${STYLES.code('git rebase -i main')}`);
+    sections.push(`${STYLES.muted('# Mark commits to squash (s) or fixup (f)')}`);
+    sections.push(`${STYLES.muted('# Suggested grouping:')}`);
+    sections.push(`${STYLES.muted(`#   - Planning phase commits → "planning(#${ticketId}): ${ticket.title.toLowerCase()}"`)}`);
+    sections.push(`${STYLES.muted(`#   - Test commits → "test(#${ticketId}): comprehensive test suite"`)}`);
+    sections.push(`${STYLES.muted(`#   - Implementation → "${commitTitle}"`)}`);
+    sections.push(`${STYLES.muted(`#   - Refactoring → "refactor(#${ticketId}): optimize implementation"`)}`);
     stepNumber++;
   }
 
   // Step 2: Create comprehensive commit message
-  sections.push(`\n${FLOW_STYLES.info(`## ${stepNumber}. Create comprehensive commit message:`)}`);
-  sections.push(FLOW_STYLES.code('git commit --amend -m "' + commitTitle + '"'));
+  sections.push(`\n${STYLES.info(`## ${stepNumber}. Create comprehensive commit message:`)}`);
+  sections.push(STYLES.code('git commit --amend -m "' + commitTitle + '"'));
   sections.push('');
   sections.push(generateCommitBody(ticket));
   sections.push('');
-  sections.push(FLOW_STYLES.success('SUCCESS:') + ' All tests passing');
-  sections.push(FLOW_STYLES.success('DOCS:') + ' Docs updated');
-  sections.push(FLOW_STYLES.success('TOOLS:') + ' No breaking changes');
+  sections.push(STYLES.success('SUCCESS:') + ' All tests passing');
+  sections.push(STYLES.success('DOCS:') + ' Docs updated');
+  sections.push(STYLES.success('TOOLS:') + ' No breaking changes');
   stepNumber++;
 
   // Step 3: Push to remote
-  sections.push(`\n${FLOW_STYLES.info(`## ${stepNumber}. Push to remote:`)}`);
-  sections.push(`${FLOW_STYLES.code(`git push origin ${featureName} --force-with-lease`)}`);
-  sections.push(`${FLOW_STYLES.warning('WARNING:  --force-with-lease ensures safe force push')}`);
+  sections.push(`\n${STYLES.info(`## ${stepNumber}. Push to remote:`)}`);
+  sections.push(`${STYLES.code(`git push origin ${featureName} --force-with-lease`)}`);
+  sections.push(`${STYLES.warning('WARNING:  --force-with-lease ensures safe force push')}`);
   stepNumber++;
 
   // Step 4: Create Pull Request (if --pr flag)
   if (args.pr) {
-    sections.push(`\n${FLOW_STYLES.info(`## ${stepNumber}. Create Pull Request:`)}`);
-    sections.push(`${FLOW_STYLES.code(`gh pr create --title "${commitTitle}" \\`)}`);
-    sections.push(`${FLOW_STYLES.code(`  --body "Implements final phase of AIT³ workflow for ${ticket.title}" \\`)}`);
-    sections.push(`${FLOW_STYLES.code('  --base main')}`);
-    sections.push(`${FLOW_STYLES.dim('# Alternative: Use GitHub web interface if gh CLI not available')}`);
+    sections.push(`\n${STYLES.info(`## ${stepNumber}. Create Pull Request:`)}`);
+    sections.push(`${STYLES.code(`gh pr create --title "${commitTitle}" \\`)}`);
+    sections.push(`${STYLES.code(`  --body "Implements final phase of AIT³ workflow for ${ticket.title}" \\`)}`);
+    sections.push(`${STYLES.code('  --base main')}`);
+    sections.push(`${STYLES.muted('# Alternative: Use GitHub web interface if gh CLI not available')}`);
     stepNumber++;
   }
 
   // Step 5: After review, merge
-  sections.push(`\n${FLOW_STYLES.info(`## ${stepNumber}. After review, merge:`)}`);
-  sections.push(`${FLOW_STYLES.code('git checkout main')}`);
-  sections.push(`${FLOW_STYLES.code('git pull origin main')}`);
-  sections.push(`${FLOW_STYLES.code(`git merge --no-ff ${featureName}`)}`);
-  sections.push(`${FLOW_STYLES.code('git push origin main')}`);
-  sections.push(`${FLOW_STYLES.warning('WARNING:  Use --no-ff to preserve feature branch history')}`);
+  sections.push(`\n${STYLES.info(`## ${stepNumber}. After review, merge:`)}`);
+  sections.push(`${STYLES.code('git checkout main')}`);
+  sections.push(`${STYLES.code('git pull origin main')}`);
+  sections.push(`${STYLES.code(`git merge --no-ff ${featureName}`)}`);
+  sections.push(`${STYLES.code('git push origin main')}`);
+  sections.push(`${STYLES.warning('WARNING:  Use --no-ff to preserve feature branch history')}`);
   stepNumber++;
   
   // If PR was rejected info
-  sections.push(`\n${FLOW_STYLES.info('TIP: If PR rejected')}:`);
-  sections.push(`${FLOW_STYLES.code(`ait3 ticket reopen ${ticketId}`)}`);
-  sections.push(`${FLOW_STYLES.dim('This will move ticket from done → doing')}`);
+  sections.push(`\n${STYLES.info('TIP: If PR rejected')}:`);
+  sections.push(`${STYLES.code(`ait3 ticket reopen ${ticketId}`)}`);
+  sections.push(`${STYLES.muted('This will move ticket from done → doing')}`);
 
   // Create structured Next Action section
-  sections.push(`\n${FLOW_STYLES.info('Next Action')}:`);
+  sections.push(`\n${STYLES.info('Next Action')}:`);
   
   if (!args.noSquash) {
     sections.push(`├─ Squash commits:`);
-    sections.push(`│  └─ ${FLOW_STYLES.code('git rebase -i main')}`);
+    sections.push(`│  └─ ${STYLES.code('git rebase -i main')}`);
     sections.push(`├─ Create final commit:`);
-    sections.push(`│  └─ ${FLOW_STYLES.code(`git commit -m "${commitTitle}"`)}`);
+    sections.push(`│  └─ ${STYLES.code(`git commit -m "${commitTitle}"`)}`);
     sections.push(`├─ Push changes:`);
-    sections.push(`│  └─ ${FLOW_STYLES.code('git push --force-with-lease')}`);
+    sections.push(`│  └─ ${STYLES.code('git push --force-with-lease')}`);
     sections.push(`└─ Create PR or merge to main`);
   } else {
     sections.push(`├─ Review commits (no squash)`);
     sections.push(`├─ Push changes:`);
-    sections.push(`│  └─ ${FLOW_STYLES.code('git push')}`);
+    sections.push(`│  └─ ${STYLES.code('git push')}`);
     sections.push(`└─ Create PR or merge to main`);
   }
 
   // Safety warnings
-  sections.push(`\n${FLOW_STYLES.warning('WARNING:  Safety reminders')}:`);
-  sections.push(`├─ ${FLOW_STYLES.dim('Review all commands before execution')}`);
-  sections.push(`├─ ${FLOW_STYLES.dim('Ensure tests pass before merging')}`);
-  sections.push(`├─ ${FLOW_STYLES.dim('Backup important changes')}`);
-  sections.push(`└─ ${FLOW_STYLES.dim('Use --force-with-lease instead of --force')}`);
+  sections.push(`\n${STYLES.warning('WARNING:  Safety reminders')}:`);
+  sections.push(`├─ ${STYLES.muted('Review all commands before execution')}`);
+  sections.push(`├─ ${STYLES.muted('Ensure tests pass before merging')}`);
+  sections.push(`├─ ${STYLES.muted('Backup important changes')}`);
+  sections.push(`└─ ${STYLES.muted('Use --force-with-lease instead of --force')}`);
 
   // Educational note
-  sections.push(`\n${FLOW_STYLES.dim('TIP: This is the final step in AIT³ workflow: PLANNING → RED → GREEN → REFACTOR → SQUASH')}`);
+  sections.push(`\n${STYLES.muted('TIP: This is the final step in AIT³ workflow: PLANNING → RED → GREEN → REFACTOR → SQUASH')}`);
 
   return sections.join('\n');
 }

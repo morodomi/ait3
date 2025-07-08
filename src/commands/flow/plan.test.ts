@@ -215,7 +215,8 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Location: .tickets/doing/0001-');
+      expect(result.message).toContain('Location');
+      expect(result.message).toContain('.tickets/doing/0001-');
     });
 
     it('should include structured Next Action section', async () => {
@@ -228,9 +229,10 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Next Action:');
+      expect(result.message).toContain('Next Action');
       expect(result.message).toContain('├─ Analyze ticket:');
-      expect(result.message).toContain('│  └─ Read .tickets/doing/001-test-feature.md');
+      expect(result.message).toContain('│  └─ Read');
+      expect(result.message).toContain('.tickets/doing/001-test-feature.md');
       expect(result.message).toContain('├─ Research codebase:');
       expect(result.message).toContain('│  └─ Understand existing patterns');
       expect(result.message).toContain('├─ Propose approach:');

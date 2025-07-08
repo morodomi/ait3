@@ -2,12 +2,8 @@ import type { StartTicketArgs, Services, CLIResult } from '../../common/types.js
 import type { GitService } from '../../services/interfaces/GitService.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError } from '../../common/errors.js';
 import { IDUtils, SlugUtils } from '../../common/utils.js';
-import { FLOW_STYLES } from '../../common/styles.js';
+import { STYLES } from '../../common/styles.js';
 import { getTicketLocation } from '../../common/flow-utils.js';
-import chalk from 'chalk';
-
-// Force colors for consistent output in tests
-chalk.level = 3;
 
 export async function startTicket(
   args: StartTicketArgs,
@@ -56,10 +52,10 @@ export async function startTicket(
         }
         
         // For non-critical errors (like fetch failures), we'll continue
-        gitMessage = FLOW_STYLES.gitWarning('WARNING: Git operations failed\n') +
-                     FLOW_STYLES.gitCommand(`   ${gitError instanceof Error ? gitError.message : 'Unknown error'}\n`) +
-                     FLOW_STYLES.gitWarning('Manual Git steps:\n') +
-                     FLOW_STYLES.gitCommand(`   git checkout -b ${generateBranchName(args.id, ticket.title)}\n`);
+        gitMessage = STYLES.warning('WARNING: Git operations failed\n') +
+                     STYLES.muted(`   ${gitError instanceof Error ? gitError.message : 'Unknown error'}\n`) +
+                     STYLES.warning('Manual Git steps:\n') +
+                     STYLES.muted(`   git checkout -b ${generateBranchName(args.id, ticket.title)}\n`);
         gitOperationSuccess = true; // Allow ticket move for non-critical errors
       }
     } else {
@@ -77,14 +73,14 @@ export async function startTicket(
 
     // Generate formatted success output
     const messageParts = [
-      FLOW_STYLES.success(`SUCCESS: Started ticket #${args.id}`) + (ticket ? `: ${ticket.title}` : ''),
+      STYLES.success(`SUCCESS: Started ticket #${args.id}`) + (ticket ? `: ${ticket.title}` : ''),
       ''
     ];
     
     // Add status information
-    messageParts.push(FLOW_STYLES.info('Details:'));
-    messageParts.push(`   Status: ${FLOW_STYLES.warning('doing')}`);
-    messageParts.push(`   Location: ${FLOW_STYLES.path(getTicketLocation(args.id, ticket?.title || 'unknown', 'doing'))}`);
+    messageParts.push(STYLES.info('Details:'));
+    messageParts.push(`   Status: ${STYLES.warning('doing')}`);
+    messageParts.push(`   Location: ${STYLES.info(getTicketLocation(args.id, ticket?.title || 'unknown', 'doing'))}`);
     messageParts.push('');
     
     // Add Git message if available
@@ -93,14 +89,14 @@ export async function startTicket(
     } else if (!services.gitService && ticket) {
       // Show manual instructions if GitService is not available
       const branchName = generateBranchName(args.id, ticket.title);
-      messageParts.push(FLOW_STYLES.gitWarning('Manual Git steps:'));
-      messageParts.push(FLOW_STYLES.gitCommand(`   git checkout -b ${branchName}`));
+      messageParts.push(STYLES.warning('Manual Git steps:'));
+      messageParts.push(STYLES.muted(`   git checkout -b ${branchName}`));
       messageParts.push('');
     }
 
     // Add next steps guidance with new format
-    messageParts.push(FLOW_STYLES.info('Next Action:'));
-    messageParts.push(`└─ Run: ${FLOW_STYLES.command(`ait3 flow plan ${args.id}`)}`);
+    messageParts.push(STYLES.info('Next Action:'));
+    messageParts.push(`└─ Run: ${STYLES.info(`ait3 flow plan ${args.id}`)}`);
 
     return {
       success: true,
@@ -166,10 +162,10 @@ async function handleGitOperations(
 
 function handleGitNotInitialized(ticketId: string, title: string): string {
   const messageParts = [
-    FLOW_STYLES.gitWarning('WARNING: Git is not initialized'),
-    FLOW_STYLES.gitCommand('   Run these commands:'),
-    FLOW_STYLES.gitCommand(`   git init`),
-    FLOW_STYLES.gitCommand(`   git checkout -b ${generateBranchName(ticketId, title)}`),
+    STYLES.warning('WARNING: Git is not initialized'),
+    STYLES.muted('   Run these commands:'),
+    STYLES.muted(`   git init`),
+    STYLES.muted(`   git checkout -b ${generateBranchName(ticketId, title)}`),
     ''
   ];
   return messageParts.join('\n');
@@ -179,8 +175,8 @@ async function attemptFetch(gitService: GitService, messageParts: string[]): Pro
   try {
     await gitService.fetch();
   } catch (fetchError) {
-    messageParts.push(FLOW_STYLES.gitWarning('WARNING: Warning: Could not fetch remote branches'));
-    messageParts.push(FLOW_STYLES.gitCommand(`   ${formatErrorMessage(fetchError)}`));
+    messageParts.push(STYLES.warning('WARNING: Warning: Could not fetch remote branches'));
+    messageParts.push(STYLES.muted(`   ${formatErrorMessage(fetchError)}`));
     messageParts.push('');
   }
 }
@@ -214,18 +210,18 @@ async function handleRemoteBranch(
   gitService: GitService,
   messageParts: string[]
 ): Promise<void> {
-  messageParts.push(FLOW_STYLES.gitInfo(`INFO: Found remote branch: ${branchName}`));
-  messageParts.push(FLOW_STYLES.gitCommand('   Creating local tracking branch'));
+  messageParts.push(STYLES.info(`INFO: Found remote branch: ${branchName}`));
+  messageParts.push(STYLES.muted('   Creating local tracking branch'));
   
   const localBranchName = branchName.replace('origin/', '');
   try {
     await gitService.checkout(localBranchName);
-    messageParts.push(FLOW_STYLES.gitSuccess(`SUCCESS: Created and switched to: ${localBranchName}`));
+    messageParts.push(STYLES.success(`SUCCESS: Created and switched to: ${localBranchName}`));
   } catch (checkoutError) {
-    messageParts.push(FLOW_STYLES.gitWarning(`WARNING: Could not create tracking branch`));
-    messageParts.push(FLOW_STYLES.gitCommand(`   Error: ${formatErrorMessage(checkoutError)}`));
-    messageParts.push(FLOW_STYLES.gitCommand('   Manual command:'));
-    messageParts.push(FLOW_STYLES.gitCommand(`   git checkout -b ${localBranchName} ${branchName}`));
+    messageParts.push(STYLES.warning(`WARNING: Could not create tracking branch`));
+    messageParts.push(STYLES.muted(`   Error: ${formatErrorMessage(checkoutError)}`));
+    messageParts.push(STYLES.muted('   Manual command:'));
+    messageParts.push(STYLES.muted(`   git checkout -b ${localBranchName} ${branchName}`));
   }
 }
 
@@ -236,12 +232,12 @@ async function handleLocalBranch(
 ): Promise<void> {
   try {
     await gitService.checkout(branchName);
-    messageParts.push(FLOW_STYLES.gitSuccess(`SUCCESS: Switched to existing branch: ${branchName}`));
+    messageParts.push(STYLES.success(`SUCCESS: Switched to existing branch: ${branchName}`));
   } catch (checkoutError) {
     // For existing branch checkout, we can be more lenient since the branch exists
-    messageParts.push(FLOW_STYLES.gitWarning(`WARNING: Could not switch to existing branch`));
-    messageParts.push(FLOW_STYLES.gitCommand(`   Error: ${formatErrorMessage(checkoutError)}`));
-    messageParts.push(FLOW_STYLES.gitCommand('   Manual resolution required'));
+    messageParts.push(STYLES.warning(`WARNING: Could not switch to existing branch`));
+    messageParts.push(STYLES.muted(`   Error: ${formatErrorMessage(checkoutError)}`));
+    messageParts.push(STYLES.muted('   Manual resolution required'));
     // Don't throw - allow ticket move since branch exists
   }
 }
@@ -251,18 +247,18 @@ async function handleMultipleExistingBranches(
   gitService: GitService,
   messageParts: string[]
 ): Promise<void> {
-  messageParts.push(FLOW_STYLES.gitWarning('INFO: Found multiple branches:'));
+  messageParts.push(STYLES.warning('INFO: Found multiple branches:'));
   existingBranches.forEach(branch => {
-    messageParts.push(FLOW_STYLES.gitCommand(`   - ${branch}`));
+    messageParts.push(STYLES.muted(`   - ${branch}`));
   });
   
   try {
     await gitService.checkout(existingBranches[0]);
-    messageParts.push(FLOW_STYLES.gitSuccess(`SUCCESS: Switched to: ${existingBranches[0]}`));
+    messageParts.push(STYLES.success(`SUCCESS: Switched to: ${existingBranches[0]}`));
   } catch (checkoutError) {
-    messageParts.push(FLOW_STYLES.gitWarning('WARNING: Could not switch automatically'));
-    messageParts.push(FLOW_STYLES.gitCommand('   Choose manually:'));
-    messageParts.push(FLOW_STYLES.gitCommand(`   git checkout ${existingBranches[0]}`));
+    messageParts.push(STYLES.warning('WARNING: Could not switch automatically'));
+    messageParts.push(STYLES.muted('   Choose manually:'));
+    messageParts.push(STYLES.muted(`   git checkout ${existingBranches[0]}`));
   }
 }
 
@@ -279,9 +275,9 @@ async function handleNewBranchCreation(
     await gitService.createBranch(newBranchName);
     await gitService.checkout(newBranchName);
     
-    messageParts.push(FLOW_STYLES.gitSuccess(`SUCCESS: Created and switched to branch: ${newBranchName}`));
+    messageParts.push(STYLES.success(`SUCCESS: Created and switched to branch: ${newBranchName}`));
     if (currentBranch !== 'main' && currentBranch !== 'master') {
-      messageParts.push(FLOW_STYLES.gitCommand(`   Created from branch: ${currentBranch}`));
+      messageParts.push(STYLES.muted(`   Created from branch: ${currentBranch}`));
     }
   } catch (createError) {
     // Throw error to prevent ticket move

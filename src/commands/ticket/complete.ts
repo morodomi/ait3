@@ -1,9 +1,6 @@
 import type { CLIResult, Services, CompleteTicketArgs } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError, TicketNotStartedError, TicketAlreadyCompletedError } from '../../common/errors.js';
-import chalk from 'chalk';
-
-// Force colors for consistent output in tests
-chalk.level = 3;
+import { STYLES } from '../../common/styles.js';
 
 /**
  * Complete a ticket by moving it from 'doing' to 'done' status
@@ -31,10 +28,10 @@ export async function completeTicket(
 
     // Generate formatted success output
     const messageParts = [
-      chalk.green(`SUCCESS: Completed ticket #${id}`) + (ticket ? `: ${ticketTitle}` : ''),
+      STYLES.success(`SUCCESS: Completed ticket #${id}`) + (ticket ? `: ${ticketTitle}` : ''),
       '',
-      chalk.gray('   Status updated: ') + chalk.yellow('doing') + chalk.gray(' → ') + chalk.green('done'),
-      chalk.gray('   Moved from doing → done'),
+      STYLES.muted('   Status updated: ') + STYLES.warning('doing') + STYLES.muted(' → ') + STYLES.success('done'),
+      STYLES.muted('   Moved from doing → done'),
       ''
     ];
 

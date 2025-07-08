@@ -1,7 +1,7 @@
 import type { CreateTicketArgs, Services, CLIResult } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
 import { TICKET_CONSTANTS } from '../../common/constants.js';
-import chalk from 'chalk';
+import { STYLES } from '../../common/styles.js';
 
 export async function createTicket(
   args: CreateTicketArgs,
@@ -41,25 +41,25 @@ export async function createTicket(
 
     // Create user-friendly colored output
     const messageParts = [
-      chalk.green('SUCCESS: Ticket created successfully'),
-      chalk.white(`   ID: #${ticket.id}`),
-      chalk.white(`   Title: ${ticket.title}`),
-      chalk.white(`   Priority: ${ticket.priority}`),
-      chalk.white(`   Status: ${ticket.status}`)
+      STYLES.success('SUCCESS: Ticket created successfully'),
+      `   ID: #${ticket.id}`,
+      `   Title: ${ticket.title}`,
+      `   Priority: ${ticket.priority}`,
+      `   Status: ${ticket.status}`
     ];
 
     // Add optional fields only if they exist
     if (ticket.assignee) {
-      messageParts.push(chalk.white(`   Assignee: ${ticket.assignee}`));
+      messageParts.push(`   Assignee: ${ticket.assignee}`);
     }
 
     if (ticket.labels.length > 0) {
-      messageParts.push(chalk.white(`   Labels: ${ticket.labels.join(', ')}`));
+      messageParts.push(`   Labels: ${ticket.labels.join(', ')}`);
     }
 
     // Add file location
     messageParts.push(
-      chalk.gray(`   Location: .tickets/${ticket.status}/${ticket.id}-${slug}.md`)
+      STYLES.muted(`   Location: .tickets/${ticket.status}/${ticket.id}-${slug}.md`)
     );
 
     return {

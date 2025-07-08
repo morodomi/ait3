@@ -8,7 +8,7 @@ import {
   getPriorityColor, 
   createTableHeader 
 } from '../../common/table-utils.js';
-import chalk from 'chalk';
+import { STYLES } from '../../common/styles.js';
 
 export async function listTickets(
   args: ListTicketsArgs,
@@ -33,7 +33,7 @@ export async function listTickets(
     if (tickets.length === 0) {
       return {
         success: true,
-        message: chalk.yellow('LIST: No tickets found'),
+        message: STYLES.warning('LIST: No tickets found'),
         data: tickets
       };
     }
@@ -47,7 +47,7 @@ export async function listTickets(
     ];
 
     const messageParts = [
-      chalk.green(`LIST: Found ${tickets.length} tickets`),
+      STYLES.success(`LIST: Found ${tickets.length} tickets`),
       '',
       ...createTableHeader(columns)
     ];
@@ -60,8 +60,8 @@ export async function listTickets(
       const priorityColor = getPriorityColor(ticket.priority);
       
       const row = 
-        chalk.white(padString(`#${ticket.id}`, 6)) +
-        chalk.white(padString(truncateString(ticket.title, 38), 40)) +
+        padString(`#${ticket.id}`, 6) +
+        padString(truncateString(ticket.title, 38), 40) +
         statusColor(padString(ticket.status, 10)) +
         priorityColor(padString(ticket.priority, 10));
       

@@ -2,10 +2,7 @@ import type { ShowTicketArgs, Services, CLIResult } from '../../common/types.js'
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { getStatusColor, getPriorityColor } from '../../common/table-utils.js';
 import { TimeUtils, IDUtils } from '../../common/utils.js';
-import chalk from 'chalk';
-
-// Force colors for consistent output in tests
-chalk.level = 3;
+import { STYLES } from '../../common/styles.js';
 
 export async function showTicket(
   args: ShowTicketArgs,
@@ -30,11 +27,11 @@ export async function showTicket(
     // Generate formatted output
     const messageParts = [
       // Header
-      chalk.bold(`Ticket #${ticket.id}: ${ticket.title}`),
+      STYLES.bold(`Ticket #${ticket.id}: ${ticket.title}`),
       '',
       
       // Metadata section
-      chalk.bold('Details:'),
+      STYLES.bold('Details:'),
       formatMetadataField('Status', ticket.status, getStatusColor(ticket.status)),
       formatMetadataField('Priority', ticket.priority, getPriorityColor(ticket.priority)),
       formatMetadataField('Created', TimeUtils.formatDate(ticket.created)),
@@ -53,11 +50,11 @@ export async function showTicket(
 
     // Separator
     messageParts.push('');
-    messageParts.push(chalk.gray('────────────────────────────────────'));
+    messageParts.push(STYLES.muted('────────────────────────────────────'));
     
     // Description section
     messageParts.push('');
-    messageParts.push(chalk.bold('Description:'));
+    messageParts.push(STYLES.bold('Description:'));
     messageParts.push('');
 
     const description = ticket.description || '(No description provided)';
@@ -82,6 +79,6 @@ export async function showTicket(
 
 // Helper functions
 function formatMetadataField(label: string, value: string, colorFn?: (text: string) => string): string {
-  const formattedValue = colorFn ? colorFn(value) : chalk.white(value);
-  return `   ${chalk.gray(label + ':')} ${formattedValue}`;
+  const formattedValue = colorFn ? colorFn(value) : value;
+  return `   ${STYLES.muted(label + ':')} ${formattedValue}`;
 }

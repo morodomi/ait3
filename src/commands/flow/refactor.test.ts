@@ -190,7 +190,7 @@ describe('refactorPhase Pure Function', () => {
       const result = await refactorPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Next Action:');
+      expect(result.message).toContain('Next Action');
       expect(result.message).toContain('Review analysis:');
       expect(result.message).toContain('Apply improvements:');
       expect(result.message).toContain('Verify 100% test pass:');

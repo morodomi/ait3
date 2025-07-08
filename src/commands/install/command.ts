@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import type { CLIResult } from '../../common/types.js';
 import { join, dirname } from 'path';
 import { mkdir, writeFile, access } from 'fs/promises';
-import { FLOW_STYLES } from '../../common/styles.js';
+import { STYLES } from '../../common/styles.js';
 import { ait3Template } from '../../assets/commands/ait3.js';
 interface InstallCommandArgs {
   name?: string;
@@ -32,7 +32,7 @@ export async function installCommand(
     // Invalid command name
     return {
       success: false,
-      message: `${FLOW_STYLES.error('ERROR: Unknown command')}: ${name}\n${FLOW_STYLES.info('Available commands')}: ${Object.keys(commandGuides).join(', ')}`
+      message: `${STYLES.danger('ERROR: Unknown command')}: ${name}\n${STYLES.info('Available commands')}: ${Object.keys(commandGuides).join(', ')}`
     };
   }
   
@@ -43,7 +43,7 @@ export async function installCommand(
   
   // Show intent
   if (!name || name === 'all') {
-    messages.push(`${FLOW_STYLES.info('PACKAGE: Installing all command guides')}...`);
+    messages.push(`${STYLES.info('PACKAGE: Installing all command guides')}...`);
   }
   
   // Process each file
@@ -57,7 +57,7 @@ export async function installCommand(
         await access(targetDir);
       } catch {
         await mkdir(targetDir, { recursive: true });
-        messages.push(`${FLOW_STYLES.success('SUCCESS:')} Created directory: ${FLOW_STYLES.path(targetDir)}`);
+        messages.push(`${STYLES.success('SUCCESS:')} Created directory: ${STYLES.info(targetDir)}`);
       }
       
       // Check if file exists
@@ -67,10 +67,10 @@ export async function installCommand(
         hasExistingFile = true;
         if (!force) {
           shouldWrite = false;
-          messages.push(`${FLOW_STYLES.warning('⚠')} Skipped: ${FLOW_STYLES.path(targetPath)} already exists (use --force to overwrite)`);
+          messages.push(`${STYLES.warning('⚠')} Skipped: ${STYLES.info(targetPath)} already exists (use --force to overwrite)`);
           skippedCount++;
         } else {
-          messages.push(`${FLOW_STYLES.warning('⚠')} Overwriting existing file: ${FLOW_STYLES.path(targetPath)}`);
+          messages.push(`${STYLES.warning('⚠')} Overwriting existing file: ${STYLES.info(targetPath)}`);
         }
       } catch {
         // File doesn't exist, good to proceed
@@ -82,14 +82,14 @@ export async function installCommand(
         
         // Write file
         await writeFile(targetPath, templateContent, 'utf-8');
-        messages.push(`${FLOW_STYLES.success('SUCCESS:')} Installed: ${FLOW_STYLES.path(targetPath)}`);
+        messages.push(`${STYLES.success('SUCCESS:')} Installed: ${STYLES.info(targetPath)}`);
         installedCount++;
       }
       
     } catch (error) {
       return {
         success: false,
-        message: `${FLOW_STYLES.error('ERROR: Failed to create')}: ${targetPath}\n${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `${STYLES.danger('ERROR: Failed to create')}: ${targetPath}\n${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
@@ -104,7 +104,7 @@ export async function installCommand(
   
   // Summary
   messages.push('');
-  messages.push(`${FLOW_STYLES.success('SUCCESS: Installation complete')}: ${installedCount} file(s) installed${skippedCount > 0 ? `, ${skippedCount} skipped` : ''}`);
+  messages.push(`${STYLES.success('SUCCESS: Installation complete')}: ${installedCount} file(s) installed${skippedCount > 0 ? `, ${skippedCount} skipped` : ''}`);
   
   return {
     success: true,

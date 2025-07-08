@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import { STYLES } from './styles.js';
 
 /**
  * Utility functions for formatting table output in CLI commands
@@ -15,28 +15,28 @@ export function truncateString(str: string, maxLength: number): string {
 export function getStatusColor(status: string): (text: string) => string {
   switch (status) {
     case 'todo':
-      return chalk.blue;
+      return STYLES.info;
     case 'doing':
-      return chalk.yellow;
+      return STYLES.warning;
     case 'done':
-      return chalk.green;
+      return STYLES.success;
     default:
-      return chalk.white;
+      return (text: string) => text; // No styling
   }
 }
 
 export function getPriorityColor(priority: string): (text: string) => string {
   switch (priority) {
     case 'critical':
-      return chalk.red.bold;
+      return (text: string) => STYLES.bold(STYLES.danger(text));
     case 'high':
-      return chalk.red;
+      return STYLES.danger;
     case 'medium':
-      return chalk.yellow;
+      return STYLES.warning;
     case 'low':
-      return chalk.gray;
+      return STYLES.muted;
     default:
-      return chalk.white;
+      return (text: string) => text; // No styling
   }
 }
 
@@ -50,7 +50,7 @@ export function createTableHeader(columns: Array<{ title: string; width: number 
   );
 
   return [
-    chalk.bold(header),
-    chalk.gray(separator)
+    STYLES.bold(header),
+    STYLES.muted(separator)
   ];
 }

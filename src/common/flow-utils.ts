@@ -1,5 +1,5 @@
 import { SlugUtils } from './utils.js';
-import { FLOW_STYLES } from './styles.js';
+import { STYLES } from './styles.js';
 
 /**
  * Common utilities for flow commands to reduce code duplication
@@ -41,7 +41,7 @@ export function generateCommitMessage(phase: FlowPhase, ticketId: string, title:
  */
 export function formatTicketHeader(ticketId: string, title: string, phase: string, status: TicketStatus = 'doing'): string {
   const ticketLocation = getTicketLocation(ticketId, title, status);
-  return `${FLOW_STYLES.title(phase)} for Ticket #${ticketId}: ${title}\n${FLOW_STYLES.info('Location')}: ${FLOW_STYLES.path(ticketLocation)}`;
+  return `${STYLES.bold(phase)} for Ticket #${ticketId}: ${title}\n${STYLES.info('Location')}: ${STYLES.info(ticketLocation)}`;
 }
 
 /**
@@ -49,5 +49,5 @@ export function formatTicketHeader(ticketId: string, title: string, phase: strin
  */
 export function formatCommitAction(phase: FlowPhase, ticketId: string, title: string): string {
   const commitMessage = generateCommitMessage(phase, ticketId, title);
-  return `└─ Commit ${phase}:\n   └─ ${FLOW_STYLES.code(`git commit -m "${commitMessage}"`)}`;
+  return `└─ Commit ${phase}:\n   └─ ${STYLES.code(`git commit -m "${commitMessage}"`)}`;
 }

@@ -1,6 +1,6 @@
 import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
-import { FLOW_STYLES } from '../../common/styles.js';
+import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';
 import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
@@ -74,12 +74,12 @@ export async function refactorPhase(
     return {
       success: false,
       message: `
-${FLOW_STYLES.error('ERROR: Analysis failed')}
+${STYLES.danger('ERROR: Analysis failed')}
 
-${FLOW_STYLES.warning('WARNING:  Error')}: Unable to analyze project structure
-${FLOW_STYLES.dim('Check your project structure and ensure source files are accessible')}
+${STYLES.warning('WARNING:  Error')}: Unable to analyze project structure
+${STYLES.muted('Check your project structure and ensure source files are accessible')}
 
-${FLOW_STYLES.info('TIP: Tip')}: Make sure you're running from the project root directory
+${STYLES.info('TIP: Tip')}: Make sure you're running from the project root directory
 `
     };
   }
@@ -197,8 +197,8 @@ function formatAnalysisOutput(
   sections.push(`${formatTicketHeader(ticketId, ticketTitle, 'REFACTOR Phase')}`);
   
   // Claude Code Instructions
-  sections.push(`\n${FLOW_STYLES.section('Claude Code Instructions')}:
-1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
+  sections.push(`\n${STYLES.bold('Claude Code Instructions')}:
+1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Run quality checks (project-specific):
    - Linter (e.g., eslint, ruff, rubocop)
    - Formatter (e.g., prettier, black, rustfmt)
@@ -216,7 +216,7 @@ function formatAnalysisOutput(
    - Suggest creating tickets
    - Human decides whether to create
 
-${FLOW_STYLES.warning('CONSTRAINT: Requirement')}: Maintain 100% test pass rate`);
+${STYLES.warning('CONSTRAINT: Requirement')}: Maintain 100% test pass rate`);
   
   // Focus indicator
   if (focusAreas) {
@@ -225,7 +225,7 @@ ${FLOW_STYLES.warning('CONSTRAINT: Requirement')}: Maintain 100% test pass rate`
 
   // Code Quality Summary
   sections.push(`
-${FLOW_STYLES.title('STATS: Code Quality Summary')}:
+${STYLES.bold('STATS: Code Quality Summary')}:
 ├─ Files analyzed: ${analysis.filesAnalyzed}
 ├─ Improvement opportunities: ${analysis.improvements}
 ├─ Estimated effort: ${analysis.estimatedEffort}
@@ -233,40 +233,40 @@ ${FLOW_STYLES.title('STATS: Code Quality Summary')}:
 
   // Limited analysis message if no files
   if (analysis.filesAnalyzed === 0) {
-    sections.push(`\n${FLOW_STYLES.warning('WARNING:  Limited analysis')} - No source files found in project`);
+    sections.push(`\n${STYLES.warning('WARNING:  Limited analysis')} - No source files found in project`);
   }
 
   // Refactoring Suggestions
-  sections.push(`\n${FLOW_STYLES.title('LIST: Refactoring Suggestions')}:`);
+  sections.push(`\n${STYLES.bold('LIST: Refactoring Suggestions')}:`);
 
   // Code Duplication
   if (!focusAreas || focusAreas.includes('duplication')) {
-    sections.push(`\n${FLOW_STYLES.info('## 1. Code Duplication')} (${analysis.duplication.length} issues)`);
+    sections.push(`\n${STYLES.info('## 1. Code Duplication')} (${analysis.duplication.length} issues)`);
     if (analysis.duplication.length > 0) {
       analysis.duplication.forEach(dup => {
         sections.push(`- ${dup.description} in:`);
         dup.locations.forEach(loc => {
-          sections.push(`  ${FLOW_STYLES.path(`• ${loc}`)}`);
+          sections.push(`  ${STYLES.info(`• ${loc}`)}`);
         });
-        sections.push(`  ${FLOW_STYLES.success('→')} ${dup.suggestion}`);
+        sections.push(`  ${STYLES.success('→')} ${dup.suggestion}`);
       });
     }
   }
 
   // Mock Implementations
   if (!focusAreas || focusAreas.includes('mocks')) {
-    sections.push(`\n${FLOW_STYLES.info('## 2. Mock Implementations')} (${analysis.mocks.length} found)`);
+    sections.push(`\n${STYLES.info('## 2. Mock Implementations')} (${analysis.mocks.length} found)`);
     if (analysis.mocks.length > 0) {
       analysis.mocks.forEach(mock => {
-        sections.push(`- ${FLOW_STYLES.code(mock.name)} at ${FLOW_STYLES.path(mock.location)}`);
-        sections.push(`  ${FLOW_STYLES.success('→')} Create ticket: "${mock.name.replace('Service', ' Service').trim()}"`);
+        sections.push(`- ${STYLES.code(mock.name)} at ${STYLES.info(mock.location)}`);
+        sections.push(`  ${STYLES.success('→')} Create ticket: "${mock.name.replace('Service', ' Service').trim()}"`);
       });
     }
   }
 
   // Type Improvements
   if (!focusAreas || focusAreas.includes('types')) {
-    sections.push(`\n${FLOW_STYLES.info('## 3. Type Improvements')} (${analysis.types.reduce((sum, t) => sum + t.count, 0)} suggestions)`);
+    sections.push(`\n${STYLES.info('## 3. Type Improvements')} (${analysis.types.reduce((sum, t) => sum + t.count, 0)} suggestions)`);
     if (analysis.types.length > 0) {
       analysis.types.forEach(type => {
         sections.push(`- ${type.issue} in ${type.count} functions`);
@@ -276,33 +276,33 @@ ${FLOW_STYLES.title('STATS: Code Quality Summary')}:
 
   // Code Organization
   if (!focusAreas || focusAreas.includes('organization')) {
-    sections.push(`\n${FLOW_STYLES.info('## 4. Code Organization')}`);
+    sections.push(`\n${STYLES.info('## 4. Code Organization')}`);
     if (analysis.organization.length > 0) {
       analysis.organization.forEach(org => {
         sections.push(`- ${org.issue}`);
-        sections.push(`  ${FLOW_STYLES.success('→')} ${org.suggestion}`);
+        sections.push(`  ${STYLES.success('→')} ${org.suggestion}`);
       });
     }
   }
 
   // Verbose mode additions
   if (verbose) {
-    sections.push(`\n${FLOW_STYLES.title('LIST: Detailed Analysis')}:`);
-    sections.push(`├─ ${FLOW_STYLES.info('Line-by-line analysis')}: Available`);
-    sections.push(`├─ ${FLOW_STYLES.info('Complexity metrics')}: Calculated`);
-    sections.push(`└─ ${FLOW_STYLES.info('Performance hints')}: Identified`);
+    sections.push(`\n${STYLES.bold('LIST: Detailed Analysis')}:`);
+    sections.push(`├─ ${STYLES.info('Line-by-line analysis')}: Available`);
+    sections.push(`├─ ${STYLES.info('Complexity metrics')}: Calculated`);
+    sections.push(`└─ ${STYLES.info('Performance hints')}: Identified`);
   }
 
   // Mock ticket creation commands
   if (analysis.mocks.length > 0) {
-    sections.push(`\n${FLOW_STYLES.dim('# Suggested ticket creation commands:')}`);
+    sections.push(`\n${STYLES.muted('# Suggested ticket creation commands:')}`);
     analysis.mocks.forEach(mock => {
-      sections.push(FLOW_STYLES.dim(mock.ticketSuggestion));
+      sections.push(STYLES.muted(mock.ticketSuggestion));
     });
   }
 
   // Next Action section
-  sections.push(`\n${FLOW_STYLES.info('Next Action')}:
+  sections.push(`\n${STYLES.info('Next Action')}:
 ├─ Review analysis:
 │  └─ Examine refactor opportunities
 ├─ Apply improvements:
@@ -312,10 +312,10 @@ ${FLOW_STYLES.title('STATS: Code Quality Summary')}:
 ├─ Verify 100% test pass:
 │  └─ Ensure refactoring doesn't break tests
 └─ Commit refactoring:
-   └─ ${FLOW_STYLES.code(`git commit -m "${generateCommitMessage('refactor', ticketId, ticketTitle)}"`)}`);
+   └─ ${STYLES.code(`git commit -m "${generateCommitMessage('refactor', ticketId, ticketTitle)}"`)}`);
 
   // Next phase hint
-  sections.push(`\n${FLOW_STYLES.dim('After refactoring: ait3 flow squash')}`);
+  sections.push(`\n${STYLES.muted('After refactoring: ait3 flow squash')}`);
 
   return sections.join('\n');
 }

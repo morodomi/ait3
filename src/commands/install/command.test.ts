@@ -92,7 +92,8 @@ describe('installCommand', () => {
       
       expect(result.success).toBe(false);
       expect(result.message).toContain('Unknown command');
-      expect(result.message).toContain('Available commands: ait3');
+      expect(result.message).toContain('Available commands');
+      expect(result.message).toContain('ait3');
     });
   });
 
