@@ -1,38 +1,38 @@
-# AIT³ - AI-Driven Development Platform
+export const ait3Template = `# AIT³ - AI-Driven Development Platform
 
 AIT³ implements a disciplined AI + Ticket + Test + Tool driven development workflow. Each phase must be completed before proceeding to the next.
 
 ## Core Commands
 
 ### Ticket Management
-```bash
+\`\`\`bash
 ait3 ticket create "Feature name"     # Create new ticket
 ait3 ticket list                      # List all tickets
 ait3 ticket start <id>                # Start working on ticket
 ait3 ticket complete <id>             # Mark ticket as done
 ait3 ticket show <id>                 # View ticket details
-```
+\`\`\`
 
 ### AIT³ Workflow (MANDATORY SEQUENCE)
 
 #### 1. PLANNING Phase - Socratic Dialogue
-```bash
+\`\`\`bash
 ait3 flow plan <featureName> [options]
-```
+\`\`\`
 **Purpose**: Validate approach through dialectical reasoning BEFORE any implementation.
 
 **Process**:
 1. Claude proposes implementation approach with rationale
-2. Challenge with Gemini: `gemini -p "Critique this approach: [details]"`
+2. Challenge with Gemini: \`gemini -p "Critique this approach: [details]"\`
 3. Human synthesizes competing perspectives and decides
 4. Document decision reasoning in commit message
 
 **IMPORTANT**: Never skip this phase. Failed refutations strengthen confidence.
 
 #### 2. RED Phase - Test Creation
-```bash
+\`\`\`bash
 ait3 flow red <ticketId>
-```
+\`\`\`
 **Purpose**: Create comprehensive failing tests that define expected behavior.
 
 **Requirements**:
@@ -42,9 +42,9 @@ ait3 flow red <ticketId>
 - Tests drive implementation, not vice versa
 
 #### 3. GREEN Phase - Implementation
-```bash
+\`\`\`bash
 ait3 flow green <ticketId>
-```
+\`\`\`
 **Purpose**: Write minimal code to achieve 100% test pass rate.
 
 **Constraints**:
@@ -54,9 +54,9 @@ ait3 flow green <ticketId>
 - Create tickets for mock implementations requiring real code
 
 #### 4. REFACTOR Phase - Optimization
-```bash
+\`\`\`bash
 ait3 flow refactor <ticketId>
-```
+\`\`\`
 **Purpose**: Improve code quality while maintaining 100% test coverage.
 
 **Focus Areas**:
@@ -67,9 +67,9 @@ ait3 flow refactor <ticketId>
 - Enhance code readability
 
 #### 5. SQUASH Phase - Git Integration
-```bash
+\`\`\`bash
 ait3 flow squash <ticketId>
-```
+\`\`\`
 **Purpose**: Provide Git command suggestions for clean commit history.
 
 **Output**:
@@ -100,7 +100,7 @@ Wisdom emerges through questioning and dialogue. Embrace "I may know nothing" as
 
 ## Workflow Example
 
-```bash
+\`\`\`bash
 # 1. Create and start ticket
 ait3 ticket create "Add user authentication"
 ait3 ticket start 0001
@@ -133,7 +133,7 @@ ait3 flow squash 0001
 
 # 7. Complete ticket
 ait3 ticket complete 0001
-```
+\`\`\`
 
 ## Critical Rules
 
@@ -160,3 +160,4 @@ ait3 ticket complete 0001
 - Language-agnostic principles
 
 Remember: The goal is thoughtful, evidence-based development through structured collaboration between human wisdom and AI capabilities.
+`;

@@ -193,10 +193,10 @@ ait3 generate interactive                     # Interactive generation
 
 #### 🛠️ Setup & Installation
 ```bash
-ait3 install claude                           # Install .claude/commands files
+ait3 install command ait3                     # Install .claude/commands/ait3
+ait3 install command orchestrator             # Install orchestrator guide
+ait3 install command                          # Install all command guides
 ait3 install mcp                              # Install MCP server configuration
-ait3 install commands                         # Install command templates
-ait3 install all                              # Install all components
 ```
 
 #### 📊 Status & Monitoring
@@ -493,11 +493,15 @@ Implement comprehensive user authentication system with OAuth2 support.
 
 **Setup Command**:
 ```bash
-ait3 install all
-# Installs:
+ait3 install command
+# Installs all command guides:
 # - .claude/commands/ait3 (AIT³ CLI commands guide)
 # - .claude/commands/gemini (Gemini large codebase analysis guide)
-# - .claude/mcp_settings.json (MCP server configuration)
+# - .claude/commands/orchestrator (Orchestrator guide - future)
+
+ait3 install mcp
+# Installs MCP server configuration:
+# - .claude/mcp_settings.json
 ```
 
 ### 📋 .claude/commands/ait3
@@ -855,7 +859,8 @@ npm install -g @morodomi/ait3
 
 # Initialize in existing project
 cd your-project
-ait3 install all
+ait3 install command    # Install Claude command guides
+ait3 install mcp        # Install MCP server
 
 # Generate CLAUDE.md for Claude Code
 ait3 generate claude-md
@@ -872,7 +877,8 @@ ait3 flow plan "project-setup"
 ait3 analyze project --comprehensive
 
 # Setup complete integration
-ait3 install all
+ait3 install command    # Install command guides
+ait3 install mcp        # Install MCP server
 
 # Setup ticket system
 ait3 ticket create "Integrate AIT³ workflow"
@@ -949,7 +955,8 @@ ait3 analyze project --detailed
 ait3 analyze structure --dependencies
 
 # 2. Setup complete integration
-ait3 install all
+ait3 install command    # Install command guides
+ait3 install mcp        # Install MCP server
 # → Installs .claude/commands files
 # → Configures MCP server
 # → Sets up local ticket system
