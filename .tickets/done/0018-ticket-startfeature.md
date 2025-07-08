@@ -1,15 +1,16 @@
 ---
 id: 0018
 title: ticket startコマンドでfeatureブランチ自動作成
-status: doing
+status: done
 priority: high
 created: '2025-07-08T01:59:10.281Z'
-updated: '2025-07-08T02:18:13.982Z'
+updated: '2025-07-08T03:06:55.316Z'
 labels:
   - enhancement
   - git
   - workflow
 started: '2025-07-08T02:18:13.982Z'
+completed: '2025-07-08T03:06:55.316Z'
 ---
 # Ticket #0018: ticket startコマンドでfeatureブランチ自動作成
 
