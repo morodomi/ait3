@@ -340,10 +340,10 @@ ait3 flow squash 123 --pr           # Include PR creation commands
 ait3 flow squash 123 --no-squash    # Skip squash, show merge only
 ait3 flow squash 123 --dry-run      # Preview suggestions
 
-# Human execution required:
-# - Review suggested commands
-# - Execute manually with adjustments
-# - Complete ticket: ait3 ticket complete 123
+# Command behavior:
+# - Auto-completes ticket if not in 'done' status
+# - Shows Git command suggestions for squashing
+# - Human executes Git commands manually
 ```
 
 ## 🤖 AI Integration Patterns

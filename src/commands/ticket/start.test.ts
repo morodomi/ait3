@@ -157,7 +157,10 @@ describe('startTicket pure function', () => {
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('✅ Started ticket #0001');
-      expect(result.message).toContain('Moved from todo → doing');
+      expect(result.message).toContain('Status:');
+      expect(result.message).toContain('doing');
+      expect(result.message).toContain('Location:');
+      expect(result.message).toContain('.tickets/doing/0001-');
     });
 
     it('should provide helpful success message', async () => {
@@ -166,7 +169,8 @@ describe('startTicket pure function', () => {
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('Started ticket #0042');
-      expect(result.message).toContain('Status updated');
+      expect(result.message).toContain('Status:');
+      expect(result.message).toContain('doing');
     });
   });
 
@@ -332,7 +336,8 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('todo → doing');
+      expect(result.message).toContain('Status:');
+      expect(result.message).toContain('doing');
     });
 
     it('should provide user-friendly messages', async () => {
@@ -444,12 +449,7 @@ describe('startTicket pure function', () => {
       mockGitService.setCreateBranchError(new Error('Permission denied'));
       const args: StartTicketArgs = { id: '0001' };
       
-      const result = await startTicket(args, services);
-      
-      expect(result.success).toBe(true);
-      expect(result.message).toContain('⚠️  Could not create branch automatically');
-      expect(result.message).toContain('Manual Git steps');
-      expect(result.message).toContain('Error: Permission denied');
+      await expect(startTicket(args, services)).rejects.toThrow('Failed to create branch');
     });
 
     it('should handle checkout failure for existing branch', async () => {
@@ -493,8 +493,55 @@ describe('startTicket pure function', () => {
       const result = await startTicket(args, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Next: ait3 flow plan');
-      expect(result.message).toContain('Start planning phase for this ticket');
+      expect(result.message).toContain('Next Action:');
+      expect(result.message).toContain('ait3 flow plan 0001');
+    });
+  });
+
+  describe('branch creation before ticket move', () => {
+    it('should NOT move ticket if branch creation fails', async () => {
+      mockGitService.setCreateBranchError(new Error('Permission denied'));
+      const args: StartTicketArgs = { id: '0001' };
+      
+      // This test currently fails - documenting expected behavior
+      // Expected: Branch creation failure should prevent ticket move
+      // Current: Ticket is moved even when branch creation fails
+      
+      await expect(async () => {
+        const result = await startTicket(args, services);
+        // Should either throw error or return success:false
+        expect(result.success).toBe(false);
+      }).rejects.toThrow();
+      
+      // Verify ticket status remains 'todo'
+      const ticket = await mockTicketService.getTicket('0001');
+      expect(ticket?.status).toBe('todo'); // Should NOT be 'doing'
+    });
+
+    it('should move ticket ONLY after successful branch creation', async () => {
+      const args: StartTicketArgs = { id: '0001' };
+      
+      // This test documents the correct order of operations
+      const result = await startTicket(args, services);
+      
+      expect(result.success).toBe(true);
+      // Verify ticket was successfully started after branch creation
+      expect(result.message).toContain('Created and switched to branch');
+      expect(result.message).toContain('Started ticket #0001');
+    });
+
+    it('should handle branch checkout failure without moving ticket', async () => {
+      mockGitService.setCheckoutError(new Error('Cannot checkout'));
+      const args: StartTicketArgs = { id: '0001' };
+      
+      // Expected: Checkout failure should prevent ticket move
+      await expect(async () => {
+        await startTicket(args, services);
+      }).rejects.toThrow();
+      
+      // Verify ticket remains in todo
+      const ticket = await mockTicketService.getTicket('0001');
+      expect(ticket?.status).toBe('todo');
     });
   });
 

@@ -56,9 +56,9 @@ create → start → plan → red → green → refactor → squash(+complete) �
 | コマンド | ファイル操作 | Git操作 |
 |---------|------------|---------|
 | `ticket create` | `.tickets/todo/`に作成 | - |
-| `ticket start` | `todo→doing`に移動 | featureブランチ作成（推奨実装） |
+| `ticket start` | `todo→doing`に移動 | featureブランチ作成 |
 | `ticket complete` | `doing→done`に移動 | - |
-| `flow squash` | なし（提示のみ） | コミット整理の手順提示 |
+| `flow squash` | 自動complete（必要時） | コミット整理の手順提示 |
 
 ### 完全なワークフロー手順
 
@@ -117,7 +117,7 @@ ait3 flow squash 001
 | Actor | 責任 | 実行内容 |
 |-------|------|---------|
 | **人間** | 作業開始判断 | 優先順位の確認 |
-| **CLI** | 環境準備 | チケット移動（`todo→doing`）、ブランチ作成 |
+| **CLI** | 環境準備 | ブランチ作成、チケット移動（`todo→doing`） |
 | **Claude Code** | - | - |
 | **Gemini** | - | - |
 
@@ -184,11 +184,11 @@ git checkout -b feature/001-{ticket-slug}
 | Actor | 責任 | 実行内容 |
 |-------|------|---------|
 | **人間** | 実行判断、PR/merge決定 | 最終確認とGitコマンド実行 |
-| **CLI** | コマンド提示 | Git整理手順の提示（ファイル操作なし） |
+| **CLI** | コマンド提示、自動complete | Git整理手順の提示、必要時に自動ticket complete |
 | **Claude Code** | コミットメッセージ作成 | 変更内容の要約と説明 |
 | **Gemini** | - | - |
 
-**Note**: `flow squash`は提示のみ。実際のticket completeは別途実行
+**Note**: `flow squash`はチケットがdone状態でない場合、自動的にticket completeを実行
 
 ## 📋 各フェーズの詳細な提示内容
 
@@ -214,141 +214,106 @@ git checkout -b feature/001-{ticket-slug}
 ```
 ✅ Started ticket #001: {ticket.title}
 
-📋 Status: todo → doing
-🌿 Branch: feature/001-{ticket-slug} (future: auto-create)
+📊 Details:
+   Status: doing
+   Location: .tickets/doing/001-{ticket-slug}.md
 
-🚀 Next Step:
-$ ait3 flow plan
+Next Action:
+└─ Run: ait3 flow plan 001
 ```
 
 ### 🎭 PLAN Phase 提示内容
 ```
 🎭 PLANNING Phase for Ticket #001: {ticket.title}
+📍 Ticket location: .tickets/doing/001-{ticket-slug}.md
 
-🧠 Claude Code Instructions:
-1. Read ticket: .tickets/doing/001-{ticket-slug}.md
-2. Analyze and propose:
-   ├─ Purpose & Goals
-   ├─ Implementation approach
-   ├─ Test scenarios
-   ├─ Edge cases
-   ├─ Technical considerations
-   └─ Dependencies & Integration points
-
-3. (Optional) Gemini analysis:
-   $ gemini -p "@src/ @CLAUDE.md @.tickets/doing/001-*.md Critique this approach"
-   Note: @src/ includes relevant source files. For full codebase use @./
-
-4. Present proposal for human decision
-
-⚡ After human approval:
-$ ait3 flow red
-Note: From RED to SQUASH, human intervention is optional
+Next Action:
+├─ Analyze project context:
+│  ├─ Read CLAUDE.md for project conventions
+│  ├─ Read ticket file for requirements
+│  └─ Analyze relevant source files
+├─ Design implementation approach
+├─ Consult Gemini for critical analysis:
+│  └─ gemini -p "@src/ @CLAUDE.md @.tickets/doing/001-*.md Critique this approach"
+├─ Update ticket file with your plan:
+│  └─ Add "## Design (PLANNING Phase Output)" section
+├─ Commit plan: git add . && git commit -m "planning(#001): design approach"
+└─ Run: ait3 flow red 001
 ```
 
 ### 🔴 RED Phase 提示内容
 ```
 🔴 RED Phase for Ticket #001: {ticket.title}
+📍 Ticket location: .tickets/doing/001-{ticket-slug}.md
 
-🧠 Claude Code Instructions:
-1. Read ticket: .tickets/doing/001-{ticket-slug}.md
-2. Create comprehensive test cases:
-   ├─ Test behavior, not implementation
-   ├─ Cover all acceptance criteria
-   ├─ Include edge cases & error scenarios
-   └─ Ensure 0% pass rate initially
-
-3. Test coverage check:
-   - Not required to be 100%
-   - Must be sufficient for the feature
-   - Verify all critical paths covered
-
-📍 Test Locations:
-├─ Unit: src/commands/{feature}.test.ts
-└─ Integration: tests/integration/{feature}.test.ts
-
-⚡ After test creation:
-$ ait3 flow green
+Next Action:
+├─ Create comprehensive test cases:
+│  ├─ Test main functionality requirements
+│  ├─ Test error scenarios and edge cases
+│  ├─ Test integration points
+│  └─ Ensure 0% pass rate initially
+├─ Verify tests align with ticket requirements
+├─ Commit: git add . && git commit -m "test(#001): create failing tests"
+└─ Run: ait3 flow green 001
 ```
 
 ### 🟢 GREEN Phase 提示内容
 ```
 🟢 GREEN Phase for Ticket #001: {ticket.title}
+📍 Ticket location: .tickets/doing/001-{ticket-slug}.md
 
-🧠 Claude Code Instructions:
-1. Read ticket: .tickets/doing/001-{ticket-slug}.md
-2. Run tests and analyze failures
-3. Implement minimal code to pass tests:
-   ├─ Follow existing codebase patterns
-   ├─ Use pure functions + service injection
-   ├─ Keep implementation minimal
-   └─ Create tickets for mock implementations
-
-⚡ Constraints:
-- Avoid modifying tests to fit implementation
-- Tests should drive implementation, not vice versa
-- If tests have fundamental issues → return to RED phase
-- Achieve 100% test pass rate
-
-📊 Progress tracking:
-- Show test results after each run
-- Report pass/fail count
-
-⚡ After 100% pass rate:
-$ ait3 flow refactor
+Next Action:
+├─ Implement minimal code to pass tests:
+│  ├─ Follow existing codebase patterns
+│  ├─ Use pure functions + service injection
+│  ├─ Keep implementation minimal
+│  └─ Create tickets for mock implementations
+├─ Run tests until 100% pass rate
+├─ Commit: git add . && git commit -m "feat(#001): implement feature"
+└─ Run: ait3 flow refactor 001
 ```
 
 ### 🔧 REFACTOR Phase 提示内容
 ```
 🔧 REFACTOR Phase for Ticket #001: {ticket.title}
+📍 Ticket location: .tickets/doing/001-{ticket-slug}.md
 
-🧠 Claude Code Instructions:
-1. Read ticket: .tickets/doing/001-{ticket-slug}.md
-2. Run quality checks (project-specific):
-   - Linter (e.g., eslint, ruff, rubocop)
-   - Formatter (e.g., prettier, black, rustfmt)
-   - Type checker (if applicable)
-   - Code duplication analysis (if available)
-
-3. Refactor priorities:
-   ├─ Extract common patterns
-   ├─ Improve type safety
-   ├─ Optimize performance
-   ├─ Enhance readability
-   └─ Identify mock implementations
-
-4. For mock implementations found:
-   - Suggest creating tickets
-   - Human decides whether to create
-
-⚡ Requirement: Maintain 100% test pass rate
-
-⚡ After refactoring:
-$ ait3 flow squash
+Next Action:
+├─ Run code quality checks:
+│  ├─ npm run lint
+│  ├─ npm run type-check
+│  └─ Check for code duplication
+├─ Refactor priorities:
+│  ├─ Extract common patterns
+│  ├─ Improve error handling consistency
+│  ├─ Enhance code readability
+│  └─ Optimize performance if needed
+├─ Maintain 100% test pass rate
+├─ Commit: git add . && git commit -m "refactor(#001): optimize implementation"
+└─ Run: ait3 flow squash 001
 ```
 
 ### 📦 SQUASH Phase 提示内容
 ```
 📦 SQUASH Phase for Ticket #{ticket.id}: {ticket.title}
+📍 Ticket location: .tickets/done/{ticket.id}-{ticket-slug}.md
 
-🧠 Claude Code Instructions:
-1. Read ticket: .tickets/doing/{ticket.id}-{ticket-slug}.md
-2. Verify all tests passing (100%)
-3. Generate commit message template:
-   feat(#{ticket.id}): {concise summary}
-   
-   - {key changes}
-   - {test coverage info}
-   - {any breaking changes}
+✅ Ticket is already completed (or auto-completed if not done)
 
-🚀 Next Steps (Manual Execution):
-1. First, complete the ticket:
-   $ ait3 ticket complete {ticket.id}
-   
-2. Then, squash your commits:
-   git rebase -i {base-branch}
-   # Mark all except first as 'squash'
-   # Use the commit message template above
+Related commits to squash:
+├─ xxxxxxx planning(#{ticket.id}): design approach
+├─ xxxxxxx test(#{ticket.id}): create failing tests
+├─ xxxxxxx feat(#{ticket.id}): implement feature
+└─ xxxxxxx refactor(#{ticket.id}): optimize implementation
+
+Next Action:
+├─ Squash commits:
+│  └─ git rebase -i main
+├─ Create final commit:
+│  └─ git commit -m "feat(#{ticket.id}): {concise summary}"
+├─ Push changes:
+│  └─ git push --force-with-lease
+└─ Create PR or merge to main
    
 3. PR/Merge options:
    # Option 1: Create PR
@@ -358,10 +323,6 @@ $ ait3 flow squash
    git checkout main
    git merge --ff-only feature/{ticket.id}-{slug}
 
-⚡ If PR rejected:
-$ ait3 ticket reopen {ticket.id}
-
-Note: Future version will automate ticket completion during squash
 ```
 
 ## 🚨 例外パターンと対処法

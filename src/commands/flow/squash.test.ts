@@ -41,15 +41,20 @@ describe('squashPhase Pure Function', () => {
       ).rejects.toThrow("Ticket with ID '9999' not found");
     });
 
-    it('should reject tickets in todo status', async () => {
+    it('should auto-complete tickets in todo status', async () => {
       // Create ticket in todo status
       await services.ticketService.createTicket('Test feature', {
         priority: 'high'
       });
 
-      await expect(
-        squashPhase({ ticketId: '0001' }, services)
-      ).rejects.toThrow('Ticket #0001 must be in progress');
+      const result = await squashPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Automatically completed ticket #0001');
+      
+      // Verify ticket is now done
+      const ticket = await services.ticketService.getTicket('0001');
+      expect(ticket?.status).toBe('done');
     });
 
     it('should generate squash suggestions for valid ticket', async () => {
@@ -61,7 +66,7 @@ describe('squashPhase Pure Function', () => {
       
       expect(result.success).toBe(true);
       expect(result.message).toContain('SQUASH Phase');
-      expect(result.message).toContain('Git Command Suggestions');
+      expect(result.message).toContain('Suggested Git Commands');
       expect(result.message).toContain('ticket #0001');
       
       // Should not contain auto-completion message
@@ -117,20 +122,15 @@ describe('squashPhase Pure Function', () => {
       const result = await squashPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Next Steps');
-      expect(result.message).toContain('ait3 ticket complete');
+      expect(result.message).toContain('Next Action:');
+      expect(result.message).toContain('Squash commits:');
+      expect(result.message).toContain('git rebase -i main');
       
-      // Verify the manual execution steps order
-      const lowerMessage = result.message.toLowerCase();
-      expect(lowerMessage).toContain('first, complete the ticket');
-      expect(lowerMessage).toContain('then, squash your commits');
-      
-      // Verify future automation note is present
-      expect(lowerMessage).toContain('future');
-      expect(lowerMessage).toContain('automat');
+      // Verify that ticket is auto-completed
+      expect(result.message).toContain('Automatically completed ticket');
       
       // Verify PR rejection handling is mentioned
-      expect(lowerMessage).toContain('pr rejected');
+      expect(result.message.toLowerCase()).toContain('pr rejected');
       expect(result.message).toContain('ait3 ticket reopen');
     });
   });
@@ -200,7 +200,6 @@ describe('squashPhase Pure Function', () => {
       
       expect(result.success).toBe(true);
       expect(result.message).toContain('Note: Ticket is already completed');
-      expect(result.message).toContain('Showing Git command suggestions only');
       expect(result.message).toContain('SQUASH Phase');
       expect(result.message).toContain('git rebase');
     });
@@ -237,11 +236,74 @@ describe('squashPhase Pure Function', () => {
       expect(result.message).toContain('custom-template-test');
     });
     
-    it('should mention future automation for ticket completion', async () => {
+    it('should automatically complete tickets', async () => {
       const result = await squashPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message.toLowerCase()).toMatch(/future|automat/);
+      expect(result.message).toContain('Automatically completed');
+    });
+  });
+
+  describe('automatic ticket completion', () => {
+    it('should auto-complete ticket if in doing status', async () => {
+      // Create and start ticket (status: doing)
+      await services.ticketService.createTicket('Feature to auto-complete');
+      await services.ticketService.startTicket('0001');
+      
+      const result = await squashPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('✅ Automatically completed ticket #0001');
+      
+      // Verify ticket is now in done status
+      const ticket = await services.ticketService.getTicket('0001');
+      expect(ticket?.status).toBe('done');
+    });
+
+    it('should auto-complete ticket if in todo status', async () => {
+      // Create ticket (status: todo)
+      await services.ticketService.createTicket('Feature in todo');
+      
+      const result = await squashPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('✅ Automatically completed ticket #0001');
+      
+      // Verify ticket is now in done status
+      const ticket = await services.ticketService.getTicket('0001');
+      expect(ticket?.status).toBe('done');
+    });
+
+    it('should not auto-complete if already done', async () => {
+      // Create and complete ticket
+      await services.ticketService.createTicket('Already done feature');
+      await services.ticketService.startTicket('0001');
+      await services.ticketService.completeTicket('0001');
+      
+      const result = await squashPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Ticket is already completed');
+      expect(result.message).not.toContain('Automatically completed');
+    });
+
+    it('should abort squash if auto-complete fails', async () => {
+      // Create ticket in doing status
+      await services.ticketService.createTicket('Will fail to complete');
+      await services.ticketService.startTicket('0001');
+      
+      // Mock the completeTicket to fail
+      const originalComplete = services.ticketService.completeTicket;
+      services.ticketService.completeTicket = async () => {
+        throw new Error('Database error');
+      };
+      
+      await expect(
+        squashPhase({ ticketId: '0001' }, services)
+      ).rejects.toThrow('Failed to auto-complete ticket: Database error');
+      
+      // Restore original method
+      services.ticketService.completeTicket = originalComplete;
     });
   });
 });

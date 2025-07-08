@@ -3,6 +3,7 @@ import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { FLOW_STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';
+import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
 
 export interface GreenArgs {
   ticketId: string;
@@ -110,15 +111,15 @@ ${FLOW_STYLES.info('💡 Check test configuration and ensure all dependencies ar
 
   // Get ticket title for better formatting
   const ticketTitle = ticket.title || 'Feature';
-  const ticketSlug = SlugUtils.titleToSlug(ticketTitle);
+  const ticketLocation = getTicketLocation(ticketId, ticketTitle, 'doing');
 
   return {
     success: true,
     message: `
-${FLOW_STYLES.title('🟢 GREEN Phase')} for Ticket #${ticketId}: ${ticketTitle}
+${formatTicketHeader(ticketId, ticketTitle, '🟢 GREEN Phase')}
 
 ${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
-1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticketId}-${ticketSlug}.md`)}
+1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Run tests and analyze failures
 3. Implement minimal code to pass tests:
    ├─ Follow existing codebase patterns
@@ -140,8 +141,17 @@ ${implementationStatus}
 
 ${verboseModeInfo}
 
-${FLOW_STYLES.warning('⚡ After 100% pass rate')}:
-${FLOW_STYLES.command('$ ait3 flow refactor')}
+${FLOW_STYLES.info('Next Action')}:
+├─ Run tests:
+│  └─ Identify failing test cases
+├─ Implement code:
+│  └─ Minimal implementation to pass tests
+├─ Iterate until 100% pass:
+│  └─ Test → Code → Test loop
+└─ Commit implementation:
+   └─ ${FLOW_STYLES.code(`git commit -m "${generateCommitMessage('feat', ticketId, ticketTitle)}"`)}
+
+${FLOW_STYLES.dim('After 100% pass rate: ait3 flow refactor')}
 `
   };
 }
