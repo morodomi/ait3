@@ -2,6 +2,7 @@ import type { Services, CLIResult } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { FLOW_STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
+import { SlugUtils } from '../../common/utils.js';
 
 export interface GreenArgs {
   ticketId: string;
@@ -107,10 +108,29 @@ ${FLOW_STYLES.info('💡 Check test configuration and ensure all dependencies ar
   // Generate implementation status
   const implementationStatus = generateImplementationStatus();
 
+  // Get ticket title for better formatting
+  const ticketTitle = ticket.title || 'Feature';
+  const ticketSlug = SlugUtils.titleToSlug(ticketTitle);
+
   return {
     success: true,
     message: `
-${FLOW_STYLES.title('🟢 GREEN Phase')} - Making tests pass for ticket #${ticketId}
+${FLOW_STYLES.title('🟢 GREEN Phase')} for Ticket #${ticketId}: ${ticketTitle}
+
+${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
+1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticketId}-${ticketSlug}.md`)}
+2. Run tests and analyze failures
+3. Implement minimal code to pass tests:
+   ├─ Follow existing codebase patterns
+   ├─ Use pure functions + service injection
+   ├─ Keep implementation minimal
+   └─ Create tickets for mock implementations
+
+${FLOW_STYLES.warning('⚡ Constraints')}:
+- Avoid modifying tests to fit implementation
+- Tests should drive implementation, not vice versa
+- If tests have fundamental issues → return to RED phase
+- Achieve 100% test pass rate
 
 ${strictModeInfo}${targetInfo}
 
@@ -120,38 +140,30 @@ ${implementationStatus}
 
 ${verboseModeInfo}
 
-${FLOW_STYLES.dim('Next step: ait3 flow refactor')}
+${FLOW_STYLES.warning('⚡ After 100% pass rate')}:
+${FLOW_STYLES.command('$ ait3 flow refactor')}
 `
   };
 }
 
 function generateProgressDisplay(): string {
   // Simulate test progress
-  return `${FLOW_STYLES.title('📊 Test Progress')}:
-├─ Total: 27 tests
-├─ Passing: 15 (↑ from 0)
-├─ Failing: 12
-└─ Progress: ${FLOW_STYLES.progress('████████')}░░░░░░░░ 55%
+  return `${FLOW_STYLES.title('📊 Progress tracking')}:
+- Show test results after each run
+- Report pass/fail count
 
-${FLOW_STYLES.info('📍 Initial test status')}:
-├─ Failing: 27 tests
-└─ 0% pass rate`;
+${FLOW_STYLES.info('Example progress')}:
+├─ Initial: 0/27 passing (0%)
+├─ After iteration 1: 15/27 passing (55%)
+└─ Final: 27/27 passing (100%)`;
 }
 
 function generateImplementationStatus(): string {
-  return `${FLOW_STYLES.title('📝 Implementation plan')}:
-├─ Found test files related to ticket
-├─ Analyzing test requirements
-└─ Functions to implement: 5
-
-${FLOW_STYLES.success('✅ Generated implementation')}:
-├─ Following patterns from existing codebase
-├─ Pure functions with service injection
-└─ Minimal code to pass tests
-
-${FLOW_STYLES.info('🏁 Final test results')}:
-├─ ${FLOW_STYLES.success('100% passing')} (goal achieved)
-└─ ${FLOW_STYLES.success('All tests green')}`;
+  return `${FLOW_STYLES.title('📝 Implementation Status')}:
+├─ Follow existing patterns
+├─ Pure functions + service injection
+├─ Minimal code for test satisfaction
+└─ Create tickets for mock services`;
 }
 
 function generateVerboseOutput(ticket: any, target?: string): string {

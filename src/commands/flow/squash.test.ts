@@ -41,7 +41,7 @@ describe('squashPhase Pure Function', () => {
       ).rejects.toThrow("Ticket with ID '9999' not found");
     });
 
-    it('should reject tickets not in doing status', async () => {
+    it('should reject tickets in todo status', async () => {
       // Create ticket in todo status
       await services.ticketService.createTicket('Test feature', {
         priority: 'high'
@@ -63,6 +63,9 @@ describe('squashPhase Pure Function', () => {
       expect(result.message).toContain('SQUASH Phase');
       expect(result.message).toContain('Git Command Suggestions');
       expect(result.message).toContain('ticket #0001');
+      
+      // Should not contain auto-completion message
+      expect(result.message).not.toContain('automatically complete');
     });
   });
 
@@ -110,13 +113,25 @@ describe('squashPhase Pure Function', () => {
       expect(result.message).toContain('git pull origin main');
     });
 
-    it('should include next steps guidance', async () => {
+    it('should include next steps guidance with ticket complete first', async () => {
       const result = await squashPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Next steps');
-      expect(result.message).toContain('Review suggested commands');
+      expect(result.message).toContain('Next Steps');
       expect(result.message).toContain('ait3 ticket complete');
+      
+      // Verify the manual execution steps order
+      const lowerMessage = result.message.toLowerCase();
+      expect(lowerMessage).toContain('first, complete the ticket');
+      expect(lowerMessage).toContain('then, squash your commits');
+      
+      // Verify future automation note is present
+      expect(lowerMessage).toContain('future');
+      expect(lowerMessage).toContain('automat');
+      
+      // Verify PR rejection handling is mentioned
+      expect(lowerMessage).toContain('pr rejected');
+      expect(result.message).toContain('ait3 ticket reopen');
     });
   });
 
@@ -176,14 +191,18 @@ describe('squashPhase Pure Function', () => {
   });
 
   describe('error handling', () => {
-    it('should handle completed tickets', async () => {
+    it('should handle completed tickets with warning', async () => {
       await services.ticketService.createTicket('Completed feature');
       await services.ticketService.startTicket('0001');
       await services.ticketService.completeTicket('0001');
 
-      await expect(
-        squashPhase({ ticketId: '0001' }, services)
-      ).rejects.toThrow('Ticket #0001 is already completed');
+      const result = await squashPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Note: Ticket is already completed');
+      expect(result.message).toContain('Showing Git command suggestions only');
+      expect(result.message).toContain('SQUASH Phase');
+      expect(result.message).toContain('git rebase');
     });
 
     it('should provide clear error messages', async () => {
@@ -216,6 +235,13 @@ describe('squashPhase Pure Function', () => {
       expect(result.success).toBe(true);
       expect(result.message).toContain('feature/0001');
       expect(result.message).toContain('custom-template-test');
+    });
+    
+    it('should mention future automation for ticket completion', async () => {
+      const result = await squashPhase({ ticketId: '0001' }, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message.toLowerCase()).toMatch(/future|automat/);
     });
   });
 });

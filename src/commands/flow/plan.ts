@@ -2,6 +2,7 @@ import type { Services, CLIResult } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
 import { FLOW_STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
+import { SlugUtils } from '../../common/utils.js';
 
 export interface PlanArgs {
   featureName?: string;
@@ -52,27 +53,39 @@ function expressPlan(featureName: string, requirements?: string[], ticketInfo?: 
     ? `\n${FLOW_STYLES.command('📋 Requirements')}: ${requirements.join(', ')}`
     : '';
 
+  // Find ticket ID from ticketInfo if available
+  const ticketIdMatch = ticketInfo?.match(/#(\d+)/);
+  const ticketId = ticketIdMatch ? ticketIdMatch[1] : '001';
+  const ticketSlug = SlugUtils.titleToSlug(featureName);
+
   return {
     success: true,
     message: `
-${FLOW_STYLES.title('🚀 Express Planning')} for "${FLOW_STYLES.feature(featureName)}"${ticketInfo}${requirementsText}
+${FLOW_STYLES.title('🎭 PLANNING Phase (Express)')} for Ticket #${ticketId}: ${featureName}${requirementsText}
 
-${FLOW_STYLES.section('📝 Quick Implementation Guide')}:
-├─ Analyze existing codebase patterns
-├─ Identify minimal viable implementation
-├─ Follow pure function + service injection architecture
-└─ Proceed to: ${FLOW_STYLES.command('ait3 flow red')} for test creation
+${FLOW_STYLES.section('🧠 Claude Code Quick Analysis')}:
+1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticketId}-${ticketSlug}.md`)}
+2. Analyze existing patterns in codebase
+3. Propose minimal viable implementation
+4. Skip Gemini analysis (express mode)
 
-${FLOW_STYLES.dim('💡 For detailed planning, use: ait3 flow plan "' + featureName + '" --mode guided')}
+${FLOW_STYLES.warning('⚡ After quick approval')}:
+${FLOW_STYLES.command('$ ait3 flow red')}
+${FLOW_STYLES.dim('Note: Express mode skips dialectical analysis')}
 `
   };
 }
 
 function manualPlan(featureName: string, ticketInfo?: string): CLIResult {
+  // Find ticket ID from ticketInfo if available
+  const ticketIdMatch = ticketInfo?.match(/#(\d+)/);
+  const ticketId = ticketIdMatch ? ticketIdMatch[1] : '001';
+  const ticketSlug = SlugUtils.titleToSlug(featureName);
+
   return {
     success: true,
     message: `
-${FLOW_STYLES.title('🎭 AIT³ Philosophy')} - Manual Planning for "${FLOW_STYLES.feature(featureName)}"${ticketInfo}
+${FLOW_STYLES.title('🎭 PLANNING Phase (Manual)')} for Ticket #${ticketId}: ${featureName}
 
 ${FLOW_STYLES.section('🔄 Dialectical Process')}:
 ├─ ${FLOW_STYLES.info('Claude proposes')} → Generate technical approach with clear rationale
@@ -80,13 +93,15 @@ ${FLOW_STYLES.section('🔄 Dialectical Process')}:
 └─ ${FLOW_STYLES.feature('Human decides')} → Synthesize evidence and make informed decisions
 
 ${FLOW_STYLES.section('📋 Manual Planning Steps')}:
-1. Define requirements and constraints
+1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticketId}-${ticketSlug}.md`)}
 2. Research existing approaches and patterns
-3. Consult: ${FLOW_STYLES.command('gemini -p "@src/ @CLAUDE.md Critique approach for ' + featureName + '"')}
+3. Consult: ${FLOW_STYLES.command(`gemini -p "@src/ @CLAUDE.md @.tickets/doing/${ticketId}-*.md Critique approach"`)}
 4. Document architectural decisions
 5. Update ticket with reasoning
 
-${FLOW_STYLES.section('⚡ Next Phase')}: ${FLOW_STYLES.command('ait3 flow red')} for test-driven implementation
+${FLOW_STYLES.warning('⚡ After human decision')}:
+${FLOW_STYLES.command('$ ait3 flow red')}
+${FLOW_STYLES.dim('Note: Manual mode requires explicit human decisions')}
 `
   };
 }
@@ -96,30 +111,35 @@ function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: s
     ? `\n${FLOW_STYLES.command('📋 Requirements')}: ${requirements.join(', ')}`
     : '';
 
-  // Generate Claude's proposal based on feature name and requirements
-  const proposal = generateClaudeProposal(featureName, requirements);
-  
-  // Prepare Gemini analysis command
-  const geminiCommand = `gemini -p "@src/ @CLAUDE.md @.tickets/ Critique this approach for ${featureName}: ${proposal.summary}"`;
+  // Find ticket ID from ticketInfo if available
+  const ticketIdMatch = ticketInfo?.match(/#(\d+)/);
+  const ticketId = ticketIdMatch ? ticketIdMatch[1] : '001';
+  const ticketSlug = SlugUtils.titleToSlug(featureName);
 
   return {
     success: true,
     message: `
-${FLOW_STYLES.title('🎭 AIT³ PLANNING Phase')} (guided mode) for "${FLOW_STYLES.feature(featureName)}"${ticketInfo}${requirementsSection}
+${FLOW_STYLES.title('🎭 PLANNING Phase')} for Ticket #${ticketId}: ${featureName}${requirementsSection}
 
-${FLOW_STYLES.section('💡 Claude\'s Proposal')}:
-${proposal.details}
+${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
+1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticketId}-${ticketSlug}.md`)}
+2. Analyze and propose:
+   ├─ Purpose & Goals
+   ├─ Implementation approach
+   ├─ Test scenarios
+   ├─ Edge cases
+   ├─ Technical considerations
+   └─ Dependencies & Integration points
 
-${FLOW_STYLES.section('🔍 Prepared Gemini Analysis')}:
-${FLOW_STYLES.command('$ ' + geminiCommand)}
+3. (Optional) Gemini analysis:
+   ${FLOW_STYLES.command(`$ gemini -p "@src/ @CLAUDE.md @.tickets/doing/${ticketId}-*.md Critique this approach"`)}
+   ${FLOW_STYLES.dim('Note: @src/ includes relevant source files. For full codebase use @./')}
 
-${FLOW_STYLES.section('❓ Choose next action')}:
-${FLOW_STYLES.option('[1]')} ✅ Accept proposal and update ticket
-${FLOW_STYLES.option('[2]')} 🔍 Run Gemini analysis (copy command to clipboard)
-${FLOW_STYLES.option('[3]')} ✏️  Refine proposal manually
-${FLOW_STYLES.option('[4]')} 💾 Save draft and continue later
+4. Present proposal for human decision
 
-${FLOW_STYLES.dim('💡 Philosophy: ' + FLOW_MESSAGES.PHILOSOPHY)}
+${FLOW_STYLES.warning('⚡ After human approval')}:
+${FLOW_STYLES.command('$ ait3 flow red')}
+${FLOW_STYLES.dim('Note: From RED to SQUASH, human intervention is optional')}
 `
   };
 }

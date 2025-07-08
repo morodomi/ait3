@@ -1,12 +1,13 @@
 ---
 id: '0013'
 title: 'refactor: ハイブリッドテスト配置への移行 - ユニットテストをコロケーション化'
-status: doing
+status: done
 priority: medium
 created: '2025-07-07T11:31:30.906Z'
-updated: '2025-07-07T15:19:24.147Z'
+updated: '2025-07-07T22:30:57.694Z'
 labels: []
 started: '2025-07-07T15:19:24.147Z'
+completed: '2025-07-07T22:30:57.694Z'
 ---
 # Ticket #0013: refactor: ハイブリッドテスト配置への移行 - ユニットテストをコロケーション化
 

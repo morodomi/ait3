@@ -52,7 +52,7 @@ describe('redPhase Pure Function', () => {
       
       expect(result.success).toBe(true);
       expect(result.message).toContain('Unit test generated');
-      expect(result.message).toContain('tests/commands/');
+      expect(result.message).toContain('src/commands/');
       expect(result.message).toContain('0% pass rate');
     });
   });
@@ -197,6 +197,7 @@ labels:
       expect(result.message).toContain('[1]');
       expect(result.message).toContain('[2]');
       expect(result.message).toContain('[3]');
+      expect(result.message).toContain('Claude Code Instructions');
     });
   });
 
@@ -211,7 +212,8 @@ labels:
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('DRY RUN');
-      expect(result.message).toContain('Would generate');
+      expect(result.message).toContain('Would execute');
+      expect(result.message).toContain('Generate test files');
       expect(result.message).not.toContain('Created file');
     });
   });

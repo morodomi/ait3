@@ -61,7 +61,8 @@ describe('refactorPhase Pure Function', () => {
       
       expect(result.success).toBe(true);
       expect(result.message).toContain('REFACTOR Phase');
-      expect(result.message).toContain('Analysis for ticket #0001');
+      expect(result.message).toContain('Ticket #0001');
+      expect(result.message).toContain('Claude Code Instructions');
     });
   });
 
@@ -189,9 +190,8 @@ describe('refactorPhase Pure Function', () => {
       const result = await refactorPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Next steps');
-      expect(result.message).toContain('Review suggestions');
-      expect(result.message).toContain('Apply changes');
+      expect(result.message).toContain('Actions');
+      expect(result.message).toContain('Review and apply suggestions');
       expect(result.message).toContain('Run tests');
     });
 
@@ -199,7 +199,7 @@ describe('refactorPhase Pure Function', () => {
       const result = await refactorPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Create tickets for mock implementations');
+      expect(result.message).toContain('Consider creating tickets for mocks');
     });
   });
 

@@ -61,8 +61,8 @@ describe('greenPhase Pure Function', () => {
       
       expect(result.success).toBe(true);
       expect(result.message).toContain('GREEN Phase');
-      expect(result.message).toContain('Making tests pass');
-      expect(result.message).toContain('Test Progress');
+      expect(result.message).toContain('Claude Code Instructions');
+      expect(result.message).toContain('Progress tracking');
     });
   });
 
@@ -80,16 +80,16 @@ describe('greenPhase Pure Function', () => {
       const result = await greenPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Found test files');
-      expect(result.message).toContain('Analyzing test requirements');
+      expect(result.message).toContain('Claude Code Instructions');
+      expect(result.message).toContain('Run tests and analyze');
     });
 
     it('should run tests and show initial failure status', async () => {
       const result = await greenPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Initial test status');
-      expect(result.message).toContain('Failing:');
+      expect(result.message).toContain('Progress tracking');
+      expect(result.message).toContain('0/27 passing');
       expect(result.message).toContain('0%'); // Initially all tests fail
     });
 
@@ -97,8 +97,8 @@ describe('greenPhase Pure Function', () => {
       const result = await greenPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Implementation plan');
-      expect(result.message).toContain('Functions to implement');
+      expect(result.message).toContain('Implementation Status');
+      expect(result.message).toContain('Pure functions + service injection');
     });
   });
 
@@ -178,7 +178,7 @@ describe('greenPhase Pure Function', () => {
 
       expect(result.success).toBe(true);
       expect(result.message).not.toContain('Detailed test analysis');
-      expect(result.message).toContain('Test Progress'); // Still shows summary
+      expect(result.message).toContain('Progress tracking'); // Still shows summary
     });
   });
 
@@ -226,26 +226,24 @@ describe('greenPhase Pure Function', () => {
       const result = await greenPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Generated implementation');
-      expect(result.message).toContain('Minimal code to pass tests');
+      expect(result.message).toContain('Implementation Status');
+      expect(result.message).toContain('Minimal code for test satisfaction');
     });
 
     it('should follow existing code patterns', async () => {
       const result = await greenPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Following patterns');
-      expect(result.message).toContain('Pure functions');
-      expect(result.message).toContain('service injection');
+      expect(result.message).toContain('Follow existing codebase patterns');
+      expect(result.message).toContain('Pure functions + service injection');
     });
 
     it('should achieve 100% test pass rate', async () => {
       const result = await greenPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Final test results');
-      expect(result.message).toContain('100% passing');
-      expect(result.message).toContain('All tests green');
+      expect(result.message).toContain('100% test pass rate');
+      expect(result.message).toContain('ait3 flow refactor');
     });
   });
 

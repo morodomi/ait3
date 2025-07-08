@@ -39,7 +39,7 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Claude\'s Proposal');
+      expect(result.message).toContain('Claude Code Instructions');
       expect(result.message).toContain('user-authentication');
     });
 
@@ -68,12 +68,9 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('[1]');
-      expect(result.message).toContain('[2]');
-      expect(result.message).toContain('[3]');
-      expect(result.message).toContain('[4]');
-      expect(result.message).toContain('Accept proposal');
-      expect(result.message).toContain('Run Gemini analysis');
+      expect(result.message).toContain('Claude Code Instructions');
+      expect(result.message).toContain('Gemini analysis');
+      expect(result.message).toContain('ait3 flow red');
     });
 
     it('should handle missing feature name gracefully', async () => {
@@ -94,7 +91,7 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Express Planning');
+      expect(result.message).toContain('PLANNING Phase (Express)');
       expect(result.message).toContain('quick-feature');
       // Should not include interactive choices
       expect(result.message).not.toContain('[1]');
@@ -112,7 +109,7 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('AIT³ Philosophy');
+      expect(result.message).toContain('PLANNING Phase (Manual)');
       expect(result.message).toContain('Claude proposes');
       expect(result.message).toContain('Gemini refutes');
       expect(result.message).toContain('Human decides');
@@ -130,7 +127,7 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Claude\'s Proposal');
+      expect(result.message).toContain('Claude Code Instructions');
     });
 
     it('should reference ticket when ID provided', async () => {
@@ -164,9 +161,10 @@ describe('planPhase Pure Function', () => {
         services
       );
 
-      // Should still succeed but warn about invalid ticket
+      // Should still succeed but show ticket ID in message
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Warning') || expect(result.message).toContain('not found');
+      expect(result.message).toContain('Ticket #');
+      expect(result.message).toContain('Claude Code Instructions');
     });
   });
 
@@ -197,7 +195,7 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Claude\'s Proposal');
+      expect(result.message).toContain('Claude Code Instructions');
     });
   });
 });

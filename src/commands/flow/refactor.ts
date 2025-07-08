@@ -2,6 +2,7 @@ import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { FLOW_STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
+import { SlugUtils } from '../../common/utils.js';
 
 const REFACTOR_MESSAGES = {
   INVALID_FOCUS_AREA: (area: string) => `Invalid focus area: ${area}`
@@ -84,7 +85,7 @@ ${FLOW_STYLES.info('💡 Tip')}: Make sure you're running from the project root 
 
   // Generate analysis based on mode and focus
   const analysis = performAnalysis(ticket, focusAreas);
-  const output = formatAnalysisOutput(analysis, verbose, focusAreas);
+  const output = formatAnalysisOutput(analysis, verbose, focusAreas, ticket);
 
   return {
     success: true,
@@ -182,12 +183,38 @@ function performAnalysis(ticket: Ticket, focusAreas?: FocusArea[]): AnalysisResu
 function formatAnalysisOutput(
   analysis: AnalysisResult, 
   verbose: boolean,
-  focusAreas?: FocusArea[]
+  focusAreas?: FocusArea[],
+  ticket?: Ticket
 ): string {
   const sections: string[] = [];
+  const ticketId = ticket?.id || '0001';
+  const ticketTitle = ticket?.title || 'Feature';
+  const ticketSlug = SlugUtils.titleToSlug(ticketTitle);
 
   // Header
-  sections.push(`${FLOW_STYLES.title('🔧 REFACTOR Phase')} - Analysis for ticket #${analysis.filesAnalyzed > 0 ? '0001' : '0001'}`);
+  sections.push(`${FLOW_STYLES.title('🔧 REFACTOR Phase')} for Ticket #${ticketId}: ${ticketTitle}`);
+  
+  // Claude Code Instructions
+  sections.push(`\n${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
+1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticketId}-${ticketSlug}.md`)}
+2. Run quality checks (project-specific):
+   - Linter (e.g., eslint, ruff, rubocop)
+   - Formatter (e.g., prettier, black, rustfmt)
+   - Type checker (if applicable)
+   - Code duplication analysis (if available)
+
+3. Refactor priorities:
+   ├─ Extract common patterns
+   ├─ Improve type safety
+   ├─ Optimize performance
+   ├─ Enhance readability
+   └─ Identify mock implementations
+
+4. For mock implementations found:
+   - Suggest creating tickets
+   - Human decides whether to create
+
+${FLOW_STYLES.warning('⚡ Requirement')}: Maintain 100% test pass rate`);
   
   // Focus indicator
   if (focusAreas) {
@@ -265,15 +292,15 @@ ${FLOW_STYLES.title('📊 Code Quality Summary')}:
   }
 
   // Next steps
-  sections.push(`\n${FLOW_STYLES.title('💡 Next steps')}:
-1. Review suggestions above
-2. Apply changes manually or with AI assistance
-3. Run tests to ensure 100% pass rate
-4. Create tickets for mock implementations`);
+  sections.push(`\n${FLOW_STYLES.title('🚀 Actions')}:
+1. Review and apply suggestions
+2. Run tests to ensure 100% pass rate
+3. Consider creating tickets for mocks
+4. Maintain code quality standards`);
 
   // Mock ticket creation commands
   if (analysis.mocks.length > 0) {
-    sections.push(`\n${FLOW_STYLES.dim('# Mock ticket creation commands:')}`);
+    sections.push(`\n${FLOW_STYLES.dim('# Suggested ticket creation commands:')}`);
     analysis.mocks.forEach(mock => {
       sections.push(FLOW_STYLES.dim(mock.ticketSuggestion));
     });

@@ -2,6 +2,7 @@ import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { FLOW_STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
+import { SlugUtils } from '../../common/utils.js';
 
 export interface SquashArgs {
   ticketId: string;
@@ -36,12 +37,11 @@ export async function squashPhase(
     throw new TicketNotFoundError(ticketId);
   }
 
-  // Check ticket status
+  // Check ticket status and prepare status message
+  let statusMessage = '';
   if (ticket.status === 'done') {
-    throw new ValidationError(FLOW_MESSAGES.TICKET_ALREADY_COMPLETED(ticketId));
-  }
-
-  if (ticket.status !== 'doing') {
+    statusMessage = `\n${FLOW_STYLES.warning('⚠️  Note: Ticket is already completed')}\n${FLOW_STYLES.dim('Showing Git command suggestions only (ticket move skipped)')}\n`;
+  } else if (ticket.status === 'todo') {
     throw new ValidationError(FLOW_MESSAGES.TICKET_NOT_IN_PROGRESS(ticketId));
   }
 
@@ -55,7 +55,7 @@ export async function squashPhase(
 
   return {
     success: true,
-    message: suggestions
+    message: statusMessage + suggestions
   };
 }
 
@@ -150,13 +150,25 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   sections.push(`${FLOW_STYLES.code(`git merge --no-ff ${featureName}`)}`);
   sections.push(`${FLOW_STYLES.code('git push origin main')}`);
   sections.push(`${FLOW_STYLES.warning('⚠️  Use --no-ff to preserve feature branch history')}`);
+  stepNumber++;
+  
+  // If PR was rejected info
+  sections.push(`\n${FLOW_STYLES.info('💡 If PR rejected')}:`);
+  sections.push(`${FLOW_STYLES.code(`ait3 ticket reopen ${ticketId}`)}`);
+  sections.push(`${FLOW_STYLES.dim('This will move ticket from done → doing')}`);
 
-  // Next steps
-  sections.push(`\n${FLOW_STYLES.title('💡 Next steps')}:`);
-  sections.push('1. Review suggested commands above');
-  sections.push('2. Execute commands manually with necessary adjustments');
-  sections.push('3. Test deployment and functionality');
-  sections.push(`4. Complete ticket with: ${FLOW_STYLES.code(`ait3 ticket complete ${ticketId}`)}`);
+  // Next steps (Manual Execution)
+  sections.push(`\n${FLOW_STYLES.title('🚀 Next Steps (Manual Execution)')}:`);
+  sections.push(`1. First, complete the ticket:`);
+  sections.push(`   ${FLOW_STYLES.code(`ait3 ticket complete ${ticketId}`)}`);
+  sections.push(`   `);
+  sections.push(`2. Then, squash your commits:`);
+  sections.push(`   ${FLOW_STYLES.dim('Follow the git rebase commands above')}`);
+  sections.push(`   `);
+  sections.push(`3. PR/Merge options:`);
+  sections.push(`   ${FLOW_STYLES.dim('Choose between PR creation or direct merge')}`);
+  sections.push(`   `);
+  sections.push(`${FLOW_STYLES.dim('Note: Future version will automate ticket completion during squash')}`);
 
   // Safety warnings
   sections.push(`\n${FLOW_STYLES.warning('⚠️  Safety reminders')}:`);
@@ -172,10 +184,7 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
 }
 
 function generateFeatureBranchName(ticket: Ticket): string {
-  const featureName = ticket.title.toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-  
+  const featureName = SlugUtils.titleToSlug(ticket.title);
   return `feature/${ticket.id}-${featureName}`;
 }
 
@@ -201,11 +210,9 @@ function generateCommitTitle(ticket: Ticket): string {
 function generateCommitBody(ticket: Ticket): string {
   const lines: string[] = [];
   
-  lines.push('Implements Git command suggestion system for clean history management:');
-  lines.push('- Static template-based Git command suggestions');
-  lines.push('- Copy-pasteable command format with explanations');
-  lines.push('- PR creation and merge guidance templates');
-  lines.push('- Safety warnings and educational output');
+  // Create a generic description based on ticket title
+  const description = ticket.description || `Implements ${ticket.title.toLowerCase()}`;
+  lines.push(description);
   
   if (ticket.labels && ticket.labels.length > 0) {
     lines.push('');
