@@ -158,15 +158,11 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   sections.push(`${FLOW_STYLES.dim('This will move ticket from done → doing')}`);
 
   // Next steps (Manual Execution)
-  sections.push(`\n${FLOW_STYLES.title('🚀 Next Steps (Manual Execution)')}:`);
-  sections.push(`1. First, complete the ticket:`);
+  sections.push(`\n${FLOW_STYLES.title('🚀 Next steps (Manual Execution)')}:`);
+  sections.push(`1. Review suggested commands and execute manually`);
+  sections.push(`2. Complete the ticket when ready:`);
   sections.push(`   ${FLOW_STYLES.code(`ait3 ticket complete ${ticketId}`)}`);
-  sections.push(`   `);
-  sections.push(`2. Then, squash your commits:`);
-  sections.push(`   ${FLOW_STYLES.dim('Follow the git rebase commands above')}`);
-  sections.push(`   `);
-  sections.push(`3. PR/Merge options:`);
-  sections.push(`   ${FLOW_STYLES.dim('Choose between PR creation or direct merge')}`);
+  sections.push(`3. Push changes and create PR or merge`);
   sections.push(`   `);
   sections.push(`${FLOW_STYLES.dim('Note: Future version will automate ticket completion during squash')}`);
 

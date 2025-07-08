@@ -309,13 +309,14 @@ Custom test for squash command customization`;
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(() => {
-        execSync('node dist/cli.js flow squash 0001', {
-          encoding: 'utf8',
-          timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
-        });
-      }).toThrow(/already completed/);
+      const result = execSync('node dist/cli.js flow squash 0001', {
+        encoding: 'utf8',
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
+      });
+      
+      expect(result).toContain('Note: Ticket is already completed');
+      expect(result).toContain('Showing Git command suggestions only');
     });
   });
 

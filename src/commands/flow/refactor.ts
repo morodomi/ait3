@@ -193,6 +193,7 @@ function formatAnalysisOutput(
 
   // Header
   sections.push(`${FLOW_STYLES.title('🔧 REFACTOR Phase')} for Ticket #${ticketId}: ${ticketTitle}`);
+  sections.push(`\n${FLOW_STYLES.info('Analysis for ticket #' + ticketId)}`);
   
   // Claude Code Instructions
   sections.push(`\n${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
@@ -292,11 +293,12 @@ ${FLOW_STYLES.title('📊 Code Quality Summary')}:
   }
 
   // Next steps
-  sections.push(`\n${FLOW_STYLES.title('🚀 Actions')}:
-1. Review and apply suggestions
-2. Run tests to ensure 100% pass rate
-3. Consider creating tickets for mocks
-4. Maintain code quality standards`);
+  sections.push(`\n${FLOW_STYLES.title('🚀 Next steps')}:
+1. Review suggestions
+2. Apply changes
+3. Run tests to ensure 100% pass rate
+4. Consider creating tickets for mocks
+5. Maintain code quality standards`);
 
   // Mock ticket creation commands
   if (analysis.mocks.length > 0) {
