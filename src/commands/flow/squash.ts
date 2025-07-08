@@ -71,7 +71,7 @@ export async function squashPhase(
   const locationInfo = `${STYLES.bold('SQUASH Phase')} for Ticket #${ticketId}: ${ticket.title}\n` +
                       `${STYLES.info('LOCATION: Ticket location')}: ${STYLES.info(ticketLocation)}\n`;
   
-  const suggestions = generateGitSuggestions(ticket, args);
+  const suggestions = await generateGitSuggestions(ticket, args, services);
 
   return {
     success: true,
@@ -106,7 +106,7 @@ function generateDryRunOutput(ticket: Ticket, args: SquashArgs): CLIResult {
   };
 }
 
-function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
+async function generateGitSuggestions(ticket: Ticket, args: SquashArgs, services: Services): Promise<string> {
   const sections: string[] = [];
   const ticketId = ticket.id;
   const featureName = generateFeatureBranchName(ticket);
@@ -120,10 +120,37 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
 
   // Add related commits section
   sections.push(`\n${STYLES.info('Related commits to squash')}:`);
-  sections.push(`├─ ${STYLES.muted('xxxxxxx planning(#' + ticketId + '): design approach')}`);
-  sections.push(`├─ ${STYLES.muted('xxxxxxx test(#' + ticketId + '): create failing tests')}`);
-  sections.push(`├─ ${STYLES.muted('xxxxxxx feat(#' + ticketId + '): implement feature')}`);
-  sections.push(`└─ ${STYLES.muted('xxxxxxx refactor(#' + ticketId + '): optimize implementation')}`);
+  
+  // Try to get actual commits if GitService is available
+  if (services.gitService) {
+    try {
+      const isRepo = await services.gitService.isRepository();
+      if (isRepo) {
+        const commits = await services.gitService.getCommits('main');
+        if (commits.length > 0) {
+          commits.forEach((commit, index) => {
+            const isLast = index === commits.length - 1;
+            const prefix = isLast ? '└─' : '├─';
+            sections.push(`${prefix} ${STYLES.muted(commit.hash.substring(0, 7) + ' ' + commit.message)}`);
+          });
+        } else {
+          sections.push(`└─ ${STYLES.muted('No commits found in this branch')}`);
+        }
+      }
+    } catch (error) {
+      // Fall back to placeholder commits
+      sections.push(`├─ ${STYLES.muted('xxxxxxx planning(#' + ticketId + '): design approach')}`);
+      sections.push(`├─ ${STYLES.muted('xxxxxxx test(#' + ticketId + '): create failing tests')}`);
+      sections.push(`├─ ${STYLES.muted('xxxxxxx feat(#' + ticketId + '): implement feature')}`);
+      sections.push(`└─ ${STYLES.muted('xxxxxxx refactor(#' + ticketId + '): optimize implementation')}`);
+    }
+  } else {
+    // Show placeholder commits when GitService is not available
+    sections.push(`├─ ${STYLES.muted('xxxxxxx planning(#' + ticketId + '): design approach')}`);
+    sections.push(`├─ ${STYLES.muted('xxxxxxx test(#' + ticketId + '): create failing tests')}`);
+    sections.push(`├─ ${STYLES.muted('xxxxxxx feat(#' + ticketId + '): implement feature')}`);
+    sections.push(`└─ ${STYLES.muted('xxxxxxx refactor(#' + ticketId + '): optimize implementation')}`);
+  }
 
   sections.push(`\n${STYLES.bold('LIST: Suggested Git Commands')}:`);
 
@@ -132,6 +159,16 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   // Step 1: Squash commits (unless --no-squash)
   if (!args.noSquash) {
     sections.push(`\n${STYLES.info(`## ${stepNumber}. Squash commits into logical units:`)}`);
+    
+    // Add AI-friendly non-interactive commands
+    sections.push(`\n${STYLES.warning('AI-friendly non-interactive commands:')}`);
+    sections.push(`${STYLES.code(`# Get commit count from main`)}`);
+    sections.push(`${STYLES.code(`COMMIT_COUNT=$(git rev-list --count main..HEAD)`)}`);
+    sections.push(`${STYLES.code(`# Reset to main and create single commit`)}`);
+    sections.push(`${STYLES.code(`git reset --soft main`)}`);
+    sections.push(`${STYLES.code(`git commit -m "${commitTitle}"`)}`);
+    
+    sections.push(`\n${STYLES.muted('OR use interactive rebase (for human execution):')}`);
     sections.push(`${STYLES.code('git rebase -i main')}`);
     sections.push(`${STYLES.muted('# Mark commits to squash (s) or fixup (f)')}`);
     sections.push(`${STYLES.muted('# Suggested grouping:')}`);
@@ -144,7 +181,7 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
 
   // Step 2: Create comprehensive commit message
   sections.push(`\n${STYLES.info(`## ${stepNumber}. Create comprehensive commit message:`)}`);
-  sections.push(STYLES.code('git commit --amend -m "' + commitTitle + '"'));
+  sections.push(STYLES.code(`git commit --amend -m "${commitTitle}"`));
   sections.push('');
   sections.push(generateCommitBody(ticket));
   sections.push('');

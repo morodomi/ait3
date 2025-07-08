@@ -5,6 +5,7 @@ import { greenPhase } from './green.js';
 import { refactorPhase } from './refactor.js';
 import { squashPhase } from './squash.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
+import { SimpleGitService } from '../../services/implementations/SimpleGitService.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
 import { STYLES } from '../../common/styles.js';
@@ -13,7 +14,9 @@ import { STYLES } from '../../common/styles.js';
 // Support test environment override with TICKETS_DIR
 const ticketsPath = process.env.TICKETS_DIR || '.tickets';
 const services: Services = {
-  ticketService: new LocalTicketService(ticketsPath)
+  ticketService: new LocalTicketService(ticketsPath),
+  // GitService is optional - disable in test environments to avoid git conflicts
+  gitService: process.env.NODE_ENV !== 'test' && !process.env.VITEST ? new SimpleGitService() : undefined
 };
 
 export const flowCommand = new Command('flow')
