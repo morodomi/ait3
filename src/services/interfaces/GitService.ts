@@ -45,4 +45,19 @@ export interface GitService {
    * @returns Name of the current branch
    */
   getCurrentBranch(): Promise<string>;
+
+  /**
+   * Get the merge base between two branches
+   * @param branch1 - First branch name
+   * @param branch2 - Second branch name
+   * @returns Hash of the merge base commit
+   */
+  getMergeBase(branch1: string, branch2: string): Promise<string>;
+
+  /**
+   * Get commits from a base branch to HEAD
+   * @param base - Base branch or commit to compare from
+   * @returns Array of commits with hash and message
+   */
+  getCommits(base: string): Promise<Array<{ hash: string; message: string }>>;
 }
