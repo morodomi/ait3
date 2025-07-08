@@ -1,4 +1,5 @@
 import type { TicketService } from '../services/interfaces/TicketService.js';
+import type { GitService } from '../services/interfaces/GitService.js';
 
 export interface Ticket {
   id: string;              // Format: "0001" (4-digit zero-padded)
@@ -55,8 +56,8 @@ export interface CreateTicketArgs {
 // Service Container for Dependency Injection
 export interface Services {
   ticketService: TicketService;
+  gitService?: GitService;
   // Future services:
-  // gitService?: GitService;
   // projectService?: ProjectService;
 }
 
