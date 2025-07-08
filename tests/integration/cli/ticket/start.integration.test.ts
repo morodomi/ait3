@@ -429,4 +429,91 @@ This ticket is already completed.
       expect(result).toContain('<id>');
     });
   });
+
+  describe('GitService integration', () => {
+    beforeEach(async () => {
+      // Initialize git repo in test directory for Git-specific tests
+      execSync('git init', { cwd: testDir });
+      execSync('git config user.email "test@example.com"', { cwd: testDir });
+      execSync('git config user.name "Test User"', { cwd: testDir });
+      execSync('git add .', { cwd: testDir });
+      execSync('git commit -m "Initial commit"', { cwd: testDir });
+    });
+
+    it('should create and checkout feature branch when starting ticket', async () => {
+      // This test will fail until GitService is implemented
+      expect(() => {
+        execSync(
+          'node dist/cli.js ticket start 0001',
+          {
+            encoding: 'utf8',
+            cwd: testDir,
+            env: { ...process.env, TICKETS_DIR: testDir }
+          }
+        );
+      }).toThrow(); // Expected to fail because GitService is not implemented
+
+      // After implementation, it should:
+      // 1. Create branch feature/0001-test-git-integration
+      // 2. Checkout the new branch
+      // 3. LocalTicketService uses GitService.moveFile() to move ticket to doing status
+    });
+
+    it('should handle uncommitted changes error', async () => {
+      // Create uncommitted changes
+      await writeFile(join(testDir, 'uncommitted.txt'), 'changes');
+      
+      expect(() => {
+        execSync(
+          'node dist/cli.js ticket start 0001',
+          {
+            encoding: 'utf8',
+            cwd: testDir,
+            env: { ...process.env, TICKETS_DIR: testDir }
+          }
+        );
+      }).toThrow(); // Should fail with uncommitted changes
+    });
+
+    it('should switch to existing branch if already exists', async () => {
+      // Create feature branch manually
+      execSync('git checkout -b feature/0001-test-git-integration', { cwd: testDir });
+      execSync('git checkout main', { cwd: testDir });
+
+      // This test will fail until GitService is implemented
+      expect(() => {
+        execSync(
+          'node dist/cli.js ticket start 0001',
+          {
+            encoding: 'utf8',
+            cwd: testDir,
+            env: { ...process.env, TICKETS_DIR: testDir }
+          }
+        );
+      }).toThrow(); // Expected to fail because GitService is not implemented
+
+      // After implementation, it should switch to existing branch
+    });
+
+    it('should work when not in a git repository', async () => {
+      // Remove .git directory
+      await rm(join(testDir, '.git'), { recursive: true, force: true });
+
+      // This test will fail until GitService is implemented
+      expect(() => {
+        execSync(
+          'node dist/cli.js ticket start 0001',
+          {
+            encoding: 'utf8',
+            cwd: testDir,
+            env: { ...process.env, TICKETS_DIR: testDir }
+          }
+        );
+      }).toThrow(); // Expected to fail because GitService is not implemented
+
+      // After implementation, it should:
+      // 1. Show manual git instructions
+      // 2. LocalTicketService uses fallback file operations to move ticket to doing status
+    });
+  });
 });

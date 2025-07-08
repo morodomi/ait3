@@ -428,4 +428,106 @@ This ticket is already completed.
       expect(result).toContain('<id>');
     });
   });
+
+  describe('GitService integration', () => {
+    beforeEach(async () => {
+      // Initialize git repo in test directory for Git-specific tests
+      execSync('git init', { cwd: testDir });
+      execSync('git config user.email "test@example.com"', { cwd: testDir });
+      execSync('git config user.name "Test User"', { cwd: testDir });
+      execSync('git add .', { cwd: testDir });
+      execSync('git commit -m "Initial commit"', { cwd: testDir });
+    });
+
+    it('should use git mv for file movement when in Git repository', async () => {
+      // Start a ticket first
+      execSync(
+        'node dist/cli.js ticket start 0001',
+        {
+          encoding: 'utf8',
+          timeout: 10000,
+          env: { ...process.env, TICKETS_DIR: testDir }
+        }
+      );
+
+      // This test will fail until GitService.moveFile() is implemented
+      expect(() => {
+        execSync(
+          'node dist/cli.js ticket complete 0001',
+          {
+            encoding: 'utf8',
+            cwd: testDir,
+            env: { ...process.env, TICKETS_DIR: testDir }
+          }
+        );
+      }).toThrow(); // Expected to fail because moveFile() is not implemented
+
+      // After implementation, it should:
+      // 1. LocalTicketService uses GitService.moveFile() directly
+      // 2. Use git mv for moving ticket file from doing to done
+      // 3. Preserve Git history
+      // 4. Complete ticket successfully
+    });
+
+    it('should fallback to file system operation when git mv fails', async () => {
+      // Start a ticket first
+      execSync(
+        'node dist/cli.js ticket start 0001',
+        {
+          encoding: 'utf8',
+          timeout: 10000,
+          env: { ...process.env, TICKETS_DIR: testDir }
+        }
+      );
+
+      // This test will fail until GitService.moveFile() is implemented
+      expect(() => {
+        execSync(
+          'node dist/cli.js ticket complete 0001',
+          {
+            encoding: 'utf8',
+            cwd: testDir,
+            env: { ...process.env, TICKETS_DIR: testDir }
+          }
+        );
+      }).toThrow(); // Expected to fail because moveFile() is not implemented
+
+      // After implementation, it should:
+      // 1. LocalTicketService tries GitService.moveFile() first
+      // 2. Fallback to file system operation if git mv fails  
+      // 3. Still complete the ticket successfully
+    });
+
+    it('should work when not in a git repository', async () => {
+      // Start a ticket first
+      execSync(
+        'node dist/cli.js ticket start 0001',
+        {
+          encoding: 'utf8',
+          timeout: 10000,
+          env: { ...process.env, TICKETS_DIR: testDir }
+        }
+      );
+
+      // Remove .git directory
+      await rm(join(testDir, '.git'), { recursive: true, force: true });
+
+      // This test will fail until GitService.moveFile() is implemented
+      expect(() => {
+        execSync(
+          'node dist/cli.js ticket complete 0001',
+          {
+            encoding: 'utf8',
+            cwd: testDir,
+            env: { ...process.env, TICKETS_DIR: testDir }
+          }
+        );
+      }).toThrow(); // Expected to fail because moveFile() is not implemented
+
+      // After implementation, it should:
+      // 1. LocalTicketService detects non-Git environment
+      // 2. Use file system operation only
+      // 3. Complete ticket successfully
+    });
+  });
 });

@@ -4,6 +4,7 @@ import matter from 'gray-matter';
 import { z } from 'zod';
 import { lock } from 'proper-lockfile';
 import type { TicketService } from '../interfaces/TicketService.js';
+import type { GitService } from '../interfaces/GitService.js';
 import type { Ticket, CreateTicketOptions, TicketConfig } from '../../common/types.js';
 import { TICKET_CONSTANTS, DEFAULT_TICKET_CONFIG, ERROR_MESSAGES } from '../../common/constants.js';
 import { ValidationError, FileSystemError, ConfigurationError, LockError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError, TicketNotStartedError } from '../../common/errors.js';
@@ -25,8 +26,12 @@ const TicketSchema = z.object({
 
 export class LocalTicketService implements TicketService {
   private basePath: string;
+  private isRepoCache: boolean | null = null; // Git repository check cache
 
-  constructor(basePath: string = TICKET_CONSTANTS.DEFAULT_BASE_PATH) {
+  constructor(
+    basePath: string = TICKET_CONSTANTS.DEFAULT_BASE_PATH,
+    private gitService?: GitService
+  ) {
     this.basePath = basePath;
   }
 
@@ -153,7 +158,17 @@ export class LocalTicketService implements TicketService {
 
 
   private generateFileContent(ticket: Ticket): string {
-    const frontmatter: Record<string, any> = {
+    // Type-safe frontmatter without any types
+    const frontmatter: {
+      id: string;
+      title: string;
+      status: string;
+      priority: string;
+      created: string;
+      updated: string;
+      labels: string[];
+      assignee?: string;
+    } = {
       id: ticket.id,
       title: ticket.title,
       status: ticket.status,
@@ -174,6 +189,65 @@ export class LocalTicketService implements TicketService {
     );
 
     return content;
+  }
+
+  /**
+   * Cached Git repository check for performance optimization
+   */
+  private async isGitRepository(): Promise<boolean> {
+    if (this.isRepoCache === null && this.gitService) {
+      try {
+        this.isRepoCache = await this.gitService.isRepository();
+      } catch {
+        this.isRepoCache = false;
+      }
+    }
+    return this.isRepoCache ?? false;
+  }
+
+  /**
+   * Common file move operation with Git integration and fallback
+   * Reduces code duplication between moveTicketState and undoTicket
+   */
+  private async moveFileWithGitIntegration(
+    currentFilePath: string,
+    targetPath: string,
+    updatedContent: string
+  ): Promise<void> {
+    // Try Git move first if Git service is available
+    let gitMoveSucceeded = false;
+    if (this.gitService && await this.isGitRepository()) {
+      try {
+        // Update content in place first
+        await writeFile(currentFilePath, updatedContent, 'utf-8');
+        // Then use git mv to move the file
+        await this.gitService.moveFile(currentFilePath, targetPath);
+        gitMoveSucceeded = true;
+      } catch (error) {
+        // Git move failed, fall back to file system operation
+        console.warn('Git move failed, falling back to file system operation:', error instanceof Error ? error.message : String(error));
+      }
+    }
+    
+    // Fallback to file system operation if Git move didn't succeed
+    if (!gitMoveSucceeded) {
+      // Write updated content to new location
+      await writeFile(targetPath, updatedContent, 'utf-8');
+      
+      // Remove original file - using unlink for atomic operation
+      try {
+        await rename(currentFilePath, `${currentFilePath}.tmp`);
+        await rm(`${currentFilePath}.tmp`, { force: true });
+      } catch (error) {
+        // If removal fails, try to clean up the target file
+        try {
+          await rm(targetPath, { force: true });
+        } catch {
+          // Ignore cleanup errors
+        }
+        throw new FileSystemError(`Failed to move ticket file: ${error instanceof Error ? error.message : String(error)}`, currentFilePath);
+      }
+    }
   }
 
   async listTickets(options?: { status?: string; priority?: string }): Promise<Ticket[]> {
@@ -364,23 +438,21 @@ export class LocalTicketService implements TicketService {
       const content = await readFile(currentFilePath, 'utf-8');
       const { data, content: markdownContent } = matter(content);
 
-      // Update metadata
+      // Update metadata with type safety
       const now = TimeUtils.now();
-      const updatedData: Record<string, any> = {
+      const updatedData = {
         ...data,
         status: toStatus,
-        updated: now
+        updated: now,
+        // Type-safe timestamp field addition
+        ...(timestampField === 'started' && { started: now }),
+        ...(timestampField === 'completed' && { completed: now })
       };
-
-      // Add timestamp field if specified
-      if (timestampField) {
-        updatedData[timestampField] = now;
-      }
 
       // Generate updated file content
       const updatedContent = matter.stringify(markdownContent, updatedData);
 
-      // Move file to target directory atomically
+      // Move file to target directory with Git integration
       const statusToDir: Record<typeof toStatus, string> = {
         'todo': TICKET_CONSTANTS.DIRECTORIES.TODO,
         'doing': TICKET_CONSTANTS.DIRECTORIES.DOING,
@@ -389,22 +461,8 @@ export class LocalTicketService implements TicketService {
       const targetDir = statusToDir[toStatus];
       const targetPath = join(this.basePath, targetDir, targetFilename);
       
-      // Write updated content to new location
-      await writeFile(targetPath, updatedContent, 'utf-8');
-      
-      // Remove original file - using unlink for atomic operation
-      try {
-        await rename(currentFilePath, `${currentFilePath}.tmp`);
-        await rm(`${currentFilePath}.tmp`, { force: true });
-      } catch (error) {
-        // If removal fails, try to clean up the target file
-        try {
-          await rm(targetPath, { force: true });
-        } catch {
-          // Ignore cleanup errors
-        }
-        throw new FileSystemError(`Failed to move ticket file: ${error instanceof Error ? error.message : String(error)}`, currentFilePath);
-      }
+      // Use common file move method with Git integration
+      await this.moveFileWithGitIntegration(currentFilePath, targetPath, updatedContent);
 
     } catch (error) {
       // Re-throw specific errors as-is
@@ -438,5 +496,104 @@ export class LocalTicketService implements TicketService {
       'done',
       'completed'
     );
+  }
+
+  async undoTicket(id: string): Promise<void> {
+    try {
+      await this.ensureDirectoryStructure();
+
+      // Find the ticket in all directories to check current status
+      const directories = [
+        TICKET_CONSTANTS.DIRECTORIES.TODO,
+        TICKET_CONSTANTS.DIRECTORIES.DOING,
+        TICKET_CONSTANTS.DIRECTORIES.DONE
+      ];
+
+      let currentStatus: string | null = null;
+      let currentFilePath: string | null = null;
+      let targetFilename: string | null = null;
+
+      // Search for the ticket across all status directories
+      for (const dir of directories) {
+        const dirPath = join(this.basePath, dir);
+        try {
+          const files = await readdir(dirPath);
+          const targetFile = files.find(file => 
+            file.endsWith('.md') && file.startsWith(`${id}-`)
+          );
+          
+          if (targetFile) {
+            currentStatus = dir;
+            currentFilePath = join(dirPath, targetFile);
+            targetFilename = targetFile;
+            break;
+          }
+        } catch (error) {
+          // Skip if directory doesn't exist or can't be read
+          continue;
+        }
+      }
+
+      // Check if ticket exists
+      if (!currentStatus || !currentFilePath || !targetFilename) {
+        throw new TicketNotFoundError(id);
+      }
+
+      // Determine undo operation based on current status
+      let targetStatus: 'todo' | 'doing';
+      let fieldToRemove: 'started' | 'completed' | undefined;
+
+      if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.TODO) {
+        throw new ValidationError(`Cannot undo ticket #${id}: already in 'todo' state`);
+      } else if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.DOING) {
+        // doing → todo (remove started timestamp)
+        targetStatus = 'todo';
+        fieldToRemove = 'started';
+      } else if (currentStatus === TICKET_CONSTANTS.DIRECTORIES.DONE) {
+        // done → doing (remove completed timestamp)
+        targetStatus = 'doing';
+        fieldToRemove = 'completed';
+      } else {
+        throw new ValidationError(`Invalid ticket status: ${currentStatus}`);
+      }
+
+      // Read and update ticket content
+      const content = await readFile(currentFilePath, 'utf-8');
+      const { data, content: markdownContent } = matter(content);
+
+      // Update metadata with type safety
+      const now = TimeUtils.now();
+      const { [fieldToRemove || '']: _, ...dataWithoutField } = data;
+      const updatedData = {
+        ...dataWithoutField,
+        status: targetStatus,
+        updated: now
+      };
+
+      // Generate updated file content
+      const updatedContent = matter.stringify(markdownContent, updatedData);
+
+      // Move file to target directory with Git integration
+      const statusToDir: Record<typeof targetStatus, string> = {
+        'todo': TICKET_CONSTANTS.DIRECTORIES.TODO,
+        'doing': TICKET_CONSTANTS.DIRECTORIES.DOING
+      };
+      const targetDir = statusToDir[targetStatus];
+      const targetPath = join(this.basePath, targetDir, targetFilename);
+      
+      // Use common file move method with Git integration
+      await this.moveFileWithGitIntegration(currentFilePath, targetPath, updatedContent);
+
+    } catch (error) {
+      // Re-throw specific errors as-is
+      if (error instanceof TicketNotFoundError || 
+          error instanceof ValidationError ||
+          error instanceof FileSystemError) {
+        throw error;
+      }
+      
+      // Wrap other errors
+      throw new FileSystemError(`Failed to undo ticket: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
+    }
   }
 }
