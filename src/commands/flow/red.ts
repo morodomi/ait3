@@ -1,6 +1,6 @@
 import type { Services, CLIResult } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
-import { FLOW_STYLES } from '../../common/styles.js';
+import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';
 import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
@@ -45,7 +45,7 @@ export async function redPhase(
   // Generate warning for tickets already in progress
   let statusWarning = '';
   if (ticket.status === 'doing') {
-    statusWarning = `\n${FLOW_STYLES.warning('WARNING:  Warning: Ticket is already in progress')}`;
+    statusWarning = `\n${STYLES.warning('WARNING:  Warning: Ticket is already in progress')}`;
   }
 
   // Parse acceptance criteria from ticket description
@@ -67,25 +67,25 @@ export async function redPhase(
   
   if (type === 'unit' || type === 'both') {
     const unitPath = generateUnitTestPath(ticket);
-    results.push(`${FLOW_STYLES.success('CHECK:')} Unit test generated: ${FLOW_STYLES.path(unitPath)}`);
+    results.push(`${STYLES.success('CHECK:')} Unit test generated: ${STYLES.info(unitPath)}`);
   }
 
   if (type === 'integration' || type === 'both') {
     const integrationPath = generateIntegrationTestPath(ticket);
-    results.push(`${FLOW_STYLES.success('CHECK:')} Integration test generated: ${FLOW_STYLES.path(integrationPath)}`);
+    results.push(`${STYLES.success('CHECK:')} Integration test generated: ${STYLES.info(integrationPath)}`);
   }
 
   // Add test case count
   const testCount = testCases.length > 0 ? testCases.length : 3; // Default 3 basic tests
-  results.push(`${FLOW_STYLES.info('INFO:')} ${FLOW_STYLES.count(testCount + ' test cases generated')}${testCases.length > 0 ? ' from acceptance criteria' : ''}`);
+  results.push(`${STYLES.info('INFO:')} ${STYLES.info(testCount + ' test cases generated')}${testCases.length > 0 ? ' from acceptance criteria' : ''}`);
 
   // Add API pattern note if applicable
   if (hasApiLabel) {
-    results.push(`${FLOW_STYLES.info('INFO:')} API test pattern applied`);
+    results.push(`${STYLES.info('INFO:')} API test pattern applied`);
   }
 
   // Add pass rate
-  results.push(`${FLOW_STYLES.error('CROSS:')} Current pass rate: ${FLOW_STYLES.error('0% pass rate')} ${FLOW_STYLES.dim('(all tests failing as expected)')}`);
+  results.push(`${STYLES.danger('CROSS:')} Current pass rate: ${STYLES.danger('0% pass rate')} ${STYLES.muted('(all tests failing as expected)')}`);
 
   // Get ticket title for better formatting
   const ticketTitle = ticket.title || 'Feature';
@@ -96,8 +96,8 @@ export async function redPhase(
     message: `
 ${formatTicketHeader(ticketId, ticketTitle, 'RED Phase')}${statusWarning}
 
-${FLOW_STYLES.section('Claude Code Instructions')}:
-1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
+${STYLES.bold('Claude Code Instructions')}:
+1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Create comprehensive test cases:
    ├─ Test behavior, not implementation
    ├─ Cover all acceptance criteria
@@ -109,23 +109,23 @@ ${FLOW_STYLES.section('Claude Code Instructions')}:
    - Must be sufficient for the feature
    - Verify all critical paths covered
 
-${FLOW_STYLES.section('LOCATION: Test Locations')}:
-├─ Unit: ${FLOW_STYLES.path(`src/commands/${ticket.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.test.ts`)}
-└─ Integration: ${FLOW_STYLES.path(`tests/integration/${ticket.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.test.ts`)}
+${STYLES.bold('LOCATION: Test Locations')}:
+├─ Unit: ${STYLES.info(`src/commands/${ticket.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.test.ts`)}
+└─ Integration: ${STYLES.info(`tests/integration/${ticket.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.test.ts`)}
 
 ${results.join('\n')}
 
-${FLOW_STYLES.info('Next Action')}:
+${STYLES.info('Next Action')}:
 ├─ Read acceptance criteria:
-│  └─ Analyze ${FLOW_STYLES.path(ticketLocation)}
+│  └─ Analyze ${STYLES.info(ticketLocation)}
 ├─ Create test files:
 │  └─ Implement failing tests for all scenarios
 ├─ Verify 0% pass rate:
 │  └─ Run tests to confirm all failing
 └─ Commit test suite:
-   └─ ${FLOW_STYLES.code(`git commit -m "${generateCommitMessage('test', ticketId, ticketTitle)}"`)}
+   └─ ${STYLES.code(`git commit -m "${generateCommitMessage('test', ticketId, ticketTitle)}"`)},
 
-${FLOW_STYLES.dim('After test creation: ait3 flow green')}
+${STYLES.muted('After test creation: ait3 flow green')}
 `
   };
 }
@@ -157,7 +157,7 @@ function generateIntegrationTestPath(ticket: any): string {
 }
 
 function generateInteractiveOutput(ticket: any, testCases: string[], dryRun: boolean): CLIResult {
-  const prefix = dryRun ? `${FLOW_STYLES.warning('[DRY RUN]')} ` : '';
+  const prefix = dryRun ? `${STYLES.warning('[DRY RUN]')} ` : '';
   const ticketLocation = getTicketLocation(ticket.id, ticket.title, 'doing');
   
   return {
@@ -165,21 +165,21 @@ function generateInteractiveOutput(ticket: any, testCases: string[], dryRun: boo
     message: `
 ${prefix}${formatTicketHeader(ticket.id, ticket.title, 'RED Phase')}
 
-${FLOW_STYLES.section('Claude Code Instructions')}:
-1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
+${STYLES.bold('Claude Code Instructions')}:
+1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Test cases identified: ${testCases.length || 3}
 3. Interactive mode options:
 
-${FLOW_STYLES.title('Choose test generation strategy')}:
-${FLOW_STYLES.info('[1]')} Generate all test cases automatically
-${FLOW_STYLES.info('[2]')} Review and customize test cases
-${FLOW_STYLES.info('[3]')} Add additional edge cases
-${FLOW_STYLES.info('[4]')} Skip and write tests manually
+${STYLES.bold('Choose test generation strategy')}:
+${STYLES.info('[1]')} Generate all test cases automatically
+${STYLES.info('[2]')} Review and customize test cases
+${STYLES.info('[3]')} Add additional edge cases
+${STYLES.info('[4]')} Skip and write tests manually
 
-${FLOW_STYLES.info('Next Action')}:
+${STYLES.info('Next Action')}:
 └─ Choose strategy and proceed with test creation
 
-${FLOW_STYLES.dim('Interactive mode: Select an option to continue')}
+${STYLES.muted('Interactive mode: Select an option to continue')}
 `
   };
 }
@@ -199,22 +199,22 @@ function generateDryRunOutput(ticket: any, type: string, testCases: string[]): C
   return {
     success: true,
     message: `
-${FLOW_STYLES.warning('SEARCH: DRY RUN')} - Preview mode for Ticket #${ticket.id}: ${ticket.title}
-${FLOW_STYLES.info('LOCATION: Ticket location')}: ${FLOW_STYLES.path(ticketLocation)}
+${STYLES.warning('SEARCH: DRY RUN')} - Preview mode for Ticket #${ticket.id}: ${ticket.title}
+${STYLES.info('LOCATION: Ticket location')}: ${STYLES.info(ticketLocation)}
 
-${FLOW_STYLES.section('BRAIN: Would execute')}:
-1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
+${STYLES.bold('BRAIN: Would execute')}:
+1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Generate test files:
 ${files.join('\n')}
 
-${FLOW_STYLES.info('Test cases')}: ${testCases.length || 3}
-${FLOW_STYLES.info('Test type')}: ${type}
-${FLOW_STYLES.info('Expected pass rate')}: 0%
+${STYLES.info('Test cases')}: ${testCases.length || 3}
+${STYLES.info('Test type')}: ${type}
+${STYLES.info('Expected pass rate')}: 0%
 
-${FLOW_STYLES.info('Next Action')}:
+${STYLES.info('Next Action')}:
 └─ Run without --dry-run flag to create test files
 
-${FLOW_STYLES.dim('Dry run mode: Preview only')}
+${STYLES.muted('Dry run mode: Preview only')}
 `
   };
 }

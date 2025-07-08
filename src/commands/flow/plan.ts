@@ -1,6 +1,6 @@
 import type { Services, CLIResult } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
-import { FLOW_STYLES } from '../../common/styles.js';
+import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';
 import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
@@ -29,12 +29,12 @@ export async function planPhase(
     try {
       const ticket = await services.ticketService.getTicket(ticketId);
       if (ticket) {
-        ticketInfo = `\n${FLOW_STYLES.info('LIST: Ticket #' + ticketId)}: ${ticket.title}`;
+        ticketInfo = `\n${STYLES.info('LIST: Ticket #' + ticketId)}: ${ticket.title}`;
       } else {
-        ticketInfo = `\n${FLOW_STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
+        ticketInfo = `\n${STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
       }
     } catch (error) {
-      ticketInfo = `\n${FLOW_STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
+      ticketInfo = `\n${STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
     }
   }
 
@@ -51,7 +51,7 @@ export async function planPhase(
 
 function expressPlan(featureName: string, requirements?: string[], ticketInfo?: string): CLIResult {
   const requirementsText = requirements?.length 
-    ? `\n${FLOW_STYLES.command('LIST: Requirements')}: ${requirements.join(', ')}`
+    ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
 
   // Find ticket ID from ticketInfo if available
@@ -64,21 +64,21 @@ function expressPlan(featureName: string, requirements?: string[], ticketInfo?: 
     message: `
 ${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Express)')}${requirementsText}
 
-${FLOW_STYLES.section('BRAIN: Claude Code Quick Analysis')}:
-1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
+${STYLES.bold('BRAIN: Claude Code Quick Analysis')}:
+1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Analyze existing patterns in codebase
 3. Propose minimal viable implementation
 4. Skip Gemini analysis (express mode)
 
-${FLOW_STYLES.info('Next Action')}:
+${STYLES.info('Next Action')}:
 ├─ Quick analysis:
-│  └─ Read ${FLOW_STYLES.path(ticketLocation)}
+│  └─ Read ${STYLES.info(ticketLocation)}
 ├─ Rapid proposal:
 │  └─ Minimal viable approach
 └─ Fast commit:
-   └─ ${FLOW_STYLES.code(`git commit -m "${generateCommitMessage('planning', ticketId, featureName)}"`)}
+   └─ ${STYLES.code(`git commit -m "${generateCommitMessage('planning', ticketId, featureName)}"`)}
 
-${FLOW_STYLES.dim('Express mode: ait3 flow red after quick approval')}
+${STYLES.muted('Express mode: ait3 flow red after quick approval')}
 `
   };
 }
@@ -94,38 +94,38 @@ function manualPlan(featureName: string, ticketInfo?: string): CLIResult {
     message: `
 ${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Manual)')}
 
-${FLOW_STYLES.section('CYCLE: Dialectical Process')}:
-├─ ${FLOW_STYLES.info('Claude proposes')} → Generate technical approach with clear rationale
-├─ ${FLOW_STYLES.error('Gemini refutes')} → Challenge assumptions and identify alternatives  
-└─ ${FLOW_STYLES.feature('Human decides')} → Synthesize evidence and make informed decisions
+${STYLES.bold('CYCLE: Dialectical Process')}:
+├─ ${STYLES.info('Claude proposes')} → Generate technical approach with clear rationale
+├─ ${STYLES.danger('Gemini refutes')} → Challenge assumptions and identify alternatives  
+└─ ${STYLES.success('Human decides')} → Synthesize evidence and make informed decisions
 
-${FLOW_STYLES.section('LIST: Manual Planning Steps')}:
-1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
+${STYLES.bold('LIST: Manual Planning Steps')}:
+1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Research existing approaches and patterns
-3. Consult: ${FLOW_STYLES.command(`gemini -p "@src/ @CLAUDE.md @.tickets/doing/${ticketId}-*.md Critique approach"`)}
+3. Consult: ${STYLES.info(`gemini -p "@src/ @CLAUDE.md @.tickets/doing/${ticketId}-*.md Critique approach"`)}
 4. Document architectural decisions
 5. Update ticket with reasoning
 
-${FLOW_STYLES.info('Next Action')}:
+${STYLES.info('Next Action')}:
 ├─ Research approaches:
 │  └─ Investigate existing patterns
 ├─ Create proposal:
 │  └─ Document design decisions
 ├─ Get dialectical critique:
-│  └─ ${FLOW_STYLES.code(`gemini -p "@src/ @CLAUDE.md Critique"`)}
+│  └─ ${STYLES.code(`gemini -p "@src/ @CLAUDE.md Critique"`)}
 ├─ Synthesize decision:
 │  └─ Weigh arguments and choose
 └─ Document reasoning:
-   └─ ${FLOW_STYLES.code(`git commit -m "${generateCommitMessage('planning', ticketId, featureName)}"`)}
+   └─ ${STYLES.code(`git commit -m "${generateCommitMessage('planning', ticketId, featureName)}"`)}
 
-${FLOW_STYLES.dim('Manual mode: Proceed to ait3 flow red after decision')}
+${STYLES.muted('Manual mode: Proceed to ait3 flow red after decision')}
 `
   };
 }
 
 function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: string): CLIResult {
   const requirementsSection = requirements?.length 
-    ? `\n${FLOW_STYLES.command('LIST: Requirements')}: ${requirements.join(', ')}`
+    ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
 
   // Find ticket ID from ticketInfo if available
@@ -138,8 +138,8 @@ function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: s
     message: `
 ${formatTicketHeader(ticketId, featureName, 'PLANNING Phase')}${requirementsSection}
 
-${FLOW_STYLES.section('Claude Code Instructions')}:
-1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
+${STYLES.bold('Claude Code Instructions')}:
+1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Analyze and propose:
    ├─ Purpose & Goals
    ├─ Implementation approach
@@ -149,24 +149,24 @@ ${FLOW_STYLES.section('Claude Code Instructions')}:
    └─ Dependencies & Integration points
 
 3. (Optional) Gemini analysis:
-   ${FLOW_STYLES.command(`$ gemini -p "@src/ @CLAUDE.md @.tickets/doing/${ticketId}-*.md Critique this approach"`)}
-   ${FLOW_STYLES.dim('Note: @src/ includes relevant source files. For full codebase use @./')}
+   ${STYLES.info(`$ gemini -p "@src/ @CLAUDE.md @.tickets/doing/${ticketId}-*.md Critique this approach"`)}
+   ${STYLES.muted('Note: @src/ includes relevant source files. For full codebase use @./')}
 
 4. Present proposal for human decision
 
-${FLOW_STYLES.info('Next Action')}:
+${STYLES.info('Next Action')}:
 ├─ Analyze ticket:
-│  └─ Read ${FLOW_STYLES.path(ticketLocation)}
+│  └─ Read ${STYLES.info(ticketLocation)}
 ├─ Research codebase:
 │  └─ Understand existing patterns
 ├─ Propose approach:
 │  └─ Document technical design
 ├─ Validate with Gemini (optional):
-│  └─ ${FLOW_STYLES.code(`gemini -p "@src/ Critique approach"`)}
+│  └─ ${STYLES.code(`gemini -p "@src/ Critique approach"`)}
 └─ Commit design:
-   └─ ${FLOW_STYLES.code(`git commit -m "${generateCommitMessage('planning', ticketId, featureName)}"`)}
+   └─ ${STYLES.code(`git commit -m "${generateCommitMessage('planning', ticketId, featureName)}"`)}
 
-${FLOW_STYLES.dim('After approval: ait3 flow red')}
+${STYLES.muted('After approval: ait3 flow red')}
 `
   };
 }
@@ -240,7 +240,7 @@ function formatProposalDetails(items: [string, string][]): string {
   return items
     .map(([label, desc], index, array) => {
       const prefix = index === array.length - 1 ? '└─' : '├─';
-      return `${prefix} ${FLOW_STYLES.info(label)}: ${desc}`;
+      return `${prefix} ${STYLES.info(label)}: ${desc}`;
     })
     .join('\n');
 }

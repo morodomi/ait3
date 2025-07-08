@@ -7,7 +7,7 @@ import { squashPhase } from './squash.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
-import chalk from 'chalk';
+import { STYLES } from '../../common/styles.js';
 
 // Service container - centralized dependency injection
 // Support test environment override with TICKETS_DIR
@@ -64,9 +64,9 @@ flowCommand
     } catch (error) {
       // Enhanced error handling
       if (error instanceof ValidationError) {
-        console.error(chalk.red('VALIDATION ERROR:'), error.message);
+        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
       } else {
-        console.error(chalk.red('ERROR in planning phase:'), error instanceof Error ? error.message : String(error));
+        console.error(STYLES.danger('ERROR in planning phase:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
@@ -96,15 +96,15 @@ flowCommand
     } catch (error) {
       // Enhanced error handling
       if (error instanceof ValidationError) {
-        console.error(chalk.red('VALIDATION ERROR:'), error.message);
+        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
         if (error.field === 'ticketId') {
-          console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
+          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
         }
       } else if (error instanceof TicketNotFoundError) {
-        console.error(chalk.red('TICKET NOT FOUND:'), error.message);
-        console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
+        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
+        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
       } else {
-        console.error(chalk.red('ERROR in RED phase:'), error instanceof Error ? error.message : String(error));
+        console.error(STYLES.danger('ERROR in RED phase:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
@@ -135,15 +135,15 @@ flowCommand
     } catch (error) {
       // Enhanced error handling
       if (error instanceof ValidationError) {
-        console.error(chalk.red('VALIDATION ERROR:'), error.message);
+        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
         if (error.field === 'ticketId') {
-          console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
+          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
         }
       } else if (error instanceof TicketNotFoundError) {
-        console.error(chalk.red('TICKET NOT FOUND:'), error.message);
-        console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
+        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
+        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
       } else {
-        console.error(chalk.red('ERROR in GREEN phase:'), error instanceof Error ? error.message : String(error));
+        console.error(STYLES.danger('ERROR in GREEN phase:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
@@ -171,17 +171,17 @@ flowCommand
     } catch (error) {
       // Enhanced error handling
       if (error instanceof ValidationError) {
-        console.error(chalk.red('VALIDATION ERROR:'), error.message);
+        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
         if (error.field === 'ticketId') {
-          console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
+          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
         } else if (error.field === 'focus') {
-          console.error(chalk.yellow('TIP: Valid areas: duplication, mocks, types, organization'));
+          console.error(STYLES.warning('TIP: Valid areas: duplication, mocks, types, organization'));
         }
       } else if (error instanceof TicketNotFoundError) {
-        console.error(chalk.red('TICKET NOT FOUND:'), error.message);
-        console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
+        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
+        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
       } else {
-        console.error(chalk.red('ERROR in REFACTOR phase:'), error instanceof Error ? error.message : String(error));
+        console.error(STYLES.danger('ERROR in REFACTOR phase:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }
@@ -211,15 +211,15 @@ flowCommand
     } catch (error) {
       // Enhanced error handling
       if (error instanceof ValidationError) {
-        console.error(chalk.red('VALIDATION ERROR:'), error.message);
+        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
         if (error.field === 'ticketId') {
-          console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
+          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
         }
       } else if (error instanceof TicketNotFoundError) {
-        console.error(chalk.red('TICKET NOT FOUND:'), error.message);
-        console.error(chalk.yellow('TIP: Use "ait3 ticket list" to see available tickets'));
+        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
+        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
       } else {
-        console.error(chalk.red('ERROR in SQUASH phase:'), error instanceof Error ? error.message : String(error));
+        console.error(STYLES.danger('ERROR in SQUASH phase:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }

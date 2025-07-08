@@ -122,7 +122,7 @@ describe('squashPhase Pure Function', () => {
       const result = await squashPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Next Action:');
+      expect(result.message).toContain('Next Action');
       expect(result.message).toContain('Squash commits:');
       expect(result.message).toContain('git rebase -i main');
       

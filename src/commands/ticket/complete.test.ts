@@ -3,6 +3,10 @@ import { completeTicket } from './complete.js';
 import type { Services, CompleteTicketArgs } from '@/common/types.js';
 import type { TicketService } from '@/services/interfaces/TicketService.js';
 import { ValidationError, TicketNotFoundError, TicketNotStartedError, TicketAlreadyCompletedError } from '@/common/errors.js';
+import chalk from 'chalk';
+
+// Enable colors in tests
+chalk.level = 3;
 
 // Mock TicketService for unit testing
 class MockTicketService implements TicketService {
