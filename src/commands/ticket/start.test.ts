@@ -8,6 +8,7 @@ import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, Tic
 // Mock TicketService for unit testing
 class MockTicketService implements TicketService {
   private shouldThrowError: Error | null = null;
+  private startedTickets: Set<string> = new Set();
 
   constructor() {}
 
@@ -25,26 +26,37 @@ class MockTicketService implements TicketService {
   }
 
   async getTicket(id: string): Promise<any> {
-    // Return a mock ticket for successful tests
-    if (!this.shouldThrowError) {
-      return {
-        id,
-        title: 'Test Ticket',
-        status: 'doing',
-        priority: 'medium',
-        created: '2025-01-01T00:00:00Z',
-        updated: new Date().toISOString(),
-        labels: []
-      };
+    // Handle TicketNotFoundError specifically
+    if (this.shouldThrowError instanceof TicketNotFoundError) {
+      return null;
     }
-    return null;
+    
+    // Return appropriate status based on error type
+    let status = this.startedTickets.has(id) ? 'doing' : 'todo';
+    if (this.shouldThrowError instanceof TicketAlreadyInProgressError) {
+      status = 'doing';
+    } else if (this.shouldThrowError instanceof TicketAlreadyCompletedError) {
+      status = 'done';
+    }
+    
+    // Return a mock ticket for successful tests and other error types
+    return {
+      id,
+      title: 'Test Ticket',
+      status,
+      priority: 'medium',
+      created: '2025-01-01T00:00:00Z',
+      updated: new Date().toISOString(),
+      labels: []
+    };
   }
 
   async startTicket(id: string): Promise<void> {
     if (this.shouldThrowError) {
       throw this.shouldThrowError;
     }
-    // Mock successful start
+    // Track started tickets
+    this.startedTickets.add(id);
     return Promise.resolve();
   }
 }
@@ -359,9 +371,9 @@ describe('startTicket pure function', () => {
         'Cannot start ticket: You have uncommitted changes. Please commit or stash them first.'
       );
       
-      // Ticket should still be moved to doing despite Git error
+      // Ticket should NOT be moved to doing when Git has uncommitted changes
       const ticket = await mockTicketService.getTicket('0001');
-      expect(ticket?.status).toBe('doing');
+      expect(ticket?.status).toBe('todo');
     });
 
     it('should checkout existing branch if it already exists', async () => {

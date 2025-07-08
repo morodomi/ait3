@@ -21,13 +21,13 @@ started: '2025-07-08T02:18:13.982Z'
 
 ### 基本実装方針
 1. GitServiceの既存インターフェースを活用
-2. uncommitted changesがある場合は処理を中断（データ損失防止）
+2. uncommitted changesがある場合はチケット移動せずに処理を中断（データ損失防止）
 3. 既存ブランチの検索は`feature/{ticket-id}-*`パターンで柔軟に対応
 4. GitService非依存でも動作（手動手順を表示）
 5. 現在のブランチから新規ブランチを作成（main依存なし）
 
 ### エラーハンドリング
-- uncommitted changes → 処理中断、コミットを促す
+- uncommitted changes → チケット移動せず処理中断、コミットを促す
 - Git未初期化 → エラーメッセージと初期化手順
 - 権限不足 → 権限エラーメッセージ
 - fetch失敗 → 警告のみ、ローカル操作は続行
@@ -35,16 +35,16 @@ started: '2025-07-08T02:18:13.982Z'
 
 ### 実装フロー
 ```typescript
-1. チケットステータスを todo → doing に変更
+1. チケット情報を取得・検証
 2. GitService利用可能性チェック
-   - 利用不可 → チケット移動のみ実行、手動手順表示
-3. uncommitted changesチェック
-   - 存在する → エラー表示、処理中断
-4. git fetch実行（失敗しても続行）
-5. 既存ブランチ検索（feature/{ticket-id}-*）
+3. uncommitted changesチェック（最優先）
+   - 存在する → エラー表示、チケット移動せず処理中断
+4. チケットステータスを todo → doing に変更
+5. git fetch実行（失敗しても続行）
+6. 既存ブランチ検索（feature/{ticket-id}-*）
    - 存在する → checkoutを試行
    - 存在しない → 新規作成
-6. 成功/失敗メッセージ表示
+7. 成功/失敗メッセージ表示
 ```
 
 ### GitServiceインターフェース拡張
@@ -104,7 +104,8 @@ Test Results:
 
 Implementation Details:
 - Added Git operations to `startTicket` function
-- Ticket status change happens first (before Git operations)
+- Git uncommitted changes check happens BEFORE ticket status change
+- If uncommitted changes exist, ticket status is NOT changed
 - Comprehensive error handling with fallback to manual instructions
 - Support for remote branch tracking
 - Branch creation from current branch (not just main)
@@ -114,3 +115,43 @@ Files Modified:
 - `tests/integration/cli/flow/squash.integration.test.ts` - Fixed test expectation
 - `src/commands/flow/squash.ts` - Minor text case fix
 - `src/commands/flow/refactor.ts` - Minor text formatting fix
+
+## REFACTOR Phase Complete ✅
+
+Refactored code for better maintainability and readability while maintaining 100% test pass rate.
+
+Refactoring Improvements:
+- Split large `handleGitOperations` function (100+ lines) into 8 focused functions
+- Applied Single Responsibility Principle to each function
+- Implemented DRY principle with `formatErrorMessage` utility
+- Improved code readability and reduced nesting complexity
+- Maintained 100% test coverage (33/33 tests passing)
+
+Functions Created:
+- `handleGitNotInitialized` - Git not initialized handling
+- `attemptFetch` - Safe fetch operation
+- `handleExistingBranches` - Existing branch logic routing
+- `handleSingleExistingBranch` - Single branch processing
+- `handleRemoteBranch` - Remote branch tracking
+- `handleLocalBranch` - Local branch checkout
+- `handleMultipleExistingBranches` - Multiple branch selection
+- `handleNewBranchCreation` - New branch creation
+- `formatErrorMessage` - Common error message formatting
+
+## Chalk Styling Refactoring Complete ✅
+
+Unified chalk usage across the ticket start command to use FLOW_STYLES constants.
+
+Styling Improvements:
+- Replaced all direct chalk usage (25+ instances) with FLOW_STYLES constants
+- Extended FLOW_STYLES with Git and ticket operation specific styles
+- Improved consistency: same operations use same colors across codebase
+- Enhanced maintainability: color changes now happen in one place
+- All tests passing (33/33) after refactoring
+
+Style Constants Added:
+- `gitSuccess`, `gitWarning`, `gitInfo`, `gitCommand` for Git operations
+- `ticketId`, `ticketTitle`, `ticketStatus`, `statusTransition` for ticket operations
+- `text` for general content
+
+Recommendation: Apply same pattern to other ticket commands (create.ts, complete.ts, list.ts, show.ts) for complete consistency
