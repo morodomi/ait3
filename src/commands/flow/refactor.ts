@@ -3,6 +3,7 @@ import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { FLOW_STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';
+import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
 
 const REFACTOR_MESSAGES = {
   INVALID_FOCUS_AREA: (area: string) => `Invalid focus area: ${area}`
@@ -192,12 +193,12 @@ function formatAnalysisOutput(
   const ticketSlug = SlugUtils.titleToSlug(ticketTitle);
 
   // Header
-  sections.push(`${FLOW_STYLES.title('🔧 REFACTOR Phase')} for Ticket #${ticketId}: ${ticketTitle}`);
-  sections.push(`\n${FLOW_STYLES.info('Analysis for ticket #' + ticketId)}`);
+  const ticketLocation = getTicketLocation(ticketId, ticketTitle, 'doing');
+  sections.push(`${formatTicketHeader(ticketId, ticketTitle, '🔧 REFACTOR Phase')}`);
   
   // Claude Code Instructions
   sections.push(`\n${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
-1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticketId}-${ticketSlug}.md`)}
+1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Run quality checks (project-specific):
    - Linter (e.g., eslint, ruff, rubocop)
    - Formatter (e.g., prettier, black, rustfmt)
@@ -292,14 +293,6 @@ ${FLOW_STYLES.title('📊 Code Quality Summary')}:
     sections.push(`└─ ${FLOW_STYLES.info('Performance hints')}: Identified`);
   }
 
-  // Next steps
-  sections.push(`\n${FLOW_STYLES.title('🚀 Next steps')}:
-1. Review suggestions
-2. Apply changes
-3. Run tests to ensure 100% pass rate
-4. Consider creating tickets for mocks
-5. Maintain code quality standards`);
-
   // Mock ticket creation commands
   if (analysis.mocks.length > 0) {
     sections.push(`\n${FLOW_STYLES.dim('# Suggested ticket creation commands:')}`);
@@ -308,8 +301,21 @@ ${FLOW_STYLES.title('📊 Code Quality Summary')}:
     });
   }
 
+  // Next Action section
+  sections.push(`\n${FLOW_STYLES.info('Next Action')}:
+├─ Review analysis:
+│  └─ Examine refactor opportunities
+├─ Apply improvements:
+│  └─ Extract patterns, optimize performance
+├─ Create tickets for mocks:
+│  └─ Plan future work for real implementations
+├─ Verify 100% test pass:
+│  └─ Ensure refactoring doesn't break tests
+└─ Commit refactoring:
+   └─ ${FLOW_STYLES.code(`git commit -m "${generateCommitMessage('refactor', ticketId, ticketTitle)}"`)}`);
+
   // Next phase hint
-  sections.push(`\n${FLOW_STYLES.dim('Next step: ait3 flow squash')}`);
+  sections.push(`\n${FLOW_STYLES.dim('After refactoring: ait3 flow squash')}`);
 
   return sections.join('\n');
 }

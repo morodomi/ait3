@@ -198,4 +198,60 @@ describe('planPhase Pure Function', () => {
       expect(result.message).toContain('Claude Code Instructions');
     });
   });
+
+  describe('unified Next Action format', () => {
+    it('should display ticket location when ticket ID provided', async () => {
+      // Create test ticket
+      await services.ticketService.createTicket('Feature for planning');
+      await services.ticketService.startTicket('0001');
+      
+      const result = await planPhase(
+        { 
+          featureName: 'test-feature',
+          ticketId: '0001',
+          mode: 'guided' 
+        },
+        services
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('📍 Ticket location: .tickets/doing/0001-');
+    });
+
+    it('should include structured Next Action section', async () => {
+      const result = await planPhase(
+        { 
+          featureName: 'test-feature',
+          mode: 'guided' 
+        },
+        services
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Next Action:');
+      expect(result.message).toContain('├─ Analyze ticket:');
+      expect(result.message).toContain('│  └─ Read .tickets/doing/001-test-feature.md');
+      expect(result.message).toContain('├─ Research codebase:');
+      expect(result.message).toContain('│  └─ Understand existing patterns');
+      expect(result.message).toContain('├─ Propose approach:');
+      expect(result.message).toContain('│  └─ Document technical design');
+      expect(result.message).toContain('├─ Validate with Gemini (optional):');
+      expect(result.message).toContain('└─ Commit design:');
+    });
+
+    it('should include git commit recommendation', async () => {
+      const result = await planPhase(
+        { 
+          featureName: 'test-feature',
+          ticketId: '0001',
+          mode: 'guided' 
+        },
+        services
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('└─ Commit design:');
+      expect(result.message).toContain('git commit -m "planning(#001): test-feature design"');
+    });
+  });
 });

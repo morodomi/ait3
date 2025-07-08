@@ -4,6 +4,7 @@ import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, Tic
 import { IDUtils, SlugUtils } from '../../common/utils.js';
 import { UI_CONSTANTS } from '../../common/constants.js';
 import { FLOW_STYLES } from '../../common/styles.js';
+import { getTicketLocation } from '../../common/flow-utils.js';
 import chalk from 'chalk';
 
 // Force colors for consistent output in tests
@@ -28,8 +29,11 @@ export async function startTicket(
       throw new TicketNotFoundError(args.id);
     }
 
-    // Check Git operations BEFORE changing ticket status
-    if (services.gitService) {
+    // Handle Git operations FIRST, before changing ticket status
+    let gitOperationSuccess = false;
+    let gitMessage = '';
+    
+    if (services.gitService && ticket) {
       try {
         // Check for uncommitted changes first
         const isRepo = await services.gitService.isRepository();
@@ -39,40 +43,54 @@ export async function startTicket(
             throw new Error('Cannot start ticket: You have uncommitted changes. Please commit or stash them first.');
           }
         }
+        
+        // Try to create/checkout branch
+        gitMessage = await handleGitOperations(args.id, ticket.title, services.gitService);
+        gitOperationSuccess = true;
       } catch (gitError) {
-        // If it's uncommitted changes error, re-throw to prevent ticket status change
-        if (gitError instanceof Error && gitError.message.includes('uncommitted changes')) {
+        // If it's a critical error (uncommitted changes or branch creation failure), don't move ticket
+        if (gitError instanceof Error && 
+            (gitError.message.includes('uncommitted changes') || 
+             gitError.message.includes('Failed to create branch') ||
+             gitError.message.includes('Permission denied'))) {
           throw gitError;
         }
-        // For other Git errors, we'll continue and show manual instructions
+        
+        // For non-critical errors (like fetch failures), we'll continue
+        gitMessage = FLOW_STYLES.gitWarning('⚠️  Git operations failed\n') +
+                     FLOW_STYLES.gitCommand(`   ${gitError instanceof Error ? gitError.message : 'Unknown error'}\n`) +
+                     FLOW_STYLES.gitWarning('📝 Manual Git steps:\n') +
+                     FLOW_STYLES.gitCommand(`   git checkout -b ${generateBranchName(args.id, ticket.title)}\n`);
+        gitOperationSuccess = true; // Allow ticket move for non-critical errors
       }
+    } else {
+      // No GitService available, that's OK
+      gitOperationSuccess = true;
     }
-
+    
+    // Only move ticket if Git operations succeeded (or GitService is not available)
+    if (!gitOperationSuccess) {
+      throw new Error('Git operations failed. Ticket status not changed.');
+    }
+    
     // Now safe to change ticket status
     await services.ticketService.startTicket(args.id);
 
     // Generate formatted success output
     const messageParts = [
       FLOW_STYLES.success(`✅ Started ticket #${args.id}`) + (ticket ? `: ${ticket.title}` : ''),
-      '',
-      FLOW_STYLES.statusTransition('   Status updated: ') + FLOW_STYLES.info('todo') + FLOW_STYLES.statusTransition(' → ') + FLOW_STYLES.warning('doing'),
-      FLOW_STYLES.statusTransition('   Moved from todo → doing'),
       ''
     ];
-
-    // Handle Git operations if GitService is available
-    if (services.gitService && ticket) {
-      try {
-        const gitMessage = await handleGitOperations(args.id, ticket.title, services.gitService);
-        messageParts.push(gitMessage);
-      } catch (gitError) {
-        // For Git errors after ticket move, add them to the message
-        messageParts.push(FLOW_STYLES.gitWarning('⚠️  Git operations failed'));
-        messageParts.push(FLOW_STYLES.gitCommand(`   ${gitError instanceof Error ? gitError.message : 'Unknown error'}`));
-        messageParts.push(FLOW_STYLES.gitWarning('📝 Manual Git steps:'));
-        messageParts.push(FLOW_STYLES.gitCommand(`   git checkout -b ${generateBranchName(args.id, ticket.title)}`));
-        messageParts.push('');
-      }
+    
+    // Add status information
+    messageParts.push(FLOW_STYLES.info('📊 Details:'));
+    messageParts.push(`   Status: ${FLOW_STYLES.warning('doing')}`);
+    messageParts.push(`   Location: ${FLOW_STYLES.path(getTicketLocation(args.id, ticket?.title || 'unknown', 'doing'))}`);
+    messageParts.push('');
+    
+    // Add Git message if available
+    if (gitMessage) {
+      messageParts.push(gitMessage);
     } else if (!services.gitService && ticket) {
       // Show manual instructions if GitService is not available
       const branchName = generateBranchName(args.id, ticket.title);
@@ -81,9 +99,9 @@ export async function startTicket(
       messageParts.push('');
     }
 
-    // Add next steps guidance
-    messageParts.push(FLOW_STYLES.path('🚀 Next: ait3 flow plan'));
-    messageParts.push(FLOW_STYLES.dim('   Start planning phase for this ticket'));
+    // Add next steps guidance with new format
+    messageParts.push(FLOW_STYLES.info('Next Action:'));
+    messageParts.push(`└─ Run: ${FLOW_STYLES.command(`ait3 flow plan ${args.id}`)}`);
 
     return {
       success: true,
@@ -221,9 +239,11 @@ async function handleLocalBranch(
     await gitService.checkout(branchName);
     messageParts.push(FLOW_STYLES.gitSuccess(`✓ Switched to existing branch: ${branchName}`));
   } catch (checkoutError) {
+    // For existing branch checkout, we can be more lenient since the branch exists
     messageParts.push(FLOW_STYLES.gitWarning(`⚠️  Could not switch to existing branch`));
     messageParts.push(FLOW_STYLES.gitCommand(`   Error: ${formatErrorMessage(checkoutError)}`));
     messageParts.push(FLOW_STYLES.gitCommand('   Manual resolution required'));
+    // Don't throw - allow ticket move since branch exists
   }
 }
 
@@ -265,10 +285,8 @@ async function handleNewBranchCreation(
       messageParts.push(FLOW_STYLES.gitCommand(`   Created from branch: ${currentBranch}`));
     }
   } catch (createError) {
-    messageParts.push(FLOW_STYLES.gitWarning('⚠️  Could not create branch automatically'));
-    messageParts.push(FLOW_STYLES.gitCommand(`   Error: ${formatErrorMessage(createError)}`));
-    messageParts.push(FLOW_STYLES.gitWarning('📝 Manual Git steps:'));
-    messageParts.push(FLOW_STYLES.gitCommand(`   git checkout -b ${newBranchName}`));
+    // Throw error to prevent ticket move
+    throw new Error(`Failed to create branch: ${formatErrorMessage(createError)}`);
   }
 }
 

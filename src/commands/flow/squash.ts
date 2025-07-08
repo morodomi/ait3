@@ -37,12 +37,26 @@ export async function squashPhase(
     throw new TicketNotFoundError(ticketId);
   }
 
-  // Check ticket status and prepare status message
+  // Handle ticket completion
   let statusMessage = '';
   if (ticket.status === 'done') {
-    statusMessage = `\n${FLOW_STYLES.warning('⚠️  Note: Ticket is already completed')}\n${FLOW_STYLES.dim('Showing Git command suggestions only (ticket move skipped)')}\n`;
-  } else if (ticket.status === 'todo') {
-    throw new ValidationError(FLOW_MESSAGES.TICKET_NOT_IN_PROGRESS(ticketId));
+    statusMessage = `\n${FLOW_STYLES.warning('⚠️  Note: Ticket is already completed')}\n`;
+  } else {
+    // Auto-complete the ticket if not done
+    try {
+      // If ticket is in todo, we need to start it first
+      if (ticket.status === 'todo') {
+        await services.ticketService.startTicket(ticketId);
+      }
+      await services.ticketService.completeTicket(ticketId);
+      statusMessage = `\n${FLOW_STYLES.success('✅ Automatically completed ticket #' + ticketId)}\n`;
+      
+      // Update ticket status for display
+      ticket.status = 'done';
+    } catch (completeError) {
+      // If auto-complete fails, abort the squash operation
+      throw new Error(`Failed to auto-complete ticket: ${completeError instanceof Error ? completeError.message : 'Unknown error'}`);
+    }
   }
 
   // Handle dry-run mode
@@ -50,12 +64,18 @@ export async function squashPhase(
     return generateDryRunOutput(ticket, args);
   }
 
-  // Generate Git command suggestions
+  // Generate Git command suggestions with ticket location
+  const ticketSlug = SlugUtils.titleToSlug(ticket.title);
+  const ticketLocation = `.tickets/done/${ticketId}-${ticketSlug}.md`;
+  
+  const locationInfo = `${FLOW_STYLES.title('📦 SQUASH Phase')} for Ticket #${ticketId}: ${ticket.title}\n` +
+                      `${FLOW_STYLES.info('📍 Ticket location')}: ${FLOW_STYLES.path(ticketLocation)}\n`;
+  
   const suggestions = generateGitSuggestions(ticket, args);
 
   return {
     success: true,
-    message: statusMessage + suggestions
+    message: locationInfo + statusMessage + suggestions
   };
 }
 
@@ -92,12 +112,18 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   const featureName = generateFeatureBranchName(ticket);
   const commitTitle = generateCommitTitle(ticket);
 
-  // Header
-  sections.push(`${FLOW_STYLES.title('🎯 SQUASH Phase')} - Git Command Suggestions for ticket #${ticketId}`);
+  // Header is now added in the main function, so we don't need it here
   
   if (args.dryRun) {
     sections.push(`\n${FLOW_STYLES.warning('🔍 DRY RUN MODE')}`);
   }
+
+  // Add related commits section
+  sections.push(`\n${FLOW_STYLES.info('Related commits to squash')}:`);
+  sections.push(`├─ ${FLOW_STYLES.dim('xxxxxxx planning(#' + ticketId + '): design approach')}`);
+  sections.push(`├─ ${FLOW_STYLES.dim('xxxxxxx test(#' + ticketId + '): create failing tests')}`);
+  sections.push(`├─ ${FLOW_STYLES.dim('xxxxxxx feat(#' + ticketId + '): implement feature')}`);
+  sections.push(`└─ ${FLOW_STYLES.dim('xxxxxxx refactor(#' + ticketId + '): optimize implementation')}`);
 
   sections.push(`\n${FLOW_STYLES.title('📋 Suggested Git Commands')}:`);
 
@@ -157,14 +183,23 @@ function generateGitSuggestions(ticket: Ticket, args: SquashArgs): string {
   sections.push(`${FLOW_STYLES.code(`ait3 ticket reopen ${ticketId}`)}`);
   sections.push(`${FLOW_STYLES.dim('This will move ticket from done → doing')}`);
 
-  // Next steps (Manual Execution)
-  sections.push(`\n${FLOW_STYLES.title('🚀 Next steps (Manual Execution)')}:`);
-  sections.push(`1. Review suggested commands and execute manually`);
-  sections.push(`2. Complete the ticket when ready:`);
-  sections.push(`   ${FLOW_STYLES.code(`ait3 ticket complete ${ticketId}`)}`);
-  sections.push(`3. Push changes and create PR or merge`);
-  sections.push(`   `);
-  sections.push(`${FLOW_STYLES.dim('Note: Future version will automate ticket completion during squash')}`);
+  // Create structured Next Action section
+  sections.push(`\n${FLOW_STYLES.info('Next Action')}:`);
+  
+  if (!args.noSquash) {
+    sections.push(`├─ Squash commits:`);
+    sections.push(`│  └─ ${FLOW_STYLES.code('git rebase -i main')}`);
+    sections.push(`├─ Create final commit:`);
+    sections.push(`│  └─ ${FLOW_STYLES.code(`git commit -m "${commitTitle}"`)}`);
+    sections.push(`├─ Push changes:`);
+    sections.push(`│  └─ ${FLOW_STYLES.code('git push --force-with-lease')}`);
+    sections.push(`└─ Create PR or merge to main`);
+  } else {
+    sections.push(`├─ Review commits (no squash)`);
+    sections.push(`├─ Push changes:`);
+    sections.push(`│  └─ ${FLOW_STYLES.code('git push')}`);
+    sections.push(`└─ Create PR or merge to main`);
+  }
 
   // Safety warnings
   sections.push(`\n${FLOW_STYLES.warning('⚠️  Safety reminders')}:`);

@@ -3,6 +3,7 @@ import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { FLOW_STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';
+import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
 
 export interface RedArgs {
   ticketId: string;
@@ -88,15 +89,15 @@ export async function redPhase(
 
   // Get ticket title for better formatting
   const ticketTitle = ticket.title || 'Feature';
-  const ticketSlug = SlugUtils.titleToSlug(ticketTitle);
+  const ticketLocation = getTicketLocation(ticketId, ticketTitle, 'doing');
 
   return {
     success: true,
     message: `
-${FLOW_STYLES.title('🔴 RED Phase')} for Ticket #${ticketId}: ${ticketTitle}${statusWarning}
+${formatTicketHeader(ticketId, ticketTitle, '🔴 RED Phase')}${statusWarning}
 
 ${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
-1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticketId}-${ticketSlug}.md`)}
+1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Create comprehensive test cases:
    ├─ Test behavior, not implementation
    ├─ Cover all acceptance criteria
@@ -114,8 +115,17 @@ ${FLOW_STYLES.section('📍 Test Locations')}:
 
 ${results.join('\n')}
 
-${FLOW_STYLES.warning('⚡ After test creation')}:
-${FLOW_STYLES.command('$ ait3 flow green')}
+${FLOW_STYLES.info('Next Action')}:
+├─ Read acceptance criteria:
+│  └─ Analyze ${FLOW_STYLES.path(ticketLocation)}
+├─ Create test files:
+│  └─ Implement failing tests for all scenarios
+├─ Verify 0% pass rate:
+│  └─ Run tests to confirm all failing
+└─ Commit test suite:
+   └─ ${FLOW_STYLES.code(`git commit -m "${generateCommitMessage('test', ticketId, ticketTitle)}"`)}
+
+${FLOW_STYLES.dim('After test creation: ait3 flow green')}
 `
   };
 }
@@ -148,15 +158,15 @@ function generateIntegrationTestPath(ticket: any): string {
 
 function generateInteractiveOutput(ticket: any, testCases: string[], dryRun: boolean): CLIResult {
   const prefix = dryRun ? `${FLOW_STYLES.warning('[DRY RUN]')} ` : '';
-  const ticketSlug = SlugUtils.titleToSlug(ticket.title);
+  const ticketLocation = getTicketLocation(ticket.id, ticket.title, 'doing');
   
   return {
     success: true,
     message: `
-${prefix}${FLOW_STYLES.title('🔴 RED Phase')} for Ticket #${ticket.id}: ${ticket.title}
+${prefix}${formatTicketHeader(ticket.id, ticket.title, '🔴 RED Phase')}
 
 ${FLOW_STYLES.section('🧠 Claude Code Instructions')}:
-1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticket.id}-${ticketSlug}.md`)}
+1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Test cases identified: ${testCases.length || 3}
 3. Interactive mode options:
 
@@ -166,14 +176,17 @@ ${FLOW_STYLES.info('[2]')} Review and customize test cases
 ${FLOW_STYLES.info('[3]')} Add additional edge cases
 ${FLOW_STYLES.info('[4]')} Skip and write tests manually
 
-${FLOW_STYLES.dim('Select an option to continue...')}
+${FLOW_STYLES.info('Next Action')}:
+└─ Choose strategy and proceed with test creation
+
+${FLOW_STYLES.dim('Interactive mode: Select an option to continue')}
 `
   };
 }
 
 function generateDryRunOutput(ticket: any, type: string, testCases: string[]): CLIResult {
   const files: string[] = [];
-  const ticketSlug = SlugUtils.titleToSlug(ticket.title);
+  const ticketLocation = getTicketLocation(ticket.id, ticket.title, 'doing');
   
   if (type === 'unit' || type === 'both') {
     files.push(`- ${generateUnitTestPath(ticket)}`);
@@ -187,9 +200,10 @@ function generateDryRunOutput(ticket: any, type: string, testCases: string[]): C
     success: true,
     message: `
 ${FLOW_STYLES.warning('🔍 DRY RUN')} - Preview mode for Ticket #${ticket.id}: ${ticket.title}
+${FLOW_STYLES.info('📍 Ticket location')}: ${FLOW_STYLES.path(ticketLocation)}
 
 ${FLOW_STYLES.section('🧠 Would execute')}:
-1. Read ticket: ${FLOW_STYLES.path(`.tickets/doing/${ticket.id}-${ticketSlug}.md`)}
+1. Read ticket: ${FLOW_STYLES.path(ticketLocation)}
 2. Generate test files:
 ${files.join('\n')}
 
@@ -197,7 +211,10 @@ ${FLOW_STYLES.info('Test cases')}: ${testCases.length || 3}
 ${FLOW_STYLES.info('Test type')}: ${type}
 ${FLOW_STYLES.info('Expected pass rate')}: 0%
 
-${FLOW_STYLES.dim('Run without --dry-run to create files')}
+${FLOW_STYLES.info('Next Action')}:
+└─ Run without --dry-run flag to create test files
+
+${FLOW_STYLES.dim('Dry run mode: Preview only')}
 `
   };
 }

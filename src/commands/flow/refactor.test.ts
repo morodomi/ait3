@@ -190,16 +190,18 @@ describe('refactorPhase Pure Function', () => {
       const result = await refactorPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Actions');
-      expect(result.message).toContain('Review and apply suggestions');
-      expect(result.message).toContain('Run tests');
+      expect(result.message).toContain('Next Action:');
+      expect(result.message).toContain('Review analysis:');
+      expect(result.message).toContain('Apply improvements:');
+      expect(result.message).toContain('Verify 100% test pass:');
     });
 
     it('should suggest mock ticket creation', async () => {
       const result = await refactorPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Consider creating tickets for mocks');
+      expect(result.message).toContain('Create tickets for mocks:');
+      expect(result.message).toContain('Plan future work for real implementations');
     });
   });
 
