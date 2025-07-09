@@ -162,7 +162,7 @@ describe('showTicket pure function', () => {
         expect(error).toBeInstanceOf(TicketNotFoundError);
         if (error instanceof TicketNotFoundError) {
           expect(error.ticketId).toBe('0404');
-          expect(error.message).toContain("Ticket with ID '0404' not found");
+          expect(error.message).toContain('Ticket with ID \'0404\' not found');
         }
       }
     });

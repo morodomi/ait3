@@ -39,13 +39,13 @@ export async function planPhase(
   }
 
   switch (mode) {
-    case 'express':
-      return expressPlan(featureName, requirements, ticketInfo);
-    case 'manual':
-      return manualPlan(featureName, ticketInfo);
-    case 'guided':
-    default:
-      return guidedPlan(featureName, requirements, ticketInfo);
+  case 'express':
+    return expressPlan(featureName, requirements, ticketInfo);
+  case 'manual':
+    return manualPlan(featureName, ticketInfo);
+  case 'guided':
+  default:
+    return guidedPlan(featureName, requirements, ticketInfo);
   }
 }
 
@@ -112,7 +112,7 @@ ${STYLES.info('Next Action')}:
 ├─ Create proposal:
 │  └─ Document design decisions
 ├─ Get dialectical critique:
-│  └─ ${STYLES.code(`gemini -p "@src/ @CLAUDE.md Critique"`)}
+│  └─ ${STYLES.code('gemini -p "@src/ @CLAUDE.md Critique"')}
 ├─ Synthesize decision:
 │  └─ Weigh arguments and choose
 └─ Document reasoning:
@@ -162,7 +162,7 @@ ${STYLES.info('Next Action')}:
 ├─ Propose approach:
 │  └─ Document technical design
 ├─ Validate with Gemini (optional):
-│  └─ ${STYLES.code(`gemini -p "@src/ Critique approach"`)}
+│  └─ ${STYLES.code('gemini -p "@src/ Critique approach"')}
 └─ Commit design:
    └─ ${STYLES.code(`git commit -m "${generateCommitMessage('planning', ticketId, featureName)}"`)}
 
@@ -189,7 +189,7 @@ function generateClaudeProposal(featureName: string, requirements?: string[]): P
 
   const proposalTemplates: Record<string, ProposalTemplate> = {
     auth: {
-      summary: "JWT-based authentication with OAuth2 integration",
+      summary: 'JWT-based authentication with OAuth2 integration',
       details: formatProposalDetails([
         ['Architecture', 'JWT token-based authentication'],
         ['OAuth Integration', 'Google, GitHub providers via Passport.js'],
@@ -199,7 +199,7 @@ function generateClaudeProposal(featureName: string, requirements?: string[]): P
       ])
     },
     user: {
-      summary: "CRUD user management with validation",
+      summary: 'CRUD user management with validation',
       details: formatProposalDetails([
         ['Data Layer', 'User model with Zod validation'],
         ['API Design', 'RESTful endpoints (/users CRUD)'],
@@ -209,7 +209,7 @@ function generateClaudeProposal(featureName: string, requirements?: string[]): P
       ])
     },
     api: {
-      summary: "RESTful API with Express.js and TypeScript",
+      summary: 'RESTful API with Express.js and TypeScript',
       details: formatProposalDetails([
         ['Framework', 'Express.js with TypeScript strict mode'],
         ['Architecture', 'Controller → Service → Repository pattern'],
@@ -219,7 +219,7 @@ function generateClaudeProposal(featureName: string, requirements?: string[]): P
       ])
     },
     default: {
-      summary: "Pure function implementation with service injection",
+      summary: 'Pure function implementation with service injection',
       details: formatProposalDetails([
         ['Architecture', 'Pure functions following existing patterns'],
         ['Service Layer', 'Dependency injection for testability'],

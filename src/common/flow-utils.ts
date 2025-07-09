@@ -26,16 +26,16 @@ export function generateCommitMessage(phase: FlowPhase, ticketId: string, title:
   const lowerTitle = title.toLowerCase();
   
   switch (phase) {
-    case 'planning':
-      return `planning(#${ticketId}): ${lowerTitle} design`;
-    case 'test':
-      return `test(#${ticketId}): comprehensive test suite for ${lowerTitle}`;
-    case 'feat':
-      return `feat(#${ticketId}): implement ${lowerTitle}`;
-    case 'refactor':
-      return `refactor(#${ticketId}): optimize ${lowerTitle} implementation`;
-    default:
-      return `${phase}(#${ticketId}): ${lowerTitle}`;
+  case 'planning':
+    return `planning(#${ticketId}): ${lowerTitle} design`;
+  case 'test':
+    return `test(#${ticketId}): comprehensive test suite for ${lowerTitle}`;
+  case 'feat':
+    return `feat(#${ticketId}): implement ${lowerTitle}`;
+  case 'refactor':
+    return `refactor(#${ticketId}): optimize ${lowerTitle} implementation`;
+  default:
+    return `${phase}(#${ticketId}): ${lowerTitle}`;
   }
 }
 

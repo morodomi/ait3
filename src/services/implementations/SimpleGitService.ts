@@ -84,7 +84,7 @@ export class SimpleGitService implements GitService {
         throw new Error(`Destination exists: ${newPath} already exists`);
       }
       if (errorMessage.includes('fatal: not a git repository')) {
-        throw new Error(`Not a Git repository: Cannot use git mv outside a Git repository`);
+        throw new Error('Not a Git repository: Cannot use git mv outside a Git repository');
       }
       
       // Re-throw original error with additional context

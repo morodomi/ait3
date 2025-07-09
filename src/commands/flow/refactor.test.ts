@@ -38,7 +38,7 @@ describe('refactorPhase Pure Function', () => {
     it('should validate ticket exists', async () => {
       await expect(
         refactorPhase({ ticketId: '9999' }, services)
-      ).rejects.toThrow("Ticket with ID '9999' not found");
+      ).rejects.toThrow('Ticket with ID \'9999\' not found');
     });
 
     it('should reject tickets not in doing status', async () => {

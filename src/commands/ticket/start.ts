@@ -129,42 +129,36 @@ async function handleGitOperations(
 ): Promise<string> {
   const messageParts: string[] = [];
   
-  try {
-    // Check if it's a Git repository
-    const isRepo = await gitService.isRepository();
-    if (!isRepo) {
-      return handleGitNotInitialized(ticketId, title);
-    }
-
-    // Note: uncommitted changes are already checked before calling this function
-
-    // Try to fetch (non-critical)
-    await attemptFetch(gitService, messageParts);
-
-    // Handle branch operations
-    const branchPattern = `feature/${ticketId}-`;
-    const existingBranches = await gitService.findBranches(branchPattern);
-    
-    if (existingBranches.length > 0) {
-      await handleExistingBranches(existingBranches, gitService, messageParts);
-    } else {
-      await handleNewBranchCreation(ticketId, title, gitService, messageParts);
-    }
-    
-    messageParts.push('');
-    return messageParts.join('\n');
-    
-  } catch (error) {
-    // Re-throw all errors to be handled by the main function
-    throw error;
+  // Check if it's a Git repository
+  const isRepo = await gitService.isRepository();
+  if (!isRepo) {
+    return handleGitNotInitialized(ticketId, title);
   }
+
+  // Note: uncommitted changes are already checked before calling this function
+
+  // Try to fetch (non-critical)
+  await attemptFetch(gitService, messageParts);
+
+  // Handle branch operations
+  const branchPattern = `feature/${ticketId}-`;
+  const existingBranches = await gitService.findBranches(branchPattern);
+  
+  if (existingBranches.length > 0) {
+    await handleExistingBranches(existingBranches, gitService, messageParts);
+  } else {
+    await handleNewBranchCreation(ticketId, title, gitService, messageParts);
+  }
+  
+  messageParts.push('');
+  return messageParts.join('\n');
 }
 
 function handleGitNotInitialized(ticketId: string, title: string): string {
   const messageParts = [
     STYLES.warning('WARNING: Git is not initialized'),
     STYLES.muted('   Run these commands:'),
-    STYLES.muted(`   git init`),
+    STYLES.muted('   git init'),
     STYLES.muted(`   git checkout -b ${generateBranchName(ticketId, title)}`),
     ''
   ];
@@ -218,7 +212,7 @@ async function handleRemoteBranch(
     await gitService.checkout(localBranchName);
     messageParts.push(STYLES.success(`SUCCESS: Created and switched to: ${localBranchName}`));
   } catch (checkoutError) {
-    messageParts.push(STYLES.warning(`WARNING: Could not create tracking branch`));
+    messageParts.push(STYLES.warning('WARNING: Could not create tracking branch'));
     messageParts.push(STYLES.muted(`   Error: ${formatErrorMessage(checkoutError)}`));
     messageParts.push(STYLES.muted('   Manual command:'));
     messageParts.push(STYLES.muted(`   git checkout -b ${localBranchName} ${branchName}`));
@@ -235,7 +229,7 @@ async function handleLocalBranch(
     messageParts.push(STYLES.success(`SUCCESS: Switched to existing branch: ${branchName}`));
   } catch (checkoutError) {
     // For existing branch checkout, we can be more lenient since the branch exists
-    messageParts.push(STYLES.warning(`WARNING: Could not switch to existing branch`));
+    messageParts.push(STYLES.warning('WARNING: Could not switch to existing branch'));
     messageParts.push(STYLES.muted(`   Error: ${formatErrorMessage(checkoutError)}`));
     messageParts.push(STYLES.muted('   Manual resolution required'));
     // Don't throw - allow ticket move since branch exists

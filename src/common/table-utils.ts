@@ -14,29 +14,29 @@ export function truncateString(str: string, maxLength: number): string {
 
 export function getStatusColor(status: string): (text: string) => string {
   switch (status) {
-    case 'todo':
-      return STYLES.info;
-    case 'doing':
-      return STYLES.warning;
-    case 'done':
-      return STYLES.success;
-    default:
-      return (text: string) => text; // No styling
+  case 'todo':
+    return STYLES.info;
+  case 'doing':
+    return STYLES.warning;
+  case 'done':
+    return STYLES.success;
+  default:
+    return (text: string) => text; // No styling
   }
 }
 
 export function getPriorityColor(priority: string): (text: string) => string {
   switch (priority) {
-    case 'critical':
-      return (text: string) => STYLES.bold(STYLES.danger(text));
-    case 'high':
-      return STYLES.danger;
-    case 'medium':
-      return STYLES.warning;
-    case 'low':
-      return STYLES.muted;
-    default:
-      return (text: string) => text; // No styling
+  case 'critical':
+    return (text: string) => STYLES.bold(STYLES.danger(text));
+  case 'high':
+    return STYLES.danger;
+  case 'medium':
+    return STYLES.warning;
+  case 'low':
+    return STYLES.muted;
+  default:
+    return (text: string) => text; // No styling
   }
 }
 

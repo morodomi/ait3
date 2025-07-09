@@ -162,10 +162,10 @@ async function generateGitSuggestions(ticket: Ticket, args: SquashArgs, services
     
     // Add AI-friendly non-interactive commands
     sections.push(`\n${STYLES.warning('AI-friendly non-interactive commands:')}`);
-    sections.push(`${STYLES.code(`# Get commit count from main`)}`);
-    sections.push(`${STYLES.code(`COMMIT_COUNT=$(git rev-list --count main..HEAD)`)}`);
-    sections.push(`${STYLES.code(`# Reset to main and create single commit`)}`);
-    sections.push(`${STYLES.code(`git reset --soft main`)}`);
+    sections.push(`${STYLES.code('# Get commit count from main')}`);
+    sections.push(`${STYLES.code('COMMIT_COUNT=$(git rev-list --count main..HEAD)')}`);
+    sections.push(`${STYLES.code('# Reset to main and create single commit')}`);
+    sections.push(`${STYLES.code('git reset --soft main')}`);
     sections.push(`${STYLES.code(`git commit -m "${commitTitle}"`)}`);
     
     sections.push(`\n${STYLES.muted('OR use interactive rebase (for human execution):')}`);
@@ -224,18 +224,18 @@ async function generateGitSuggestions(ticket: Ticket, args: SquashArgs, services
   sections.push(`\n${STYLES.info('Next Action')}:`);
   
   if (!args.noSquash) {
-    sections.push(`├─ Squash commits:`);
+    sections.push('├─ Squash commits:');
     sections.push(`│  └─ ${STYLES.code('git rebase -i main')}`);
-    sections.push(`├─ Create final commit:`);
+    sections.push('├─ Create final commit:');
     sections.push(`│  └─ ${STYLES.code(`git commit -m "${commitTitle}"`)}`);
-    sections.push(`├─ Push changes:`);
+    sections.push('├─ Push changes:');
     sections.push(`│  └─ ${STYLES.code('git push --force-with-lease')}`);
-    sections.push(`└─ Create PR or merge to main`);
+    sections.push('└─ Create PR or merge to main');
   } else {
-    sections.push(`├─ Review commits (no squash)`);
-    sections.push(`├─ Push changes:`);
+    sections.push('├─ Review commits (no squash)');
+    sections.push('├─ Push changes:');
     sections.push(`│  └─ ${STYLES.code('git push')}`);
-    sections.push(`└─ Create PR or merge to main`);
+    sections.push('└─ Create PR or merge to main');
   }
 
   // Safety warnings
