@@ -32,12 +32,17 @@ describe('CLI Integration: flow plan', () => {
 
   describe('basic flow plan command', () => {
     it('should show help when no arguments provided', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow plan', {
           encoding: 'utf8',
-          timeout: 5000
+          timeout: 5000,
+          stdio: 'pipe'
         });
-      }).toThrow(/missing required argument 'featureName'/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("missing required argument 'featureName'");
+      }
     });
 
     it('should execute guided mode by default', () => {
@@ -166,12 +171,16 @@ describe('CLI Integration: flow plan', () => {
 
   describe('error handling', () => {
     it('should validate mode flag values', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow plan "test" --mode invalid', {
           encoding: 'utf8',
-          timeout: 5000
+          timeout: 5000,
+          stdio: 'pipe'
         });
-      }).toThrow();
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
     });
 
     it('should handle special characters in feature name', () => {

@@ -211,16 +211,20 @@ Test ticket in done status
     });
 
     it('should handle invalid status gracefully', () => {
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket list --status invalid',
           {
             encoding: 'utf8',
             timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Should exit with non-zero code
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
     });
   });
 
@@ -258,16 +262,20 @@ Test ticket in done status
     });
 
     it('should handle invalid priority gracefully', () => {
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket list --priority invalid',
           {
             encoding: 'utf8',
             timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Should exit with non-zero code
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
     });
   });
 

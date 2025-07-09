@@ -32,22 +32,32 @@ describe('CLI Integration: flow refactor', () => {
 
   describe('basic flow refactor command', () => {
     it('should show help when no arguments provided', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow refactor', {
           encoding: 'utf8',
-          timeout: 5000
+          timeout: 5000,
+          stdio: 'pipe'
         });
-      }).toThrow(/missing required argument 'ticketId'/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("missing required argument 'ticketId'");
+      }
     });
 
     it('should validate ticket exists', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow refactor 9999', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/Ticket with ID '9999' not found/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("Ticket with ID '9999' not found");
+      }
     });
 
     it('should require ticket to be in progress', async () => {
@@ -58,13 +68,18 @@ describe('CLI Integration: flow refactor', () => {
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow refactor 0001', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/must be in progress/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain('must be in progress');
+      }
     });
 
     it('should show analysis for valid in-progress ticket', async () => {
@@ -226,13 +241,18 @@ describe('CLI Integration: flow refactor', () => {
     });
 
     it('should validate focus areas', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow refactor 0001 --focus invalid', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/Invalid focus area/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain('Invalid focus area');
+      }
     });
   });
 
@@ -353,13 +373,18 @@ Feature that has mock implementations from GREEN phase`;
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow refactor 0001', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/already completed/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain('already completed');
+      }
     });
 
     it('should handle missing project files gracefully', async () => {
