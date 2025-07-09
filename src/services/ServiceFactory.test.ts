@@ -19,7 +19,7 @@ vi.mock('./implementations/GitHubTicketService.js', () => ({
 describe('ServiceFactory', () => {
   let testDir: string;
   let originalCwd: string;
-  let originalEnv: NodeJS.ProcessEnv;
+  let originalEnv: typeof process.env;
 
   beforeEach(async () => {
     const hash = randomBytes(8).toString('hex');

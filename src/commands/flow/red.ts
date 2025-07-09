@@ -1,5 +1,5 @@
 import type { Services, CLIResult } from '../../common/types.js';
-import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
+import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';
@@ -119,7 +119,7 @@ ${STYLES.muted('After test creation: ait3 flow green')}
   };
 }
 
-function extractTestCases(ticket: any): string[] {
+function extractTestCases(ticket: { description?: string }): string[] {
   const testCases: string[] = [];
   
   // Look for acceptance criteria in description
@@ -135,17 +135,17 @@ function extractTestCases(ticket: any): string[] {
   return testCases;
 }
 
-function generateUnitTestPath(ticket: any): string {
+function generateUnitTestPath(ticket: { title: string }): string {
   const featureName = SlugUtils.titleToSlug(ticket.title);
   return `tests/commands/flow/${featureName}.test.ts`;
 }
 
-function generateIntegrationTestPath(ticket: any): string {
+function generateIntegrationTestPath(ticket: { title: string }): string {
   const featureName = SlugUtils.titleToSlug(ticket.title);
   return `tests/integration/cli/flow/${featureName}.integration.test.ts`;
 }
 
-function generateInteractiveOutput(ticket: any, testCases: string[], dryRun: boolean): CLIResult {
+function generateInteractiveOutput(ticket: { id: string; title: string }, testCases: string[], dryRun: boolean): CLIResult {
   const prefix = dryRun ? `${STYLES.warning('[DRY RUN]')} ` : '';
   const ticketLocation = getTicketLocation(ticket.id, ticket.title, 'doing');
   

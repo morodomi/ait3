@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir, readFile } from 'fs/promises';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
-import { greenPhase } from './green.js';
+import { greenPhase, type GreenArgs } from './green.js';
 import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
 import type { Services } from '@/common/types.js';
 
@@ -130,7 +130,7 @@ describe('greenPhase Pure Function', () => {
           strict: true,
           // Simulate modified test
           _testModified: mockTestFile
-        } as any,
+        } as unknown as GreenArgs,
         services
       );
 
@@ -267,7 +267,7 @@ describe('greenPhase Pure Function', () => {
         { 
           ticketId: '0001',
           _forceTestError: true
-        } as any,
+        } as unknown as GreenArgs,
         services
       );
 

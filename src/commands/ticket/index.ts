@@ -10,9 +10,7 @@ import type { Services } from '../../common/types.js';
 import { STYLES } from '../../common/styles.js';
 import { ServiceFactory } from '../../services/ServiceFactory.js';
 
-// Service container - centralized dependency injection
-// Use ServiceFactory to ensure proper dependency inversion
-const services: Services = ServiceFactory.createServices();
+// Service container will be created per command to respect config changes
 
 export const ticketCommand = new Command('ticket')
   .description('Ticket management commands')
@@ -38,6 +36,9 @@ ticketCommand
   .option('-l, --labels <labels>', 'Comma-separated labels (e.g., "feature,backend,urgent")')
   .action(async (title: string, options) => {
     try {
+      // Create services for this command execution
+      const services = ServiceFactory.createServices();
+      
       // Parse labels
       const labels = options.labels?.split(',').map((l: string) => l.trim()).filter(Boolean) || [];
       
@@ -80,6 +81,7 @@ ticketCommand
   .addOption(new Option('-p, --priority <priority>', 'Filter by priority').choices(['low', 'medium', 'high', 'critical']))
   .action(async (options) => {
     try {
+      const services = ServiceFactory.createServices();
       const result = await listTickets(options, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
@@ -108,6 +110,7 @@ ticketCommand
   .description('Show ticket details')
   .action(async (id: string) => {
     try {
+      const services = ServiceFactory.createServices();
       const result = await showTicket({ id }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
@@ -132,6 +135,7 @@ ticketCommand
   .description('Start working on a ticket')
   .action(async (id: string) => {
     try {
+      const services = ServiceFactory.createServices();
       const result = await startTicket({ id }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
@@ -162,6 +166,7 @@ ticketCommand
   .description('Complete a ticket')
   .action(async (id: string) => {
     try {
+      const services = ServiceFactory.createServices();
       const result = await completeTicket({ id }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
@@ -193,6 +198,7 @@ ticketCommand
   .option('--dry-run', 'Preview changes without executing')
   .action(async (id: string, options) => {
     try {
+      const services = ServiceFactory.createServices();
       const result = await undoTicket({ id, dryRun: options.dryRun }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);

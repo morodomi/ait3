@@ -1,8 +1,7 @@
 import type { Services, CLIResult } from '../../common/types.js';
-import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
+import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
-import { SlugUtils } from '../../common/utils.js';
 import { getTicketLocation, generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
 
 export interface GreenArgs {
@@ -159,7 +158,7 @@ function generateImplementationStatus(): string {
 └─ Create tickets for mock services`;
 }
 
-function generateVerboseOutput(ticket: any, target?: string): string {
+function generateVerboseOutput(_ticket: unknown, _target?: string): string {
   return `
 ${STYLES.bold('LIST: Verbose mode')} - Detailed test analysis
 

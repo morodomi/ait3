@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
-import { refactorPhase } from './refactor.js';
+import { refactorPhase, type RefactorArgs } from './refactor.js';
 import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
 import type { Services } from '@/common/types.js';
 
@@ -225,7 +225,7 @@ describe('refactorPhase Pure Function', () => {
         { 
           ticketId: '0001',
           _forceAnalysisError: true
-        } as any,
+        } as unknown as RefactorArgs,
         services
       );
 

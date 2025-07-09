@@ -1,20 +1,10 @@
 {
-  "backend": "github",
-  "github": {
-    "owner": "morodomi",
-    "repo": "ait3",
-    "useGhCli": true,
-    "labels": {
-      "todo": "status:todo",
-      "doing": "status:doing",
-      "done": "status:done"
-    }
-  },
+  "backend": "local",
   "path": ".tickets",
   "numbering": {
     "format": "0000",
     "increment": 1,
-    "next": 41
+    "next": 45
   },
   "templates": {
     "feature": "templates/feature-ticket.md",

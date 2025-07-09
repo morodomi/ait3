@@ -67,12 +67,25 @@ export class TicketMigrationService implements MigrationService {
       
       for (const ticket of localTickets) {
         try {
-          await githubService.createTicket(ticket.title, {
+          const createdTicket = await githubService.createTicket(ticket.title, {
             priority: ticket.priority,
             labels: ticket.labels,
             description: ticket.description,
             assignee: ticket.assignee
           });
+          
+          // Update status based on original ticket
+          try {
+            if (ticket.status === 'done') {
+              await githubService.completeTicket(createdTicket.id);
+            } else if (ticket.status === 'doing') {
+              await githubService.startTicket(createdTicket.id);
+            }
+          } catch {
+            // Status update failure should not fail the migration
+            // The ticket was created successfully, just not in the right status
+          }
+          
           migratedCount++;
         } catch (error: unknown) {
           failedCount++;
