@@ -1,0 +1,235 @@
+export const ait3InitTemplate = `# AIT³ Initialize - Generate CLAUDE.md with Project Analysis
+
+This command guides you through generating a comprehensive CLAUDE.md file for your project using AIT³ commands, similar to Claude Code's /init command.
+
+## Process Overview
+
+The \`ait3-init\` process analyzes your codebase and creates a CLAUDE.md file that serves as persistent instructions for Claude Code when working with your project.
+
+## Step-by-Step Instructions
+
+### Step 1: Project Analysis
+First, run comprehensive project analysis:
+
+\`\`\`bash
+# Analyze the project structure and detect languages/frameworks
+ait3 analyze project --format detailed > project-analysis.txt
+\`\`\`
+
+### Step 2: Extract Key Information
+Based on the analysis, gather specific information:
+
+#### README Analysis
+\`\`\`bash
+# If README.md exists, analyze it for project context
+cat README.md 2>/dev/null || echo "No README found"
+\`\`\`
+
+#### Build Configuration
+\`\`\`bash
+# Check package.json for scripts
+cat package.json | jq '.scripts' 2>/dev/null || echo "{}"
+
+# Check for other build configs (tsconfig.json, webpack.config.js, etc.)
+ls -la | grep -E "(tsconfig|webpack|vite|rollup|babel)"
+\`\`\`
+
+#### Test Configuration
+\`\`\`bash
+# Identify test runner and configuration
+cat package.json | jq '.scripts | to_entries[] | select(.key | contains("test"))' 2>/dev/null
+
+# Look for test config files
+find . -maxdepth 2 -name "*test*" -o -name "*spec*" -o -name "jest.config*" -o -name "vitest.config*" 2>/dev/null
+\`\`\`
+
+#### Lint Configuration
+\`\`\`bash
+# Check for linting setup
+cat package.json | jq '.scripts | to_entries[] | select(.key | contains("lint"))' 2>/dev/null
+
+# Find lint config files
+find . -maxdepth 2 -name ".eslint*" -o -name ".prettier*" -o -name "tslint*" 2>/dev/null
+\`\`\`
+
+### Step 3: Understand Business Logic
+Analyze the core business logic:
+
+\`\`\`bash
+# Use Gemini for comprehensive analysis (if available)
+gemini -p "@src/ Explain the core business logic and main algorithms in this codebase. Focus on the primary value proposition and key technical implementations."
+
+# Or analyze key directories
+find src -type f -name "*.ts" -o -name "*.js" | head -20
+\`\`\`
+
+### Step 4: Environment and Deployment
+Check for deployment and environment configurations:
+
+\`\`\`bash
+# Check for environment files
+ls -la | grep -E "(.env|.env.example|.env.sample)"
+
+# Check for CI/CD configurations
+ls -la .github/workflows 2>/dev/null || ls -la .gitlab-ci.yml 2>/dev/null || ls -la .circleci 2>/dev/null
+
+# Check for Docker configurations
+ls -la | grep -E "(Dockerfile|docker-compose)"
+
+# Check for deployment configs
+ls -la | grep -E "(vercel.json|netlify.toml|app.yaml|serverless)"
+\`\`\`
+
+### Step 5: Generate CLAUDE.md Template
+Create a CLAUDE.md file with the gathered information:
+
+\`\`\`bash
+cat > CLAUDE.md << 'EOF'
+# Project: [PROJECT_NAME]
+
+## Overview
+[Brief description from README or analysis]
+
+## Architecture
+- **Language**: [Primary language detected]
+- **Framework**: [Framework detected]
+- **Architecture Pattern**: [e.g., Pure Functions + Service Injection]
+- **Test Framework**: [e.g., Vitest, Jest]
+- **Build Tool**: [e.g., TypeScript, Webpack]
+
+## Key Commands
+\`\`\`bash
+npm install          # Install dependencies
+npm run build        # Build the project
+npm test            # Run tests
+npm run lint        # Run linting
+npm run dev         # Start development server
+\`\`\`
+
+## Project Structure
+\`\`\`
+[Key directories and their purposes]
+src/
+├── commands/       # [Purpose]
+├── services/       # [Purpose]
+├── common/        # [Purpose]
+└── assets/        # [Purpose]
+\`\`\`
+
+## Business Logic
+[Core business logic explanation]
+
+### Key Algorithms
+1. [Algorithm 1]: [Brief explanation]
+2. [Algorithm 2]: [Brief explanation]
+
+## Development Workflow
+[Describe the development process, e.g., AIT³ TiDD workflow]
+
+## Testing Strategy
+- **Unit Tests**: [Location and approach]
+- **Integration Tests**: [Location and approach]
+- **Test Coverage**: [Target coverage percentage]
+
+## Code Style and Standards
+- **Linting**: [ESLint/Prettier configuration]
+- **Type Safety**: [TypeScript strict mode settings]
+- **Naming Conventions**: [Describe conventions]
+
+## Environment Setup
+### Required Environment Variables
+- \`VAR_NAME\`: [Description]
+
+### Development Setup
+1. [Step 1]
+2. [Step 2]
+
+## Deployment
+[Deployment process and considerations]
+
+## Important Considerations
+- [Key architectural decisions]
+- [Performance considerations]
+- [Security considerations]
+
+## AI Development Guidelines
+When working with this codebase:
+1. [Guideline 1]
+2. [Guideline 2]
+3. [Guideline 3]
+
+## Common Tasks
+### Adding a New Feature
+1. [Step-by-step process]
+
+### Fixing a Bug
+1. [Step-by-step process]
+
+### Refactoring
+1. [Step-by-step process]
+
+EOF
+\`\`\`
+
+### Step 6: Customize and Refine
+After generating the template:
+
+1. **Review and Edit**: Open CLAUDE.md and fill in the placeholders with actual information
+2. **Add Project-Specific Details**: Include any unique aspects of your project
+3. **Include Constraints**: Add any important limitations or requirements
+4. **Document Gotchas**: Note any non-obvious behaviors or common pitfalls
+
+### Step 7: Validate with AIT³
+Ensure the CLAUDE.md is comprehensive:
+
+\`\`\`bash
+# Use Gemini to validate completeness
+gemini -p "@CLAUDE.md @src/ Does this CLAUDE.md accurately represent the codebase? What important information is missing?"
+
+# Test with a simple task
+echo "Use the CLAUDE.md to understand how to add a new command to this project"
+\`\`\`
+
+## Tips for Effective CLAUDE.md
+
+1. **Be Specific**: Include exact commands, file paths, and patterns
+2. **Explain Why**: Don't just document what, explain why decisions were made
+3. **Include Examples**: Show concrete examples of how to perform common tasks
+4. **Update Regularly**: Keep CLAUDE.md in sync with your codebase
+5. **Test It**: Have someone unfamiliar with the project use only CLAUDE.md to understand it
+
+## Integration with AIT³ Workflow
+
+When using AIT³ workflow, include:
+- How tickets are managed
+- The TiDD process (PLANNING → RED → GREEN → REFACTOR → SQUASH)
+- Where to find ticket templates
+- How to use the flow commands
+
+## Example: AIT³ Project CLAUDE.md Section
+
+\`\`\`markdown
+## Development Workflow - AIT³ TiDD
+
+This project follows the AIT³ (AI + Ticket + Test + Tool) driven development workflow:
+
+### Creating New Features
+1. Create a ticket: \`ait3 ticket create "Feature name"\`
+2. Start the ticket: \`ait3 ticket start XXXX\`
+3. Follow the phases:
+   - PLANNING: \`ait3 flow plan "feature-name"\` (validate approach)
+   - RED: \`ait3 flow red XXXX\` (create failing tests)
+   - GREEN: \`ait3 flow green XXXX\` (implement to pass tests)
+   - REFACTOR: \`ait3 flow refactor XXXX\` (optimize code)
+   - SQUASH: \`ait3 flow squash XXXX\` (clean git history)
+4. Complete: \`ait3 ticket complete XXXX\`
+
+### Architecture Rules
+- All commands must be pure functions: \`(args, services) → CLIResult\`
+- Services are injected, never imported directly in commands
+- Tests must pass 100% before moving to REFACTOR phase
+- Mock implementations must be ticketed for future work
+\`\`\`
+
+Remember: A good CLAUDE.md enables Claude Code to work effectively with your project from the first interaction, reducing onboarding time and improving code quality.
+`;

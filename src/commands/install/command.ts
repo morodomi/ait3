@@ -4,6 +4,9 @@ import { join, dirname } from 'path';
 import { mkdir, writeFile, access } from 'fs/promises';
 import { STYLES } from '../../common/styles.js';
 import { ait3Template } from '../../assets/commands/ait3.js';
+import { geminiTemplate } from '../../assets/commands/gemini.js';
+import { orchestratorTemplate } from '../../assets/commands/orchestrator.js';
+import { ait3InitTemplate } from '../../assets/commands/ait3-init.js';
 interface InstallCommandArgs {
   name?: string;
   force?: boolean;
@@ -16,7 +19,10 @@ export async function installCommand(
   
   // Available command guides
   const commandGuides = {
-    ait3: 'ait3.md'
+    ait3: 'ait3',
+    gemini: 'gemini',
+    orchestrator: 'orchestrator',
+    'ait3-init': 'ait3-init'
   };
   
   // Determine which files to install
@@ -114,16 +120,18 @@ export async function installCommand(
 
 async function getTemplateContent(commandName: string): Promise<string> {
   // Import templates based on command name
-  if (commandName === 'ait3') {
-    return ait3Template;
+  switch (commandName) {
+    case 'ait3':
+      return ait3Template;
+    case 'gemini':
+      return geminiTemplate;
+    case 'orchestrator':
+      return orchestratorTemplate;
+    case 'ait3-init':
+      return ait3InitTemplate;
+    default:
+      throw new Error(`Template not found for command: ${commandName}`);
   }
-  
-  // Future templates can be added here:
-  // if (commandName === 'gemini') {
-  //   return geminiTemplate;
-  // }
-  
-  throw new Error(`Template not found for command: ${commandName}`);
 }
 
 export const commandCommand = new Command('command')

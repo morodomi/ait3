@@ -254,20 +254,23 @@ export class LocalTicketService implements TicketService {
     try {
       await this.ensureDirectoryStructure();
 
-      const tickets: Ticket[] = [];
+      let tickets: Ticket[] = [];
       const directories = [
         TICKET_CONSTANTS.DIRECTORIES.TODO,
         TICKET_CONSTANTS.DIRECTORIES.DOING,
         TICKET_CONSTANTS.DIRECTORIES.DONE
       ];
 
-      for (const dir of directories) {
+      // Process directories in parallel for better performance
+      const ticketPromises = directories.map(async (dir) => {
         const dirPath = join(this.basePath, dir);
         try {
           const files = await readdir(dirPath);
           
-          for (const file of files) {
-            if (file.endsWith('.md')) {
+          // Process files in parallel within each directory
+          const filePromises = files
+            .filter(file => file.endsWith('.md'))
+            .map(async (file) => {
               try {
                 const filePath = join(dirPath, file);
                 const content = await readFile(filePath, 'utf-8');
@@ -275,18 +278,23 @@ export class LocalTicketService implements TicketService {
                 
                 // Validate with Zod
                 const ticket = TicketSchema.parse(data);
-                tickets.push(ticket);
+                return ticket;
               } catch (error) {
                 // Skip invalid ticket files
-                continue;
+                return null;
               }
-            }
-          }
+            });
+          
+          const dirTickets = await Promise.all(filePromises);
+          return dirTickets.filter(ticket => ticket !== null);
         } catch (error) {
           // Skip if directory doesn't exist or can't be read
-          continue;
+          return [];
         }
-      }
+      });
+
+      const ticketArrays = await Promise.all(ticketPromises);
+      tickets = ticketArrays.flat();
 
       // Apply filters
       let filtered = tickets;
@@ -316,7 +324,8 @@ export class LocalTicketService implements TicketService {
         TICKET_CONSTANTS.DIRECTORIES.DONE
       ];
 
-      for (const dir of directories) {
+      // Search directories in parallel for better performance
+      const searchPromises = directories.map(async (dir) => {
         const dirPath = join(this.basePath, dir);
         try {
           const files = await readdir(dirPath);
@@ -347,14 +356,20 @@ export class LocalTicketService implements TicketService {
               };
             } catch (error) {
               // Skip invalid ticket files
-              continue;
+              return null;
             }
           }
+          return null;
         } catch (error) {
           // Skip if directory doesn't exist or can't be read
-          continue;
+          return null;
         }
-      }
+      });
+
+      const results = await Promise.all(searchPromises);
+      const foundTicket = results.find(ticket => ticket !== null);
+      
+      return foundTicket || null;
 
       // Ticket not found in any directory
       return null;

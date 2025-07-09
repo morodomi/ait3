@@ -1,5 +1,9 @@
 import { SlugUtils } from './utils.js';
 import { STYLES } from './styles.js';
+import { Services } from './types.js';
+import { Ticket } from '../services/interfaces/TicketService.js';
+import { TicketNotFoundError, ValidationError } from './errors.js';
+import { FLOW_MESSAGES } from './flow-messages.js';
 
 /**
  * Common utilities for flow commands to reduce code duplication
@@ -50,4 +54,51 @@ export function formatTicketHeader(ticketId: string, title: string, phase: strin
 export function formatCommitAction(phase: FlowPhase, ticketId: string, title: string): string {
   const commitMessage = generateCommitMessage(phase, ticketId, title);
   return `└─ Commit ${phase}:\n   └─ ${STYLES.code(`git commit -m "${commitMessage}"`)}`;
+}
+
+/**
+ * Get a ticket by ID or throw TicketNotFoundError
+ */
+export async function getTicketOrThrow(
+  ticketId: string,
+  services: Services
+): Promise<Ticket> {
+  try {
+    const ticket = await services.ticketService.getTicket(ticketId);
+    if (!ticket) {
+      throw new TicketNotFoundError(ticketId);
+    }
+    return ticket;
+  } catch (error) {
+    if (error instanceof TicketNotFoundError) {
+      throw error;
+    }
+    throw new TicketNotFoundError(ticketId);
+  }
+}
+
+/**
+ * Validate that a ticket is not completed
+ */
+export function validateNotCompleted(ticket: Ticket): void {
+  if (ticket.status === 'done') {
+    throw new ValidationError(FLOW_MESSAGES.TICKET_ALREADY_COMPLETED(ticket.id));
+  }
+}
+
+/**
+ * Validate that a ticket is in progress
+ */
+export function validateInProgress(ticket: Ticket): void {
+  if (ticket.status !== 'doing') {
+    throw new ValidationError(FLOW_MESSAGES.TICKET_NOT_IN_PROGRESS(ticket.id));
+  }
+}
+
+/**
+ * Validate that a ticket is in progress and not completed
+ */
+export function validateTicketForFlow(ticket: Ticket): void {
+  validateNotCompleted(ticket);
+  validateInProgress(ticket);
 }
