@@ -3,7 +3,7 @@ import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';
-import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
+import { getTicketLocation, generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
 
 export interface GreenArgs {
   ticketId: string;
@@ -26,27 +26,10 @@ export async function greenPhase(
   const { ticketId, strict = true, verbose = false, target } = args;
 
   // Get ticket information
-  let ticket;
-  try {
-    ticket = await services.ticketService.getTicket(ticketId);
-    if (!ticket) {
-      throw new TicketNotFoundError(ticketId);
-    }
-  } catch (error) {
-    if (error instanceof TicketNotFoundError) {
-      throw error;
-    }
-    throw new TicketNotFoundError(ticketId);
-  }
+  const ticket = await getTicketOrThrow(ticketId, services);
 
   // Check ticket status
-  if (ticket.status === 'done') {
-    throw new ValidationError(FLOW_MESSAGES.TICKET_ALREADY_COMPLETED(ticketId));
-  }
-
-  if (ticket.status !== 'doing') {
-    throw new ValidationError(FLOW_MESSAGES.TICKET_NOT_IN_PROGRESS(ticketId));
-  }
+  validateTicketForFlow(ticket);
 
   // Check for test modifications in strict mode
   if (strict && args._testModified) {

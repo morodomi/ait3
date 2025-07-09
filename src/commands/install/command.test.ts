@@ -94,6 +94,48 @@ describe('installCommand', () => {
       expect(result.message).toContain('Unknown command');
       expect(result.message).toContain('Available commands');
       expect(result.message).toContain('ait3');
+      expect(result.message).toContain('gemini');
+      expect(result.message).toContain('orchestrator');
+      expect(result.message).toContain('ait3-init');
+    });
+
+    it('should install gemini command guide', async () => {
+      const args = { name: 'gemini' };
+      
+      const result = await installCommand(args);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('.claude/commands/gemini');
+      
+      const content = await readFile(join(testDir, '.claude/commands/gemini'), 'utf-8');
+      expect(content).toContain('Using Gemini CLI');
+      expect(content).toContain('TiDD workflow');
+    });
+
+    it('should install orchestrator command guide', async () => {
+      const args = { name: 'orchestrator' };
+      
+      const result = await installCommand(args);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('.claude/commands/orchestrator');
+      
+      const content = await readFile(join(testDir, '.claude/commands/orchestrator'), 'utf-8');
+      expect(content).toContain('Split complex tasks');
+      expect(content).toContain('parallel subtasks');
+    });
+
+    it('should install ait3-init command guide', async () => {
+      const args = { name: 'ait3-init' };
+      
+      const result = await installCommand(args);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('.claude/commands/ait3-init');
+      
+      const content = await readFile(join(testDir, '.claude/commands/ait3-init'), 'utf-8');
+      expect(content).toContain('Generate CLAUDE.md');
+      expect(content).toContain('Project Analysis');
     });
   });
 
@@ -106,10 +148,20 @@ describe('installCommand', () => {
       expect(result.success).toBe(true);
       expect(result.message).toContain('Installing all command guides');
       expect(result.message).toContain('.claude/commands/ait3');
+      expect(result.message).toContain('.claude/commands/gemini');
+      expect(result.message).toContain('.claude/commands/orchestrator');
+      expect(result.message).toContain('.claude/commands/ait3-init');
       
-      // Check ait3 file
+      // Check all files
       const ait3Path = join(testDir, '.claude/commands/ait3');
+      const geminiPath = join(testDir, '.claude/commands/gemini');
+      const orchestratorPath = join(testDir, '.claude/commands/orchestrator');
+      const ait3InitPath = join(testDir, '.claude/commands/ait3-init');
+      
       await expect(access(ait3Path)).resolves.toBeUndefined();
+      await expect(access(geminiPath)).resolves.toBeUndefined();
+      await expect(access(orchestratorPath)).resolves.toBeUndefined();
+      await expect(access(ait3InitPath)).resolves.toBeUndefined();
     });
 
     it('should install all commands with "all" name', async () => {
@@ -142,7 +194,7 @@ describe('installCommand', () => {
       
       expect(result.success).toBe(true);
       expect(result.message).toContain('Installation complete');
-      expect(result.message).toContain('1 file(s) installed');
+      expect(result.message).toContain('4 file(s) installed');
     });
   });
 

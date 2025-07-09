@@ -1,12 +1,13 @@
 ---
 id: '0027'
 title: .claude設定拡張とコマンド自動インストール - orchestrator/gemini/CLAUDE.md設定の調査と実装
-status: doing
+status: done
 priority: high
 created: '2025-07-08T11:50:29.881Z'
-updated: '2025-07-08T11:50:45.586Z'
+updated: '2025-07-09T02:47:20.765Z'
 labels: []
 started: '2025-07-08T11:50:45.586Z'
+completed: '2025-07-09T02:47:20.765Z'
 ---
 # Ticket #0027: .claude設定拡張とコマンド自動インストール - orchestrator/gemini/CLAUDE.md設定の調査と実装
 

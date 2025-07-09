@@ -29,6 +29,16 @@ export const TICKET_CONSTANTS = {
   VALIDATION: {
     TITLE_MIN_LENGTH: 1,
     TITLE_MAX_LENGTH: 200
+  } as const,
+  
+  // File extensions
+  FILE_EXTENSIONS: {
+    MARKDOWN: '.md'
+  } as const,
+  
+  // Time formats
+  TIME_FORMATS: {
+    ISO: 'YYYY-MM-DD HH:mm:ss'
   } as const
 } as const;
 
