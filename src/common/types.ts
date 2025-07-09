@@ -21,6 +21,9 @@ export interface CreateTicketOptions {
   assignee?: string;
   labels?: string[];
   status?: 'todo' | 'doing' | 'done';
+  description?: string;
+  acceptanceCriteria?: string[];
+  technicalRequirements?: string[];
 }
 
 export interface TicketConfig {
@@ -85,4 +88,31 @@ export interface CompleteTicketArgs {
 export interface UndoTicketArgs {
   id: string;
   dryRun?: boolean;
+}
+
+// Migration related types
+export interface MigrateArgs {
+  from: 'local' | 'github';
+  to: 'local' | 'github';
+  owner?: string;
+  repo?: string;
+  validate?: boolean;
+  dryRun?: boolean;
+}
+
+export interface BackendConfig {
+  backend: 'local' | 'github';
+  local?: {
+    path: string;
+  };
+  github?: {
+    owner: string;
+    repo: string;
+    useGhCli?: boolean;
+    labels?: {
+      todo?: string;
+      doing?: string;
+      done?: string;
+    };
+  };
 }
