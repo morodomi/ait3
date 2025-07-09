@@ -53,6 +53,7 @@
     "zod": "^3.25.74"
   },
   "dependencies": {
+    "@octokit/rest": "^22.0.0",
     "chalk": "^5.4.1",
     "commander": "^14.0.0",
     "cosmiconfig": "^9.0.0",
