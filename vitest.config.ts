@@ -8,6 +8,7 @@ export default defineConfig({
     ],
     globals: true,
     environment: 'node',
+    watch: false,  // Disable watch mode by default to prevent hanging processes
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

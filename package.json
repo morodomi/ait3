@@ -15,7 +15,8 @@
     "dev": "tsc --watch",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit",
-    "ci": "npm run type-check && npm run test:ci"
+    "ci": "npm run type-check && npm run test:ci",
+    "prepublishOnly": "npm run build && npm run test:ci"
   },
   "keywords": [
     "ai",
@@ -24,11 +25,19 @@
     "ticket",
     "test",
     "tool",
-    "cli"
+    "cli",
+    "claude"
   ],
   "author": "morodomi",
   "license": "MIT",
   "description": "AIT³ Development Platform - AI + Ticket + Test + Tool driven development methodology",
+  "repository": "https://github.com/morodomi/ait3.git",
+  "files": [
+    "dist/",
+    "bin/",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "devDependencies": {
     "@eslint/js": "^9.30.1",
     "@types/node": "^24.0.10",
