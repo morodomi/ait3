@@ -3,91 +3,105 @@ import { readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { ReleaseTestHelpers, PackageJsonConfig } from './release-test-helpers';
 
 const execAsync = promisify(exec);
 
 describe('v1.0.0 Release Preparation', () => {
   
+  beforeEach(() => {
+    ReleaseTestHelpers.clearCache();
+  });
+
   describe('package.json validation', () => {
     it('should have correct version 1.0.0', async () => {
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
-      expect(packageJson.version).toBe('1.0.0');
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      ReleaseTestHelpers.validatePackageJsonField(packageJson, 'version', '1.0.0');
     });
 
     it('should have repository field configured', async () => {
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
-      expect(packageJson.repository).toBeDefined();
-      expect(packageJson.repository).toContain('github.com');
-      expect(packageJson.repository).toContain('ait3');
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      const repository = ReleaseTestHelpers.validatePackageJsonField(packageJson, 'repository');
+      expect(repository).toContain('github.com');
+      expect(repository).toContain('ait3');
     });
 
     it('should have files field configured for npm distribution', async () => {
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
-      expect(packageJson.files).toBeDefined();
-      expect(packageJson.files).toContain('dist/');
-      expect(packageJson.files).toContain('bin/');
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      const files = ReleaseTestHelpers.validatePackageJsonField(packageJson, 'files');
+      ReleaseTestHelpers.validateArrayContains(files, ['dist/', 'bin/']);
     });
 
     it('should have prepublish script configured', async () => {
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
-      expect(packageJson.scripts.prepublish || packageJson.scripts.prepublishOnly).toBeDefined();
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      const scripts = ReleaseTestHelpers.validatePackageJsonField(packageJson, 'scripts');
+      expect(scripts.prepublish || scripts.prepublishOnly).toBeDefined();
     });
 
     it('should have proper keywords for discoverability', async () => {
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
-      expect(packageJson.keywords).toContain('ai');
-      expect(packageJson.keywords).toContain('claude');
-      expect(packageJson.keywords).toContain('workflow');
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      const keywords = ReleaseTestHelpers.validatePackageJsonField(packageJson, 'keywords');
+      ReleaseTestHelpers.validateArrayContains(keywords, ['ai', 'claude', 'workflow']);
     });
   });
 
   describe('documentation files', () => {
     it('should have CHANGELOG.md with v1.0.0 entry', async () => {
       await expect(access('CHANGELOG.md')).resolves.not.toThrow();
-      const changelog = await readFile('CHANGELOG.md', 'utf-8');
-      expect(changelog).toContain('# Changelog');
-      expect(changelog).toContain('## [1.0.0]');
-      expect(changelog).toContain('AIT³');
-      expect(changelog).toContain('Socratic dialogue');
+      const changelog = await ReleaseTestHelpers.readProjectFile('CHANGELOG.md');
+      ReleaseTestHelpers.validateStringContains(changelog, [
+        '# Changelog',
+        '## [1.0.0]',
+        'AIT³',
+        'Socratic dialogue'
+      ]);
     });
 
     it('should have updated README.md with comprehensive content', async () => {
       await expect(access('README.md')).resolves.not.toThrow();
-      const readme = await readFile('README.md', 'utf-8');
-      expect(readme).toContain('# AIT³');
-      expect(readme).toContain('AI + Ticket + Test + Tool');
-      expect(readme).toContain('## Quick Start');
-      expect(readme).toContain('### Installation');
-      expect(readme).toContain('ait3 ticket create');
-      expect(readme).toContain('ait3 flow');
+      const readme = await ReleaseTestHelpers.readProjectFile('README.md');
+      ReleaseTestHelpers.validateStringContains(readme, [
+        '# AIT³',
+        'AI + Ticket + Test + Tool',
+        '## Quick Start',
+        '### Installation',
+        'ait3 ticket create',
+        'ait3 flow'
+      ]);
     });
 
     it('should have README.md with Claude Code integration instructions', async () => {
-      const readme = await readFile('README.md', 'utf-8');
-      expect(readme).toContain('Claude Code');
-      expect(readme).toContain('ait3 install');
-      expect(readme).toContain('.claude/commands');
+      const readme = await ReleaseTestHelpers.readProjectFile('README.md');
+      ReleaseTestHelpers.validateStringContains(readme, [
+        'Claude Code',
+        'ait3 install',
+        '.claude/commands'
+      ]);
     });
 
     it('should have README.md with AIT³ workflow documentation', async () => {
-      const readme = await readFile('README.md', 'utf-8');
-      expect(readme).toContain('PLANNING');
-      expect(readme).toContain('RED');
-      expect(readme).toContain('GREEN');
-      expect(readme).toContain('REFACTOR');
-      expect(readme).toContain('SQUASH');
+      const readme = await ReleaseTestHelpers.readProjectFile('README.md');
+      ReleaseTestHelpers.validateStringContains(readme, [
+        'PLANNING',
+        'RED',
+        'GREEN',
+        'REFACTOR',
+        'SQUASH'
+      ]);
     });
   });
 
   describe('build and distribution', () => {
     it('should have .npmignore configured to exclude development files', async () => {
       await expect(access('.npmignore')).resolves.not.toThrow();
-      const npmignore = await readFile('.npmignore', 'utf-8');
-      expect(npmignore).toContain('src/');
-      expect(npmignore).toContain('tests/');
-      expect(npmignore).toContain('.tickets/');
-      expect(npmignore).toContain('eslint.config.js');
-      expect(npmignore).toContain('vitest.config.ts');
+      const npmignore = await ReleaseTestHelpers.readProjectFile('.npmignore');
+      ReleaseTestHelpers.validateStringContains(npmignore, [
+        'src/',
+        'tests/',
+        '.tickets/',
+        'eslint.config.js',
+        'vitest.config.ts'
+      ]);
     });
 
     it('should build successfully without errors', async () => {
@@ -100,7 +114,8 @@ describe('v1.0.0 Release Preparation', () => {
 
     it('should have test infrastructure properly configured', async () => {
       // Check test configuration instead of running tests recursively
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      ReleaseTestHelpers.validatePackageJsonField(packageJson, 'scripts');
       expect(packageJson.scripts.test).toBe('vitest run');
       
       // Check vitest config exists
@@ -114,16 +129,16 @@ describe('v1.0.0 Release Preparation', () => {
     it('should have TypeScript properly configured', async () => {
       // Check TypeScript configuration instead of running type-check
       await expect(access('tsconfig.json')).resolves.not.toThrow();
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
-      expect(packageJson.scripts['type-check']).toBe('tsc --noEmit');
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      ReleaseTestHelpers.validatePackageJsonField(packageJson.scripts, 'type-check', 'tsc --noEmit');
     });
 
     it('should have lint infrastructure configured', async () => {
       // Check lint configuration instead of running lint
       await expect(access('eslint.config.js')).resolves.not.toThrow();
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
-      expect(packageJson.scripts.lint).toBeDefined();
-      expect(packageJson.devDependencies.eslint).toBeDefined();
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      ReleaseTestHelpers.validatePackageJsonField(packageJson.scripts, 'lint');
+      ReleaseTestHelpers.validatePackageJsonField(packageJson.devDependencies, 'eslint');
     });
   });
 
@@ -143,15 +158,15 @@ describe('v1.0.0 Release Preparation', () => {
 
   describe('package validation for npm publish', () => {
     it('should have all required npm package fields', async () => {
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
-      expect(packageJson.name).toBe('@morodomi/ait3');
-      expect(packageJson.description).toBeDefined();
-      expect(packageJson.description).toContain('AIT³');
-      expect(packageJson.author).toBeDefined();
-      expect(packageJson.license).toBe('MIT');
-      expect(packageJson.main).toBeDefined();
-      expect(packageJson.bin).toBeDefined();
-      expect(packageJson.bin.ait3).toBeDefined();
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      ReleaseTestHelpers.validatePackageJsonField(packageJson, 'name', '@morodomi/ait3');
+      const description = ReleaseTestHelpers.validatePackageJsonField(packageJson, 'description');
+      expect(description).toContain('AIT³');
+      ReleaseTestHelpers.validatePackageJsonField(packageJson, 'author');
+      ReleaseTestHelpers.validatePackageJsonField(packageJson, 'license', 'MIT');
+      ReleaseTestHelpers.validatePackageJsonField(packageJson, 'main');
+      const bin = ReleaseTestHelpers.validatePackageJsonField(packageJson, 'bin');
+      expect(bin.ait3).toBeDefined();
     });
 
     it('should have proper directory structure for distribution', async () => {
@@ -168,18 +183,18 @@ describe('v1.0.0 Release Preparation', () => {
 
   describe('quality gates for release', () => {
     it('should have package.json configured for quality gates', async () => {
-      const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
-      // Check that quality scripts exist
-      expect(packageJson.scripts.test).toBe('vitest run');
-      expect(packageJson.scripts['type-check']).toBeDefined();
-      expect(packageJson.scripts.lint).toBeDefined();
-      expect(packageJson.scripts.ci).toBeDefined();
+      const packageJson = await ReleaseTestHelpers.getPackageJson();
+      const scripts = ReleaseTestHelpers.validatePackageJsonField(packageJson, 'scripts');
+      expect(scripts.test).toBe('vitest run');
+      expect(scripts['type-check']).toBeDefined();
+      expect(scripts.lint).toBeDefined();
+      expect(scripts.ci).toBeDefined();
     });
 
     it('should have vitest configured for run mode by default', async () => {
       // Check vitest.config.ts has watch: false
-      const vitestConfig = await readFile('vitest.config.ts', 'utf-8');
-      expect(vitestConfig).toContain('watch: false');
+      const vitestConfig = await ReleaseTestHelpers.readProjectFile('vitest.config.ts');
+      ReleaseTestHelpers.validateStringContains(vitestConfig, ['watch: false']);
     });
   });
 });
