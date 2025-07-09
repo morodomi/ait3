@@ -38,7 +38,7 @@ describe('redPhase Pure Function', () => {
     it('should validate ticket exists', async () => {
       await expect(
         redPhase({ ticketId: '9999' }, services)
-      ).rejects.toThrow("Ticket with ID '9999' not found");
+      ).rejects.toThrow('Ticket with ID \'9999\' not found');
     });
 
     it('should generate unit test by default', async () => {

@@ -38,7 +38,7 @@ describe('squashPhase Pure Function', () => {
     it('should validate ticket exists', async () => {
       await expect(
         squashPhase({ ticketId: '9999' }, services)
-      ).rejects.toThrow("Ticket with ID '9999' not found");
+      ).rejects.toThrow('Ticket with ID \'9999\' not found');
     });
 
     it('should auto-complete tickets in todo status', async () => {

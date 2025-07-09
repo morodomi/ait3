@@ -121,16 +121,16 @@ export async function installCommand(
 async function getTemplateContent(commandName: string): Promise<string> {
   // Import templates based on command name
   switch (commandName) {
-    case 'ait3':
-      return ait3Template;
-    case 'gemini':
-      return geminiTemplate;
-    case 'orchestrator':
-      return orchestratorTemplate;
-    case 'ait3-init':
-      return ait3InitTemplate;
-    default:
-      throw new Error(`Template not found for command: ${commandName}`);
+  case 'ait3':
+    return ait3Template;
+  case 'gemini':
+    return geminiTemplate;
+  case 'orchestrator':
+    return orchestratorTemplate;
+  case 'ait3-init':
+    return ait3InitTemplate;
+  default:
+    throw new Error(`Template not found for command: ${commandName}`);
   }
 }
 
