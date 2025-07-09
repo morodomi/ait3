@@ -1,0 +1,66 @@
+# Source files (compiled to dist/)
+src/
+
+# Tests
+tests/
+*.test.ts
+*.spec.ts
+
+# Development configuration
+eslint.config.js
+vitest.config.ts
+tsconfig.json
+
+# Tickets and planning
+.tickets/
+PLANNING-*.md
+
+# Development dependencies
+node_modules/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Temporary directories
+tmp/
+temp/
+
+# Development scripts and documentation
+docs/development/
+scripts/dev/
+
+# Build artifacts (keep dist/ for distribution)
+# Note: dist/ is included via package.json files field
