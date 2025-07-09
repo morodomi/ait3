@@ -4,20 +4,14 @@ import { redPhase } from './red.js';
 import { greenPhase } from './green.js';
 import { refactorPhase } from './refactor.js';
 import { squashPhase } from './squash.js';
-import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
-import { SimpleGitService } from '../../services/implementations/SimpleGitService.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
 import { STYLES } from '../../common/styles.js';
+import { ServiceFactory } from '../../services/ServiceFactory.js';
 
 // Service container - centralized dependency injection
-// Support test environment override with TICKETS_DIR
-const ticketsPath = process.env.TICKETS_DIR || '.tickets';
-const services: Services = {
-  ticketService: new LocalTicketService(ticketsPath),
-  // GitService is optional - disable in test environments to avoid git conflicts
-  gitService: process.env.NODE_ENV !== 'test' && !process.env.VITEST ? new SimpleGitService() : undefined
-};
+// Use ServiceFactory to ensure proper dependency inversion
+const services: Services = ServiceFactory.createServices();
 
 export const flowCommand = new Command('flow')
   .description('AIT³ workflow commands - AI + Ticket + Test + Tool driven development')

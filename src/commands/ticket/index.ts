@@ -5,21 +5,14 @@ import { showTicket } from './show.js';
 import { startTicket } from './start.js';
 import { completeTicket } from './complete.js';
 import { undoTicket } from './undo.js';
-import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
-import { SimpleGitService } from '../../services/implementations/SimpleGitService.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError, TicketNotStartedError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
 import { STYLES } from '../../common/styles.js';
+import { ServiceFactory } from '../../services/ServiceFactory.js';
 
 // Service container - centralized dependency injection
-// Support test environment override with TICKETS_DIR
-const ticketsPath = process.env.TICKETS_DIR || '.tickets';
-const gitService = process.env.NODE_ENV !== 'test' && !process.env.VITEST ? new SimpleGitService() : undefined;
-const services: Services = {
-  ticketService: new LocalTicketService(ticketsPath, gitService),
-  // GitService is optional - disable in test environments to avoid git conflicts
-  gitService
-};
+// Use ServiceFactory to ensure proper dependency inversion
+const services: Services = ServiceFactory.createServices();
 
 export const ticketCommand = new Command('ticket')
   .description('Ticket management commands')
