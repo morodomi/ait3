@@ -4,6 +4,23 @@ import { constants } from 'fs';
 import type { StructureAnalyzer } from '../interfaces/StructureAnalyzer.js';
 import type { ProjectStructure, FrameworkInfo, DirectoryInfo } from '../../common/types/analyzer.js';
 
+// Type definitions for config files
+interface PackageJson {
+  name?: string;
+  version?: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  scripts?: Record<string, string>;
+  [key: string]: unknown;
+}
+
+interface ComposerJson {
+  name?: string;
+  require?: Record<string, string>;
+  'require-dev'?: Record<string, string>;
+  [key: string]: unknown;
+}
+
 export class DirectoryStructureAnalyzer implements StructureAnalyzer {
   constructor(private rootPath: string) {}
 
@@ -244,19 +261,19 @@ export class DirectoryStructureAnalyzer implements StructureAnalyzer {
     }
   }
 
-  private async readPackageJson(targetPath: string): Promise<any> {
+  private async readPackageJson(targetPath: string): Promise<PackageJson | null> {
     try {
       const content = await readFile(join(targetPath, 'package.json'), 'utf-8');
-      return JSON.parse(content);
+      return JSON.parse(content) as PackageJson;
     } catch {
       return null;
     }
   }
 
-  private async readComposerJson(targetPath: string): Promise<any> {
+  private async readComposerJson(targetPath: string): Promise<ComposerJson | null> {
     try {
       const content = await readFile(join(targetPath, 'composer.json'), 'utf-8');
-      return JSON.parse(content);
+      return JSON.parse(content) as ComposerJson;
     } catch {
       return null;
     }

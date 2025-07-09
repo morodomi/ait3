@@ -5,65 +5,85 @@ import { constants } from 'fs';
 import type { CommandDetector } from '../interfaces/CommandDetector.js';
 import type { CommandInfo } from '../../common/types/analyzer.js';
 
+type CommandType = 'test' | 'lint' | 'format' | 'build';
+
+interface LanguageDetector {
+  [key: string]: (targetPath: string) => Promise<CommandInfo | null>;
+}
+
 export class ConfigBasedCommandDetector implements CommandDetector {
+  private languageDetectors: Record<CommandType, LanguageDetector> = {
+    test: {
+      Python: this.detectPythonTest.bind(this),
+      PHP: this.detectPHPTest.bind(this)
+    },
+    lint: {
+      Python: this.detectPythonLint.bind(this),
+      PHP: this.detectPHPLint.bind(this),
+      TypeScript: this.detectJSLint.bind(this),
+      JavaScript: this.detectJSLint.bind(this)
+    },
+    format: {
+      Python: this.detectPythonFormat.bind(this),
+      PHP: this.detectPHPFormat.bind(this),
+      TypeScript: this.detectJSFormat.bind(this),
+      JavaScript: this.detectJSFormat.bind(this)
+    },
+    build: {
+      Python: this.detectPythonBuild.bind(this),
+      PHP: this.detectPHPBuild.bind(this),
+      TypeScript: this.detectTSBuild.bind(this)
+    }
+  };
+
   constructor(private rootPath: string) {}
 
   async detectTestCommand(path?: string, language?: string): Promise<CommandInfo> {
+    return this.detectCommand('test', path, language, 'npm test');
+  }
+
+  async detectLintCommand(path?: string, language?: string): Promise<CommandInfo> {
+    return this.detectCommand('lint', path, language, '');
+  }
+
+  async detectFormatCommand(path?: string, language?: string): Promise<CommandInfo> {
+    return this.detectCommand('format', path, language, '');
+  }
+
+  async detectBuildCommand(path?: string, language?: string): Promise<CommandInfo> {
+    return this.detectCommand('build', path, language, '');
+  }
+
+  private async detectCommand(
+    type: CommandType,
+    path?: string,
+    language?: string,
+    defaultCommand?: string
+  ): Promise<CommandInfo> {
     const targetPath = path || this.rootPath;
 
     // Try package.json first for JS/TS projects
-    const packageJson = await this.readPackageJson(targetPath);
-    if (packageJson?.scripts?.test) {
+    const packageCommand = await this.detectPackageJsonCommand(targetPath, type);
+    if (packageCommand) return packageCommand;
+
+    // Try language-specific detection
+    if (language && this.languageDetectors[type][language]) {
+      const result = await this.languageDetectors[type][language](targetPath);
+      if (result) return result;
+    }
+
+    // Try all language detectors if no language specified
+    if (!language) {
+      for (const detector of Object.values(this.languageDetectors[type])) {
+        const result = await detector(targetPath);
+        if (result) return result;
+      }
+    }
+
+    // Return default or not found
+    if (defaultCommand) {
       return {
-        command: 'npm test',
-        detected: true,
-        source: 'package.json',
-        confidence: 1.0
-      };
-    }
-
-    // Language-specific detection
-    if (language === 'Python' || !language) {
-      // Check for pytest
-      if (await this.fileExists(join(targetPath, 'pytest.ini')) ||
-          await this.fileExists(join(targetPath, 'pyproject.toml'))) {
-        return {
-          command: 'pytest',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.9
-        };
-      }
-      
-      // Check for unittest
-      if (await this.fileExists(join(targetPath, 'test_*.py')) ||
-          await this.fileExists(join(targetPath, 'tests'))) {
-        return {
-          command: 'python -m unittest',
-          detected: true,
-          source: 'convention',
-          confidence: 0.7
-        };
-      }
-    }
-
-    if (language === 'PHP' || !language) {
-      // Check for PHPUnit
-      if (await this.fileExists(join(targetPath, 'phpunit.xml')) ||
-          await this.fileExists(join(targetPath, 'phpunit.xml.dist'))) {
-        return {
-          command: './vendor/bin/phpunit',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.9
-        };
-      }
-    }
-
-    // Default based on language
-    if (language === 'TypeScript' || language === 'JavaScript') {
-      return {
-        command: 'npm test',
+        command: defaultCommand,
         detected: false,
         source: 'default',
         confidence: 0.3
@@ -71,83 +91,6 @@ export class ConfigBasedCommandDetector implements CommandDetector {
     }
 
     return {
-      command: 'npm test',
-      detected: false,
-      source: 'default',
-      confidence: 0.3
-    };
-  }
-
-  async detectLintCommand(path?: string, language?: string): Promise<CommandInfo> {
-    const targetPath = path || this.rootPath;
-
-    // Try package.json first
-    const packageJson = await this.readPackageJson(targetPath);
-    if (packageJson?.scripts?.lint) {
-      return {
-        command: 'npm run lint',
-        detected: true,
-        source: 'package.json',
-        confidence: 1.0
-      };
-    }
-
-    // Check for ESLint
-    if (language === 'TypeScript' || language === 'JavaScript' || !language) {
-      if (await this.fileExists(join(targetPath, '.eslintrc.js')) ||
-          await this.fileExists(join(targetPath, '.eslintrc.json')) ||
-          await this.fileExists(join(targetPath, '.eslintrc.yml'))) {
-        return {
-          command: 'npx eslint .',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.8
-        };
-      }
-    }
-
-    // Python linting
-    if (language === 'Python' || !language) {
-      // Check for ruff
-      if (await this.fileExists(join(targetPath, '.ruff.toml')) ||
-          await this.fileExists(join(targetPath, 'pyproject.toml'))) {
-        const pyproject = await this.readPyprojectToml(targetPath);
-        if (pyproject?.includes('[tool.ruff]') || await this.fileExists(join(targetPath, '.ruff.toml'))) {
-          return {
-            command: 'ruff check',
-            detected: true,
-            source: 'config-file',
-            confidence: 0.9
-          };
-        }
-      }
-
-      // Check for flake8
-      if (await this.fileExists(join(targetPath, '.flake8')) ||
-          await this.fileExists(join(targetPath, 'setup.cfg'))) {
-        return {
-          command: 'flake8',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.8
-        };
-      }
-    }
-
-    // PHP linting
-    if (language === 'PHP' || !language) {
-      if (await this.fileExists(join(targetPath, 'phpcs.xml')) ||
-          await this.fileExists(join(targetPath, 'phpcs.xml.dist'))) {
-        return {
-          command: './vendor/bin/phpcs',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.9
-        };
-      }
-    }
-
-    return {
       command: '',
       detected: false,
       source: 'not-found',
@@ -155,127 +98,216 @@ export class ConfigBasedCommandDetector implements CommandDetector {
     };
   }
 
-  async detectFormatCommand(path?: string, language?: string): Promise<CommandInfo> {
-    const targetPath = path || this.rootPath;
-
-    // Try package.json first
+  private async detectPackageJsonCommand(
+    targetPath: string, 
+    type: CommandType
+  ): Promise<CommandInfo | null> {
     const packageJson = await this.readPackageJson(targetPath);
-    if (packageJson?.scripts?.format) {
+    if (packageJson?.scripts?.[type]) {
       return {
-        command: 'npm run format',
+        command: `npm ${type === 'test' ? 'test' : `run ${type}`}`,
         detected: true,
         source: 'package.json',
         confidence: 1.0
       };
     }
-
-    // Check for Prettier
-    if (language === 'TypeScript' || language === 'JavaScript' || !language) {
-      if (await this.fileExists(join(targetPath, '.prettierrc')) ||
-          await this.fileExists(join(targetPath, '.prettierrc.json')) ||
-          await this.fileExists(join(targetPath, '.prettierrc.js'))) {
-        return {
-          command: 'npx prettier --write .',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.8
-        };
-      }
-    }
-
-    // Python formatting
-    if (language === 'Python' || !language) {
-      // Check for Black
-      if (await this.fileExists(join(targetPath, 'pyproject.toml'))) {
-        const pyproject = await this.readPyprojectToml(targetPath);
-        if (pyproject?.includes('[tool.black]')) {
-          return {
-            command: 'black .',
-            detected: true,
-            source: 'config-file',
-            confidence: 0.9
-          };
-        }
-      }
-    }
-
-    // PHP formatting
-    if (language === 'PHP' || !language) {
-      if (await this.fileExists(join(targetPath, '.php-cs-fixer.php')) ||
-          await this.fileExists(join(targetPath, '.php_cs'))) {
-        return {
-          command: './vendor/bin/php-cs-fixer fix',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.9
-        };
-      }
-    }
-
-    return {
-      command: '',
-      detected: false,
-      source: 'not-found',
-      confidence: 0
-    };
+    return null;
   }
 
-  async detectBuildCommand(path?: string, language?: string): Promise<CommandInfo> {
-    const targetPath = path || this.rootPath;
+  // Python detection methods
+  private async detectPythonTest(targetPath: string): Promise<CommandInfo | null> {
+    const [hasPytest, hasPyproject, hasTests] = await Promise.all([
+      this.fileExists(join(targetPath, 'pytest.ini')),
+      this.fileExists(join(targetPath, 'pyproject.toml')),
+      this.fileExists(join(targetPath, 'tests'))
+    ]);
 
-    // Try package.json first
-    const packageJson = await this.readPackageJson(targetPath);
-    if (packageJson?.scripts?.build) {
+    if (hasPytest || hasPyproject) {
       return {
-        command: 'npm run build',
+        command: 'pytest',
         detected: true,
-        source: 'package.json',
-        confidence: 1.0
+        source: 'config-file',
+        confidence: 0.9
       };
     }
 
-    // TypeScript build
-    if (language === 'TypeScript' || !language) {
-      if (await this.fileExists(join(targetPath, 'tsconfig.json'))) {
-        return {
-          command: 'npx tsc',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.7
-        };
-      }
+    if (hasTests) {
+      return {
+        command: 'python -m unittest',
+        detected: true,
+        source: 'convention',
+        confidence: 0.7
+      };
     }
 
-    // Python build
-    if (language === 'Python' || !language) {
-      if (await this.fileExists(join(targetPath, 'setup.py'))) {
-        return {
-          command: 'python setup.py build',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.7
-        };
-      }
+    return null;
+  }
+
+  private async detectPythonLint(targetPath: string): Promise<CommandInfo | null> {
+    const [hasRuff, hasPyproject] = await Promise.all([
+      this.fileExists(join(targetPath, '.ruff.toml')),
+      this.readPyprojectToml(targetPath)
+    ]);
+
+    if (hasRuff || hasPyproject?.includes('[tool.ruff]')) {
+      return {
+        command: 'ruff check',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.9
+      };
     }
 
-    // PHP build (composer)
-    if (language === 'PHP' || !language) {
-      if (await this.fileExists(join(targetPath, 'composer.json'))) {
-        return {
-          command: 'composer install --no-dev',
-          detected: true,
-          source: 'config-file',
-          confidence: 0.6
-        };
-      }
+    if (await this.fileExists(join(targetPath, '.flake8'))) {
+      return {
+        command: 'flake8',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.8
+      };
     }
 
-    return {
-      command: '',
-      detected: false,
-      source: 'not-found',
-      confidence: 0
-    };
+    return null;
+  }
+
+  private async detectPythonFormat(targetPath: string): Promise<CommandInfo | null> {
+    const pyproject = await this.readPyprojectToml(targetPath);
+    if (pyproject?.includes('[tool.black]')) {
+      return {
+        command: 'black .',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.9
+      };
+    }
+    return null;
+  }
+
+  private async detectPythonBuild(targetPath: string): Promise<CommandInfo | null> {
+    if (await this.fileExists(join(targetPath, 'setup.py'))) {
+      return {
+        command: 'python setup.py build',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.7
+      };
+    }
+    return null;
+  }
+
+  // PHP detection methods
+  private async detectPHPTest(targetPath: string): Promise<CommandInfo | null> {
+    const [hasPhpUnit, hasPhpUnitDist] = await Promise.all([
+      this.fileExists(join(targetPath, 'phpunit.xml')),
+      this.fileExists(join(targetPath, 'phpunit.xml.dist'))
+    ]);
+
+    if (hasPhpUnit || hasPhpUnitDist) {
+      return {
+        command: './vendor/bin/phpunit',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.9
+      };
+    }
+    return null;
+  }
+
+  private async detectPHPLint(targetPath: string): Promise<CommandInfo | null> {
+    const [hasPhpCs, hasPhpCsDist] = await Promise.all([
+      this.fileExists(join(targetPath, 'phpcs.xml')),
+      this.fileExists(join(targetPath, 'phpcs.xml.dist'))
+    ]);
+
+    if (hasPhpCs || hasPhpCsDist) {
+      return {
+        command: './vendor/bin/phpcs',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.9
+      };
+    }
+    return null;
+  }
+
+  private async detectPHPFormat(targetPath: string): Promise<CommandInfo | null> {
+    const [hasPhpCsFixer, hasLegacyFixer] = await Promise.all([
+      this.fileExists(join(targetPath, '.php-cs-fixer.php')),
+      this.fileExists(join(targetPath, '.php_cs'))
+    ]);
+
+    if (hasPhpCsFixer || hasLegacyFixer) {
+      return {
+        command: './vendor/bin/php-cs-fixer fix',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.9
+      };
+    }
+    return null;
+  }
+
+  private async detectPHPBuild(targetPath: string): Promise<CommandInfo | null> {
+    if (await this.fileExists(join(targetPath, 'composer.json'))) {
+      return {
+        command: 'composer install --no-dev',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.6
+      };
+    }
+    return null;
+  }
+
+  // JavaScript/TypeScript detection methods
+  private async detectJSLint(targetPath: string): Promise<CommandInfo | null> {
+    const eslintConfigs = ['.eslintrc.js', '.eslintrc.json', '.eslintrc.yml'];
+    const hasEslint = await this.anyFileExists(targetPath, eslintConfigs);
+
+    if (hasEslint) {
+      return {
+        command: 'npx eslint .',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.8
+      };
+    }
+    return null;
+  }
+
+  private async detectJSFormat(targetPath: string): Promise<CommandInfo | null> {
+    const prettierConfigs = ['.prettierrc', '.prettierrc.json', '.prettierrc.js'];
+    const hasPrettier = await this.anyFileExists(targetPath, prettierConfigs);
+
+    if (hasPrettier) {
+      return {
+        command: 'npx prettier --write .',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.8
+      };
+    }
+    return null;
+  }
+
+  private async detectTSBuild(targetPath: string): Promise<CommandInfo | null> {
+    if (await this.fileExists(join(targetPath, 'tsconfig.json'))) {
+      return {
+        command: 'npx tsc',
+        detected: true,
+        source: 'config-file',
+        confidence: 0.7
+      };
+    }
+    return null;
+  }
+
+  // Utility methods
+  private async anyFileExists(basePath: string, files: string[]): Promise<boolean> {
+    const checks = await Promise.all(
+      files.map(file => this.fileExists(join(basePath, file)))
+    );
+    return checks.some(exists => exists);
   }
 
   private async readPackageJson(targetPath: string): Promise<any> {
