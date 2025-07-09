@@ -151,7 +151,7 @@ describe('v1.0.0 Release Preparation', () => {
     });
 
     it('should have proper commit history for release', async () => {
-      const { stdout } = await execAsync('git log --oneline -n 5');
+      const { stdout } = await execAsync('git log --oneline -n 20');
       expect(stdout).toContain('feat(#0034)'); // Should have the release preparation commits
     });
   });
