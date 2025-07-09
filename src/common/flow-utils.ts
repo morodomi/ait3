@@ -1,7 +1,6 @@
 import { SlugUtils } from './utils.js';
 import { STYLES } from './styles.js';
-import { Services } from './types.js';
-import { Ticket } from '../services/interfaces/TicketService.js';
+import { Services, Ticket } from './types.js';
 import { TicketNotFoundError, ValidationError } from './errors.js';
 import { FLOW_MESSAGES } from './flow-messages.js';
 
