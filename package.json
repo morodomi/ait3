@@ -7,7 +7,7 @@
     "ait3": "./bin/ait3.js"
   },
   "scripts": {
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest",
     "test:ci": "vitest run",
     "coverage": "vitest run --coverage",
@@ -41,6 +41,8 @@
   "dependencies": {
     "chalk": "^5.4.1",
     "commander": "^14.0.0",
+    "cosmiconfig": "^9.0.0",
+    "linguist-js": "^2.9.2",
     "simple-git": "^3.28.0"
   }
 }

@@ -1,8 +1,13 @@
 import type { Services } from '../common/types.js';
 import type { TicketService } from './interfaces/TicketService.js';
 import type { GitService } from './interfaces/GitService.js';
+import type { ProjectAnalyzer } from './interfaces/ProjectAnalyzer.js';
 import { LocalTicketService } from './implementations/LocalTicketService.js';
 import { SimpleGitService } from './implementations/SimpleGitService.js';
+import { DefaultProjectAnalyzer } from './implementations/DefaultProjectAnalyzer.js';
+import { LinguistLanguageDetector } from './implementations/LinguistLanguageDetector.js';
+import { ConfigBasedCommandDetector } from './implementations/ConfigBasedCommandDetector.js';
+import { DirectoryStructureAnalyzer } from './implementations/DirectoryStructureAnalyzer.js';
 
 /**
  * ServiceFactory provides dependency injection for all services
@@ -15,10 +20,12 @@ export class ServiceFactory {
   static createServices(): Services {
     const ticketsPath = process.env.TICKETS_DIR || '.tickets';
     const gitService = this.createGitService();
+    const projectAnalyzer = this.createProjectAnalyzer();
     
     return {
       ticketService: this.createTicketService(ticketsPath, gitService),
-      gitService
+      gitService,
+      projectAnalyzer
     };
   }
 
@@ -54,5 +61,22 @@ export class ServiceFactory {
     gitService?: GitService
   ): TicketService {
     return new LocalTicketService(ticketsPath, gitService);
+  }
+
+  /**
+   * Create ProjectAnalyzer instance
+   */
+  private static createProjectAnalyzer(): ProjectAnalyzer {
+    const rootPath = process.cwd();
+    const languageDetector = new LinguistLanguageDetector(rootPath);
+    const commandDetector = new ConfigBasedCommandDetector(rootPath);
+    const structureAnalyzer = new DirectoryStructureAnalyzer(rootPath);
+    
+    return new DefaultProjectAnalyzer(
+      rootPath,
+      languageDetector,
+      commandDetector,
+      structureAnalyzer
+    );
   }
 }
