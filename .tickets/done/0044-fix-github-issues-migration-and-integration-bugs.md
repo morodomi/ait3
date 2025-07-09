@@ -1,12 +1,15 @@
 ---
 id: '0044'
 title: Fix GitHub Issues migration and integration bugs
-status: doing
+status: done
 priority: medium
 created: '2025-07-09T23:05:11.461Z'
-updated: '2025-07-09T23:06:02.636Z'
-labels: ['bug', 'github-integration']
+updated: '2025-07-09T23:37:24.923Z'
+labels:
+  - bug
+  - github-integration
 started: '2025-07-09T23:06:02.636Z'
+completed: '2025-07-09T23:37:24.923Z'
 ---
 # Ticket #0044: Fix GitHub Issues migration and integration bugs
 
