@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { analyzeProject } from './project.js';
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
-import { GitService } from '../../services/implementations/GitService.js';
+import { SimpleGitService } from '../../services/implementations/SimpleGitService.js';
 import { DefaultProjectAnalyzer } from '../../services/implementations/DefaultProjectAnalyzer.js';
 import { LinguistLanguageDetector } from '../../services/implementations/LinguistLanguageDetector.js';
 import { ConfigBasedCommandDetector } from '../../services/implementations/ConfigBasedCommandDetector.js';
@@ -38,7 +38,7 @@ function createServices(): Services {
   
   // Create base services
   const ticketService = new LocalTicketService(ticketsDir);
-  const gitService = new GitService();
+  const gitService = new SimpleGitService();
   
   // Create project analyzer with dependencies
   const languageDetector = new LinguistLanguageDetector(rootPath);

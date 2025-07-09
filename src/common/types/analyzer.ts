@@ -17,7 +17,7 @@ export interface FrameworkInfo {
 export interface CommandInfo {
   command: string;
   detected: boolean;
-  source: 'package.json' | 'config-file' | 'default' | 'not-found';
+  source: 'package.json' | 'config-file' | 'default' | 'not-found' | 'convention';
   confidence: number; // 0-1
 }
 
@@ -35,6 +35,9 @@ export interface StructureAnalysis {
   hasCICD: boolean;
   hasDocker: boolean;
 }
+
+// Alias for backward compatibility
+export type ProjectStructure = StructureAnalysis;
 
 export interface DirectoryInfo {
   path: string;
