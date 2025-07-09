@@ -10,26 +10,7 @@ interface InitArgs {
   output?: string;
 }
 
-/**
- * Main init command router
- * Handles: ait3 init [subcommand]
- */
-export async function initCommand(args: InitArgs): Promise<CLIResult> {
-  const { subcommand } = args;
-
-  switch (subcommand) {
-  case 'claude-md':
-    return await initClaudeMdCommand(args);
-    
-  case undefined:
-    // Default behavior: install ait3-init guide
-    const installResult = await installCommand({
-      name: 'ait3-init',
-      force: args.force
-    });
-
-    // Append instructions to the install result message
-    const instructions = `
+const CLAUDE_MD_INSTRUCTIONS = `
 
 Next steps to generate CLAUDE.md:
 1. Launch Claude Code in your terminal: claude
@@ -42,22 +23,48 @@ The ait3-init guide will help you:
 - Understand your business logic
 - Create a comprehensive CLAUDE.md file`;
 
-    // If the guide already exists (not using force), still show instructions
-    if (!installResult.success && installResult.message.includes('already exists')) {
-      return {
-        success: true,
-        message: installResult.message + instructions
-      };
-    }
-    
-    if (!installResult.success) {
-      return installResult;
-    }
-
+/**
+ * Handles the result of installing the ait3-init command guide
+ */
+function handleInstallResult(installResult: CLIResult): CLIResult {
+  // If the guide already exists (not using force), still show instructions
+  if (!installResult.success && installResult.message.includes('already exists')) {
     return {
       success: true,
-      message: installResult.message + instructions
+      message: installResult.message + CLAUDE_MD_INSTRUCTIONS
     };
+  }
+  
+  if (!installResult.success) {
+    return installResult;
+  }
+
+  return {
+    success: true,
+    message: installResult.message + CLAUDE_MD_INSTRUCTIONS
+  };
+}
+
+/**
+ * Main init command router
+ * Handles: ait3 init [subcommand]
+ */
+export async function initCommand(args: InitArgs): Promise<CLIResult> {
+  const { subcommand } = args;
+
+  switch (subcommand) {
+  case 'claude-md':
+    return initClaudeMdCommand(args);
+    
+  case undefined: {
+    // Default behavior: install ait3-init guide
+    const installResult = await installCommand({
+      name: 'ait3-init',
+      force: args.force
+    });
+    
+    return handleInstallResult(installResult);
+  }
     
   default:
     return {
