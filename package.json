@@ -2,7 +2,7 @@
   "name": "@morodomi/ait3",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/cli.js",
   "bin": {
     "ait3": "./bin/ait3.js"
   },
@@ -32,11 +32,13 @@
   "license": "MIT",
   "description": "AIT³ Development Platform - AI + Ticket + Test + Tool driven development methodology",
   "repository": "https://github.com/morodomi/ait3.git",
+  "homepage": "https://github.com/morodomi/ait3#readme",
   "files": [
     "dist/",
     "bin/",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "devDependencies": {
     "@eslint/js": "^9.30.1",
