@@ -26,7 +26,7 @@ AIT³ embodies **Socratic epistemology** - wisdom emerges through questioning, d
 
 ## 🚀 Quick Start
 
-## Installation
+### Installation
 
 ```bash
 # Install globally
