@@ -1,4 +1,4 @@
-# 🧠 AIT³ - AI-Driven Development Platform
+# AIT³ - AI-Driven Development Platform
 
 > **AIT³ (AI + Ticket + Test + Tool)** - Revolutionary development methodology featuring Socratic dialogue between Claude and Gemini with human judgment supreme
 
@@ -6,17 +6,17 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 
-## 🎯 What is AIT³?
+## What is AIT³?
 
 AIT³ is an AI-driven development platform that revolutionizes software engineering through intelligent collaboration between **Claude Code**, **Gemini**, and **human developers**. By implementing a **4-Phase AIT³ workflow**, it facilitates thoughtful decision-making through dialectical reasoning, where **human judgment remains supreme**.
 
-### 🏛️ Socratic Foundation
+### Socratic Foundation
 
 AIT³ embodies **Socratic epistemology** - wisdom emerges through questioning, dialogue, and examining assumptions. Like Socrates, we embrace ignorance as the starting point for knowledge.
 
 > *"The only true wisdom is in knowing you know nothing."* - Socrates
 
-### 🔄 Dialectical Process
+### Dialectical Process
 
 **Claude-Gemini-Human Triad**: Technical decisions undergo structured intellectual combat:
 
@@ -24,7 +24,7 @@ AIT³ embodies **Socratic epistemology** - wisdom emerges through questioning, d
 2. **Antithesis** (Gemini): Challenges assumptions and identifies flaws  
 3. **Synthesis** (Human): Weighs evidence and makes informed decisions
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -53,7 +53,7 @@ ait3 ticket start 0001
 ait3 flow plan "project-setup"
 ```
 
-## 🎫 Core Commands
+## Core Commands
 
 ### Ticket Management
 ```bash
@@ -80,9 +80,9 @@ ait3 init claude-md                           # Generate CLAUDE.md with analysis
 ait3 install claude-md                        # Simple template generation
 ```
 
-## 🔄 AIT³ Workflow (AI + Ticket + Test + Tool)
+## AIT³ Workflow (AI + Ticket + Test + Tool)
 
-### 🎭 Phase 1: PLANNING (Socratic Dialogue)
+### Phase 1: PLANNING (Socratic Dialogue)
 
 **Purpose**: Validate approach through dialectical reasoning before implementation.
 
@@ -97,7 +97,7 @@ gemini -p "Critique Claude's approach for user authentication: [proposal-details
 git commit -m "planning(#123): chosen approach after dialectical analysis"
 ```
 
-### 🔴 Phase 2: RED (Test Creation)
+### Phase 2: RED (Test Creation)
 
 **Purpose**: Create comprehensive tests that reflect ticket requirements.
 
@@ -112,7 +112,7 @@ ait3 flow red 123
 # - Achieve 0% pass rate initially (all red)
 ```
 
-### 🟢 Phase 3: GREEN (Implementation)
+### Phase 3: GREEN (Implementation)
 
 **Purpose**: Implement minimal code to achieve 100% test pass rate.
 
@@ -126,7 +126,7 @@ ait3 flow green 123
 # - Create tickets for mock implementations that need real code
 ```
 
-### 🔧 Phase 4: REFACTOR (Optimization)
+### Phase 4: REFACTOR (Optimization)
 
 **Purpose**: Improve code quality while maintaining 100% test coverage.
 
@@ -141,7 +141,7 @@ ait3 flow refactor 123
 # - Identify and ticket remaining mock implementations
 ```
 
-### 📦 Phase 5: SQUASH (Git Cleanup)
+### Phase 5: SQUASH (Git Cleanup)
 
 **Purpose**: Generate Git command suggestions for clean commit history.
 
@@ -156,7 +156,7 @@ ait3 flow squash 123
 # - Pull request creation guidance
 ```
 
-## 🤖 Claude Code Integration
+## Claude Code Integration
 
 ### Automatic Setup
 
@@ -198,7 +198,7 @@ gemini -p "@src/auth/ @tests/auth/ Review authentication implementation"
 gemini -p "@src/ Critique this approach for [feature-name]"
 ```
 
-## 📊 Project Analysis Features
+## Project Analysis Features
 
 ### Multi-Language Detection
 - **Node.js/TypeScript**: package.json, npm scripts
@@ -213,7 +213,7 @@ gemini -p "@src/ Critique this approach for [feature-name]"
 - **Architecture Patterns**: Directory structure analysis
 - **Framework Detection**: Technology stack recognition
 
-## 🏗️ Architecture
+## Architecture
 
 ### Technology Stack
 - **Runtime**: Node.js 18+
@@ -228,7 +228,7 @@ gemini -p "@src/ Critique this approach for [feature-name]"
 - **100% Test Coverage**: Non-negotiable quality gate
 - **Type Safety**: Zero `any` types in production code
 
-## 📋 Example Workflows
+## Example Workflows
 
 ### New Feature Development
 
@@ -276,7 +276,7 @@ ait3 ticket start 001
 ait3 flow plan "ait3-migration"
 ```
 
-## 🎨 Philosophy
+## Philosophy
 
 ### Human-Centric AI Collaboration
 
@@ -300,14 +300,14 @@ Following **Karl Popper's falsifiability principle**, we actively seek to dispro
 - Embrace rapid iteration with safety nets (tests, version control)
 - Balance creativity with engineering discipline
 
-## 📚 Documentation
+## Documentation
 
 - **[CHANGELOG.md](CHANGELOG.md)** - Detailed version history
 - **[CLAUDE.md](CLAUDE.md)** - Complete project context for Claude Code
 - **Philosophy**: Socratic methodology and dialectical reasoning
 - **Workflow**: Complete AIT³ process documentation
 
-## 🤝 Contributing
+## Contributing
 
 AIT³ follows its own methodology for contributions:
 
@@ -317,11 +317,11 @@ AIT³ follows its own methodology for contributions:
 4. **Maintain 100% test coverage**: All tests must pass
 5. **Human judgment supreme**: Technical decisions require human synthesis
 
-## 📄 License
+## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Claude Code team** - Enabling seamless AI-human collaboration
 - **Socratic tradition** - Wisdom through questioning and dialogue  
