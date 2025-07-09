@@ -39,11 +39,9 @@ ait3 --version
 ### Initialize Your First Project
 
 ```bash
-# Setup Claude Code integration
-ait3 install command
-
-# Generate project-specific CLAUDE.md
-ait3 init claude-md
+# Initialize AIT³ for your project
+ait3 init
+# This installs the ait3-init guide and shows instructions for generating CLAUDE.md
 
 # Create your first ticket
 ait3 ticket create "Setup project structure"
@@ -171,12 +169,14 @@ ait3 install command
 
 ### Usage with Claude Code
 
-1. **Generate project context**:
+1. **Initialize and generate project context**:
    ```bash
-   ait3 init claude-md
+   ait3 init
+   # Follow the instructions to generate CLAUDE.md using /ait3-init in Claude Code
    ```
 
 2. **In Claude Code, use the installed commands**:
+   - `/ait3-init` - Interactive guide to generate CLAUDE.md
    - `/ait3` - Access AIT³ methodology and commands
    - `/gemini` - Large codebase analysis with Gemini
 
