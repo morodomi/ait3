@@ -1,11 +1,12 @@
 ---
 id: '0037'
 title: Fix missing gray-matter dependency error in LocalTicketService
-status: todo
+status: doing
 priority: medium
 created: '2025-07-09T14:06:35.824Z'
-updated: '2025-07-09T14:06:35.824Z'
+updated: '2025-07-09T14:07:31.542Z'
 labels: []
+started: '2025-07-09T14:07:31.542Z'
 ---
 # Ticket #0037: Fix missing gray-matter dependency error in LocalTicketService
 
