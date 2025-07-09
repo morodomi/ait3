@@ -1,0 +1,33 @@
+{
+  "backend": "local",
+  "path": ".tickets",
+  "numbering": {
+    "format": "0000",
+    "increment": 1,
+    "next": 1
+  },
+  "templates": {
+    "feature": "templates/feature-ticket.md",
+    "bug": "templates/bug-ticket.md",
+    "task": "templates/task-ticket.md"
+  },
+  "labels": {
+    "priority": [
+      "low",
+      "medium",
+      "high",
+      "critical"
+    ],
+    "type": [
+      "feature",
+      "bug",
+      "task",
+      "spike"
+    ],
+    "status": [
+      "todo",
+      "doing",
+      "done"
+    ]
+  }
+}
