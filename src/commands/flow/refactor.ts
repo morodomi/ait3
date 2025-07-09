@@ -1,5 +1,5 @@
 import type { Services, CLIResult, Ticket } from '../../common/types.js';
-import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
+import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils } from '../../common/utils.js';

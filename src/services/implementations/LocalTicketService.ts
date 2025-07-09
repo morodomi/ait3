@@ -344,11 +344,8 @@ export class LocalTicketService implements TicketService {
               // Validate with Zod and add description from markdown content
               const ticket = TicketSchema.parse(data);
               
-              // Extract description from markdown content (everything after ## Description)
-              const descriptionMatch = markdownContent.match(/^# [^]*?\n\n## Description\n*\n*([\s\S]*?)$/);
-              const description = descriptionMatch 
-                ? descriptionMatch[1].trim()
-                : markdownContent.replace(/^# [^]*?\n\n/, '').trim();
+              // Extract full markdown content as description
+              const description = markdownContent.trim();
               
               return {
                 ...ticket,

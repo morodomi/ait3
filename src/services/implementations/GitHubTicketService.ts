@@ -1,4 +1,5 @@
 import { Octokit } from '@octokit/rest';
+import { execSync } from 'child_process';
 import type { TicketService } from '../interfaces/TicketService.js';
 import type { Ticket, CreateTicketOptions } from '../../common/types.js';
 
@@ -6,6 +7,7 @@ interface GitHubConfig {
   owner: string;
   repo: string;
   token?: string;
+  useGhCli?: boolean;
   labels?: {
     todo?: string;
     doing?: string;
@@ -15,17 +17,29 @@ interface GitHubConfig {
 
 export class GitHubTicketService implements TicketService {
   private octokit: Octokit;
-  private config: Required<GitHubConfig>;
+  private config: Required<Omit<GitHubConfig, 'useGhCli'>> & { useGhCli?: boolean };
 
   constructor(config: GitHubConfig) {
+    let authToken = config.token || process.env.GITHUB_TOKEN;
+    
+    // Try to get token from gh CLI if not provided
+    if (!authToken && config.useGhCli !== false) {
+      try {
+        authToken = execSync('gh auth token', { encoding: 'utf-8' }).trim();
+      } catch {
+        // gh CLI not available or not authenticated
+      }
+    }
+    
     this.octokit = new Octokit({
-      auth: config.token || process.env.GITHUB_TOKEN,
+      auth: authToken,
     });
 
     this.config = {
       owner: config.owner,
       repo: config.repo,
-      token: config.token || process.env.GITHUB_TOKEN || '',
+      token: authToken || '',
+      useGhCli: config.useGhCli,
       labels: {
         todo: config.labels?.todo || 'status:todo',
         doing: config.labels?.doing || 'status:doing',

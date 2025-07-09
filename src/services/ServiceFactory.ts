@@ -9,7 +9,7 @@ import { DefaultProjectAnalyzer } from './implementations/DefaultProjectAnalyzer
 import { LinguistLanguageDetector } from './implementations/LinguistLanguageDetector.js';
 import { ConfigBasedCommandDetector } from './implementations/ConfigBasedCommandDetector.js';
 import { DirectoryStructureAnalyzer } from './implementations/DirectoryStructureAnalyzer.js';
-import { readFile } from 'fs/promises';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 
 /**
@@ -87,7 +87,7 @@ export class ServiceFactory {
     try {
       const ticketsPath = process.env.TICKETS_DIR || '.tickets';
       const configPath = join(process.cwd(), ticketsPath, 'config.json');
-      const configContent = require('fs').readFileSync(configPath, 'utf-8');
+      const configContent = readFileSync(configPath, 'utf-8');
       const config = JSON.parse(configContent);
       
       return {
@@ -95,7 +95,7 @@ export class ServiceFactory {
         local: config.local || { path: ticketsPath },
         github: config.github
       };
-    } catch (error) {
+    } catch {
       // Fallback to local backend if config file doesn't exist or is invalid
       return {
         backend: 'local',

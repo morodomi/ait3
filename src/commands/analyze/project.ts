@@ -1,4 +1,5 @@
 import type { CLIResult, Services } from '../../common/types.js';
+import type { ProjectAnalysis } from '../../common/types/analyzer.js';
 import chalk from 'chalk';
 
 interface AnalyzeProjectArgs {
@@ -37,7 +38,7 @@ export async function analyzeProject(
   }
 }
 
-function formatDefaultOutput(analysis: any): CLIResult {
+function formatDefaultOutput(analysis: ProjectAnalysis): CLIResult {
   const lines: string[] = [];
 
   // Project root
@@ -48,7 +49,7 @@ function formatDefaultOutput(analysis: any): CLIResult {
   // Languages
   if (analysis.languages.length > 0) {
     lines.push(chalk.bold('Languages:'));
-    analysis.languages.forEach((lang: any) => {
+    analysis.languages.forEach((lang) => {
       const primary = lang.primaryLanguage ? ' (primary)' : '';
       const percentage = lang.percentage != null ? lang.percentage.toFixed(1) : '0.0';
       lines.push(`  ${lang.name}: ${percentage}% (${lang.files} files)${primary}`);
@@ -67,7 +68,7 @@ function formatDefaultOutput(analysis: any): CLIResult {
 
   // Commands
   const commands = analysis.commands;
-  const hasCommands = Object.values(commands).some((cmd: any) => cmd?.detected);
+  const hasCommands = Object.values(commands).some((cmd) => cmd?.detected);
   
   if (hasCommands) {
     lines.push(chalk.bold('Commands:'));
@@ -93,7 +94,7 @@ function formatDefaultOutput(analysis: any): CLIResult {
   lines.push(`  Docker: ${analysis.structure.hasDocker ? '✓' : '✗'}`);
   
   if (analysis.structure.directories.length > 0) {
-    lines.push(`  Directories: ${analysis.structure.directories.map((d: any) => d.name).join(', ')}`);
+    lines.push(`  Directories: ${analysis.structure.directories.map((d) => d.name).join(', ')}`);
   }
 
   return {
@@ -103,7 +104,7 @@ function formatDefaultOutput(analysis: any): CLIResult {
   };
 }
 
-function formatDetailedOutput(analysis: any): CLIResult {
+function formatDetailedOutput(analysis: ProjectAnalysis): CLIResult {
   const lines: string[] = [];
 
   lines.push(chalk.bold.blue('=== Project Analysis ==='));
@@ -118,7 +119,7 @@ function formatDetailedOutput(analysis: any): CLIResult {
   // Languages with detailed info
   lines.push(chalk.bold('Languages'));
   if (analysis.languages.length > 0) {
-    analysis.languages.forEach((lang: any) => {
+    analysis.languages.forEach((lang) => {
       const marker = lang.primaryLanguage ? '* ' : '  ';
       lines.push(`  ${marker}${lang.name}`);
       const percentage = lang.percentage != null ? lang.percentage.toFixed(2) : '0.00';

@@ -1,12 +1,13 @@
 ---
 id: '0034'
 title: 'v1.0.0 Release Preparation - CHANGELOG, README, and npm publish setup'
-status: doing
+status: done
 priority: high
 created: '2025-07-09T05:02:50.597Z'
-updated: '2025-07-09T05:03:18.430Z'
+updated: '2025-07-09T22:52:26.803Z'
 labels: []
 started: '2025-07-09T05:03:18.430Z'
+completed: '2025-07-09T22:52:26.803Z'
 ---
 # Ticket #0034: v1.0.0 Release Preparation - CHANGELOG, README, and npm publish setup
 
