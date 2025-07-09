@@ -87,8 +87,8 @@ export class GitHubTicketService implements TicketService {
       });
 
       return this.issueToTicket(response.data);
-    } catch (error: any) {
-      if (error.status === 404) {
+    } catch (error: unknown) {
+      if ((error as {status?: number}).status === 404) {
         return null;
       }
       throw error;
@@ -163,9 +163,9 @@ export class GitHubTicketService implements TicketService {
           issue_number: issueNumber,
           name: fromLabel,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Ignore if label doesn't exist
-        if (error.status !== 404) throw error;
+        if ((error as {status?: number}).status !== 404) throw error;
       }
     }
 
@@ -201,41 +201,41 @@ export class GitHubTicketService implements TicketService {
       });
     }
 
-    sections.push(`\n---\n_Created by AIT³_`);
+    sections.push('\n---\n_Created by AIT³_');
 
     return sections.join('\n');
   }
 
-  private issueToTicket(issue: any): Ticket {
+  private issueToTicket(issue: Record<string, unknown>): Ticket {
     const status = this.getIssueStatus(issue) as 'todo' | 'doing' | 'done';
     const priority = this.getIssuePriority(issue) as 'low' | 'medium' | 'high' | 'critical';
 
     return {
       id: `#${issue.number}`,
-      title: issue.title,
+      title: issue.title as string,
       status,
       priority,
-      created: issue.created_at,
-      updated: issue.updated_at,
-      assignee: issue.assignee?.login,
-      labels: issue.labels.map((label: any) => label.name),
-      description: issue.body || '',
+      created: issue.created_at as string,
+      updated: issue.updated_at as string,
+      assignee: (issue.assignee as {login?: string} | null)?.login,
+      labels: (issue.labels as Array<{name: string}>).map((label) => label.name),
+      description: (issue.body as string) || '',
     };
   }
 
-  private getIssueStatus(issue: any): string {
-    const labels = issue.labels.map((label: any) => label.name);
+  private getIssueStatus(issue: Record<string, unknown>): string {
+    const labels = (issue.labels as Array<{name: string}>).map((label) => label.name);
     
-    if (labels.includes(this.config.labels.done)) return 'done';
-    if (labels.includes(this.config.labels.doing)) return 'doing';
-    if (labels.includes(this.config.labels.todo)) return 'todo';
+    if (labels.includes(this.config.labels.done as string)) return 'done';
+    if (labels.includes(this.config.labels.doing as string)) return 'doing';
+    if (labels.includes(this.config.labels.todo as string)) return 'todo';
     
     // Default based on issue state
     return issue.state === 'closed' ? 'done' : 'todo';
   }
 
-  private getIssuePriority(issue: any): string {
-    const labels = issue.labels.map((label: any) => label.name);
+  private getIssuePriority(issue: Record<string, unknown>): string {
+    const labels = (issue.labels as Array<{name: string}>).map((label) => label.name);
     
     for (const label of labels) {
       if (label.startsWith('priority:')) {

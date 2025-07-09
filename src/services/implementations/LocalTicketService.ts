@@ -279,7 +279,7 @@ export class LocalTicketService implements TicketService {
                 // Validate with Zod
                 const ticket = TicketSchema.parse(data);
                 return ticket;
-              } catch (error) {
+              } catch {
                 // Skip invalid ticket files
                 return null;
               }
@@ -287,7 +287,7 @@ export class LocalTicketService implements TicketService {
           
           const dirTickets = await Promise.all(filePromises);
           return dirTickets.filter(ticket => ticket !== null);
-        } catch (error) {
+        } catch {
           // Skip if directory doesn't exist or can't be read
           return [];
         }
@@ -354,13 +354,13 @@ export class LocalTicketService implements TicketService {
                 ...ticket,
                 description: description || undefined
               };
-            } catch (error) {
+            } catch {
               // Skip invalid ticket files
               return null;
             }
           }
           return null;
-        } catch (error) {
+        } catch {
           // Skip if directory doesn't exist or can't be read
           return null;
         }
@@ -370,9 +370,6 @@ export class LocalTicketService implements TicketService {
       const foundTicket = results.find(ticket => ticket !== null);
       
       return foundTicket || null;
-
-      // Ticket not found in any directory
-      return null;
     } catch (error) {
       throw new FileSystemError(`Failed to get ticket: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
     }
@@ -417,7 +414,7 @@ export class LocalTicketService implements TicketService {
             targetFilename = targetFile;
             break;
           }
-        } catch (error) {
+        } catch {
           // Skip if directory doesn't exist or can't be read
           continue;
         }
@@ -543,7 +540,7 @@ export class LocalTicketService implements TicketService {
             targetFilename = targetFile;
             break;
           }
-        } catch (error) {
+        } catch {
           // Skip if directory doesn't exist or can't be read
           continue;
         }

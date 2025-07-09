@@ -1,12 +1,13 @@
 ---
 id: 0039
 title: Support migration between LocalTicketService and GitHubTicketService
-status: doing
+status: done
 priority: medium
 created: '2025-07-09T14:29:42.028Z'
-updated: '2025-07-09T15:51:09.946Z'
+updated: '2025-07-09T22:37:45.383Z'
 labels: []
 started: '2025-07-09T15:51:09.946Z'
+completed: '2025-07-09T22:37:45.383Z'
 ---
 # Ticket #0039: Support migration between LocalTicketService and GitHubTicketService
 

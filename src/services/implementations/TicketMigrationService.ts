@@ -1,6 +1,5 @@
 import type { MigrationService, ValidationResult, MigrationResult } from '../interfaces/MigrationService.js';
 import type { TicketService } from '../interfaces/TicketService.js';
-import type { Ticket } from '../../common/types.js';
 
 export class TicketMigrationService implements MigrationService {
   /**
@@ -36,7 +35,7 @@ export class TicketMigrationService implements MigrationService {
         warnings,
         errors
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         conflicts: [],
@@ -75,7 +74,7 @@ export class TicketMigrationService implements MigrationService {
             assignee: ticket.assignee
           });
           migratedCount++;
-        } catch (error) {
+        } catch (error: unknown) {
           failedCount++;
           errors.push(`Failed to migrate ticket ${ticket.id}: ${error instanceof Error ? error.message : String(error)}`);
         }
@@ -87,7 +86,7 @@ export class TicketMigrationService implements MigrationService {
         failedCount,
         errors
       };
-    } catch (error) {
+    } catch (error: unknown) {
       return {
         success: false,
         migratedCount: 0,
@@ -110,7 +109,7 @@ export class TicketMigrationService implements MigrationService {
       
       const maxId = Math.max(...tickets.map(ticket => this.extractIdNumber(ticket.id)));
       return maxId + 1;
-    } catch (error) {
+    } catch {
       return 1;
     }
   }
