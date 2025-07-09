@@ -1,12 +1,13 @@
 ---
 id: '0035'
 title: Implement ait3 init command to auto-install ait3-init guide
-status: doing
+status: done
 priority: medium
 created: '2025-07-09T11:00:26.769Z'
-updated: '2025-07-09T11:01:03.732Z'
+updated: '2025-07-09T11:12:58.721Z'
 labels: []
 started: '2025-07-09T11:01:03.732Z'
+completed: '2025-07-09T11:12:58.721Z'
 ---
 # Ticket #0035: Implement ait3 init command to auto-install ait3-init guide
 
