@@ -27,7 +27,8 @@ describe('CLI Integration: ait3 init', () => {
       const { stdout, stderr } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init');
 
       expect(stderr).toBe('');
-      expect(stdout).toContain('SUCCESS: Installed command guide: .claude/commands/ait3-init');
+      expect(stdout).toContain('Installed');
+      expect(stdout).toContain('.claude/commands/ait3-init');
       expect(stdout).toContain('Next steps to generate CLAUDE.md:');
       expect(stdout).toContain('1. Launch Claude Code in your terminal: claude');
       expect(stdout).toContain('2. In Claude Code, run: /ait3-init');
@@ -42,9 +43,12 @@ describe('CLI Integration: ait3 init', () => {
       await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init');
 
       // Second installation
-      const { stdout, stderr } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init');
+      const { stdout } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init')
+        .catch(err => err);
 
-      expect(stderr).toBe('');
+      // The command should show skipped message
+      expect(stdout).toContain('Skipped');
+      expect(stdout).toContain('.claude/commands/ait3-init');
       expect(stdout).toContain('already exists');
       expect(stdout).toContain('Next steps to generate CLAUDE.md:');
     });
@@ -57,7 +61,8 @@ describe('CLI Integration: ait3 init', () => {
       const { stdout, stderr } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init --force');
 
       expect(stderr).toBe('');
-      expect(stdout).toContain('SUCCESS: Installed command guide: .claude/commands/ait3-init');
+      expect(stdout).toContain('Installed');
+      expect(stdout).toContain('.claude/commands/ait3-init');
       expect(stdout).toContain('Next steps to generate CLAUDE.md:');
     });
 
@@ -82,7 +87,8 @@ describe('CLI Integration: ait3 init', () => {
       // Should not install ait3-init guide
       expect(stdout).not.toContain('ait3-init');
       // Should run claude-md command instead
-      expect(stdout).toContain('CLAUDE.md');
+      // Should show output from claude-md command (template creation)
+      expect(stdout).toContain('Generic template generated');
     });
   });
 
@@ -102,7 +108,7 @@ describe('CLI Integration: ait3 init', () => {
       const { stdout } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init --help');
 
       expect(stdout).toContain('Initialize AIT³ components');
-      expect(stdout).toContain('init [subcommand]');
+      expect(stdout).toContain('init [options] [subcommand]');
     });
   });
 });

@@ -11,7 +11,7 @@ vi.mock('./claude-md.js', () => ({
 
 // Mock the install command
 vi.mock('../install/command.js', () => ({
-  installCommandCommand: vi.fn()
+  installCommand: vi.fn()
 }));
 
 describe('initCommand', () => {
@@ -21,15 +21,15 @@ describe('initCommand', () => {
 
   describe('default behavior (no subcommand)', () => {
     it('should install ait3-init command guide and show instructions', async () => {
-      const { installCommandCommand } = await import('../install/command.js');
-      vi.mocked(installCommandCommand).mockResolvedValue({
+      const { installCommand } = await import('../install/command.js');
+      vi.mocked(installCommand).mockResolvedValue({
         success: true,
         message: 'SUCCESS: Installed command guide: .claude/commands/ait3-init'
       });
 
       const result = await initCommand({});
 
-      expect(installCommandCommand).toHaveBeenCalledWith({
+      expect(installCommand).toHaveBeenCalledWith({
         name: 'ait3-init',
         force: undefined
       });
@@ -42,15 +42,15 @@ describe('initCommand', () => {
     });
 
     it('should pass force flag when provided', async () => {
-      const { installCommandCommand } = await import('../install/command.js');
-      vi.mocked(installCommandCommand).mockResolvedValue({
+      const { installCommand } = await import('../install/command.js');
+      vi.mocked(installCommand).mockResolvedValue({
         success: true,
         message: 'SUCCESS: Installed command guide: .claude/commands/ait3-init'
       });
 
       const result = await initCommand({ force: true });
 
-      expect(installCommandCommand).toHaveBeenCalledWith({
+      expect(installCommand).toHaveBeenCalledWith({
         name: 'ait3-init',
         force: true
       });
@@ -58,8 +58,8 @@ describe('initCommand', () => {
     });
 
     it('should handle installation failure', async () => {
-      const { installCommandCommand } = await import('../install/command.js');
-      vi.mocked(installCommandCommand).mockResolvedValue({
+      const { installCommand } = await import('../install/command.js');
+      vi.mocked(installCommand).mockResolvedValue({
         success: false,
         message: 'ERROR: Failed to install command guide'
       });
@@ -71,8 +71,8 @@ describe('initCommand', () => {
     });
 
     it('should handle when command guide already exists', async () => {
-      const { installCommandCommand } = await import('../install/command.js');
-      vi.mocked(installCommandCommand).mockResolvedValue({
+      const { installCommand } = await import('../install/command.js');
+      vi.mocked(installCommand).mockResolvedValue({
         success: true,
         message: 'NOTICE: Command guide already exists: .claude/commands/ait3-init (use --force to overwrite)'
       });
