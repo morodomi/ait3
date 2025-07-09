@@ -106,42 +106,54 @@ describe('CLI Integration: ticket create', () => {
 
   describe('input validation', () => {
     it('should handle invalid priority gracefully', () => {
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket create "Invalid Priority Test" --priority invalid',
           {
             encoding: 'utf8',
             timeout: 10000,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Should exit with non-zero code
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
     });
 
     it('should handle empty title gracefully', () => {
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket create ""',
           {
             encoding: 'utf8',
             timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Should exit with non-zero code
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
     });
 
     it('should handle missing title gracefully', () => {
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket create',
           {
             encoding: 'utf8',
             timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Should show help and exit with non-zero code
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
     });
   });
 

@@ -32,22 +32,32 @@ describe('CLI Integration: flow squash', () => {
 
   describe('basic flow squash command', () => {
     it('should show help when no arguments provided', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow squash', {
           encoding: 'utf8',
-          timeout: 5000
+          timeout: 5000,
+          stdio: 'pipe'
         });
-      }).toThrow(/missing required argument 'ticketId'/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("missing required argument 'ticketId'");
+      }
     });
 
     it('should validate ticket exists', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow squash 9999', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/Ticket with ID '9999' not found/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("Ticket with ID '9999' not found");
+      }
     });
 
     it('should auto-complete tickets and provide suggestions', async () => {

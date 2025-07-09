@@ -32,22 +32,32 @@ describe('CLI Integration: flow red', () => {
 
   describe('basic flow red command', () => {
     it('should show help when no arguments provided', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow red', {
           encoding: 'utf8',
-          timeout: 5000
+          timeout: 5000,
+          stdio: 'pipe'
         });
-      }).toThrow(/missing required argument 'ticketId'/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("missing required argument 'ticketId'");
+      }
     });
 
     it('should validate ticket exists', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow red 9999', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/Ticket with ID '9999' not found/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("Ticket with ID '9999' not found");
+      }
     });
 
     it('should generate unit test for valid ticket', async () => {
@@ -113,13 +123,17 @@ describe('CLI Integration: flow red', () => {
     });
 
     it('should validate type flag values', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow red 0001 --type invalid', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow();
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
     });
   });
 
@@ -286,13 +300,18 @@ Implement user registration functionality
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow red 0001', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/already completed/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain('already completed');
+      }
     });
   });
 });

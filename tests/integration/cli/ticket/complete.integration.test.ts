@@ -207,18 +207,6 @@ This ticket is already completed.
 
   describe('ticket status validation', () => {
     it('should handle ticket not yet started gracefully', () => {
-      expect(() => {
-        execSync(
-          'node dist/cli.js ticket complete 0001',
-          {
-            encoding: 'utf8',
-            timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
-          }
-        );
-      }).toThrow(); // Should exit with non-zero code
-
-      // Capture stderr to check error message
       try {
         execSync(
           'node dist/cli.js ticket complete 0001',
@@ -229,24 +217,14 @@ This ticket is already completed.
             stdio: 'pipe'
           }
         );
+        expect.fail('Command should have failed');
       } catch (error: any) {
+        expect(error.code).not.toBe(0);
         expect(error.stderr || error.stdout).toContain("Ticket with ID '0001' has not been started yet");
       }
     });
 
     it('should handle ticket already completed gracefully', () => {
-      expect(() => {
-        execSync(
-          'node dist/cli.js ticket complete 0003',
-          {
-            encoding: 'utf8',
-            timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
-          }
-        );
-      }).toThrow(); // Should exit with non-zero code
-
-      // Capture stderr to check error message
       try {
         execSync(
           'node dist/cli.js ticket complete 0003',
@@ -257,7 +235,9 @@ This ticket is already completed.
             stdio: 'pipe'
           }
         );
+        expect.fail('Command should have failed');
       } catch (error: any) {
+        expect(error.code).not.toBe(0);
         expect(error.stderr || error.stdout).toContain("Ticket with ID '0003' is already completed");
       }
     });
@@ -288,18 +268,6 @@ This ticket is already completed.
 
   describe('ticket not found handling', () => {
     it('should handle non-existent ticket gracefully', () => {
-      expect(() => {
-        execSync(
-          'node dist/cli.js ticket complete 9999',
-          {
-            encoding: 'utf8',
-            timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
-          }
-        );
-      }).toThrow(); // Should exit with non-zero code
-
-      // Capture stderr to check error message
       try {
         execSync(
           'node dist/cli.js ticket complete 9999',
@@ -310,7 +278,9 @@ This ticket is already completed.
             stdio: 'pipe'
           }
         );
+        expect.fail('Command should have failed');
       } catch (error: any) {
+        expect(error.code).not.toBe(0);
         expect(error.stderr || error.stdout).toContain("Ticket with ID '9999' not found");
       }
     });
@@ -324,16 +294,20 @@ This ticket is already completed.
       await mkdir(join(testDir, 'doing'), { recursive: true });
       await mkdir(join(testDir, 'done'), { recursive: true });
 
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket complete 0002',
           {
             encoding: 'utf8',
             timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow();
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
     });
   });
 
@@ -342,30 +316,38 @@ This ticket is already completed.
       const invalidIds = ['', 'abc', '1', '00001', 'invalid'];
       
       for (const invalidId of invalidIds) {
-        expect(() => {
+        try {
           execSync(
             `node dist/cli.js ticket complete ${invalidId}`,
             {
               encoding: 'utf8',
               timeout: 5000,
-              env: { ...process.env, TICKETS_DIR: testDir }
+              env: { ...process.env, TICKETS_DIR: testDir },
+              stdio: 'pipe'
             }
           );
-        }).toThrow(); // Should exit with non-zero code
+          expect.fail('Command should have failed');
+        } catch (error: any) {
+          expect(error.code).not.toBe(0);
+        }
       }
     });
 
     it('should handle missing ticket ID argument', () => {
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket complete',
           {
             encoding: 'utf8',
             timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Should show help and exit with non-zero code
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
     });
   });
 
@@ -451,16 +433,20 @@ This ticket is already completed.
       );
 
       // This test will fail until GitService.moveFile() is implemented
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket complete 0001',
           {
             encoding: 'utf8',
             cwd: testDir,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Expected to fail because moveFile() is not implemented
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
 
       // After implementation, it should:
       // 1. LocalTicketService uses GitService.moveFile() directly
@@ -481,16 +467,20 @@ This ticket is already completed.
       );
 
       // This test will fail until GitService.moveFile() is implemented
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket complete 0001',
           {
             encoding: 'utf8',
             cwd: testDir,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Expected to fail because moveFile() is not implemented
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
 
       // After implementation, it should:
       // 1. LocalTicketService tries GitService.moveFile() first
@@ -513,16 +503,20 @@ This ticket is already completed.
       await rm(join(testDir, '.git'), { recursive: true, force: true });
 
       // This test will fail until GitService.moveFile() is implemented
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket complete 0001',
           {
             encoding: 'utf8',
             cwd: testDir,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Expected to fail because moveFile() is not implemented
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+      }
 
       // After implementation, it should:
       // 1. LocalTicketService detects non-Git environment

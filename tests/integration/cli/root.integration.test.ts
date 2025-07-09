@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
+import { expectCliError } from '../helpers/cli-test-utils';
 
 describe('CLI Integration: Root Commands', () => {
   describe('version command', () => {
@@ -26,12 +27,14 @@ describe('CLI Integration: Root Commands', () => {
     });
 
     it('should show help when no command provided', () => {
-      expect(() => {
-        execSync('node dist/cli.js', {
+      expectCliError(
+        'node dist/cli.js',
+        {
           encoding: 'utf8',
           timeout: 5000
-        });
-      }).toThrow(/Usage: ait3 \[options\] \[command\]/);
+        },
+        /Usage: ait3 \[options\] \[command\]/
+      );
     });
   });
 

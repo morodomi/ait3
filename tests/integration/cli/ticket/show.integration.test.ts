@@ -246,18 +246,6 @@ labels:
 
   describe('ticket not found handling', () => {
     it('should handle non-existent ticket gracefully', () => {
-      expect(() => {
-        execSync(
-          'node dist/cli.js ticket show 9999',
-          {
-            encoding: 'utf8',
-            timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
-          }
-        );
-      }).toThrow(); // Should exit with non-zero code
-
-      // Capture stderr to check error message
       try {
         execSync(
           'node dist/cli.js ticket show 9999',
@@ -268,7 +256,9 @@ labels:
             stdio: 'pipe'
           }
         );
+        expect.fail('Command should have failed');
       } catch (error: any) {
+        expect(error.code).not.toBe(0);
         expect(error.stderr || error.stdout).toContain("Ticket with ID '9999' not found");
       }
     });
@@ -282,16 +272,21 @@ labels:
       await mkdir(join(testDir, 'doing'), { recursive: true });
       await mkdir(join(testDir, 'done'), { recursive: true });
 
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket show 0001',
           {
             encoding: 'utf8',
             timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow();
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain('not found');
+      }
     });
   });
 
@@ -300,30 +295,42 @@ labels:
       const invalidIds = ['', 'abc', '1', '00001', 'invalid'];
       
       for (const invalidId of invalidIds) {
-        expect(() => {
+        try {
           execSync(
             `node dist/cli.js ticket show ${invalidId}`,
             {
               encoding: 'utf8',
               timeout: 5000,
-              env: { ...process.env, TICKETS_DIR: testDir }
+              env: { ...process.env, TICKETS_DIR: testDir },
+              stdio: 'pipe'
             }
           );
-        }).toThrow(); // Should exit with non-zero code
+          expect.fail('Command should have failed');
+        } catch (error: any) {
+          expect(error.code).not.toBe(0);
+          // Invalid ID format should produce error message
+          expect(error.stderr || error.stdout).toBeTruthy();
+        }
       }
     });
 
     it('should handle missing ticket ID argument', () => {
-      expect(() => {
+      try {
         execSync(
           'node dist/cli.js ticket show',
           {
             encoding: 'utf8',
             timeout: 5000,
-            env: { ...process.env, TICKETS_DIR: testDir }
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
           }
         );
-      }).toThrow(); // Should show help and exit with non-zero code
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        // Should show error for missing argument
+        expect(error.stderr || error.stdout).toContain('missing required argument');
+      }
     });
   });
 

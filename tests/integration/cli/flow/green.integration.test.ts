@@ -32,22 +32,32 @@ describe('CLI Integration: flow green', () => {
 
   describe('basic flow green command', () => {
     it('should show help when no arguments provided', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow green', {
           encoding: 'utf8',
-          timeout: 5000
+          timeout: 5000,
+          stdio: 'pipe'
         });
-      }).toThrow(/missing required argument 'ticketId'/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("missing required argument 'ticketId'");
+      }
     });
 
     it('should validate ticket exists', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow green 9999', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/Ticket with ID '9999' not found/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("Ticket with ID '9999' not found");
+      }
     });
 
     it('should require ticket to be in progress', async () => {
@@ -58,13 +68,18 @@ describe('CLI Integration: flow green', () => {
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow green 0001', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/must be in progress/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain('must be in progress');
+      }
     });
 
     it('should show progress for valid in-progress ticket', async () => {
@@ -179,13 +194,18 @@ describe('CLI Integration: flow green', () => {
     });
 
     it('should validate target file exists', () => {
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow green 0001 --target tests/nonexistent.test.ts', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/Target test file not found/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain('Target test file not found');
+      }
     });
   });
 
@@ -309,13 +329,18 @@ Feature that has associated tests from RED phase`;
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(() => {
+      try {
         execSync('node dist/cli.js flow green 0001', {
           encoding: 'utf8',
           timeout: 5000,
-          env: { ...process.env, TICKETS_DIR: testDir }
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
         });
-      }).toThrow(/already completed/);
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain('already completed');
+      }
     });
 
     it('should handle test modification warning', async () => {
