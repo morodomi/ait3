@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2024-07-10
+## [1.1.0] - 2025-07-10
 
 ### Added
 
@@ -36,6 +36,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Idempotent operations** - Safe to run multiple times with status checking
 - **Interactive guidance** - Clear next-step instructions for setup
 
+#### 🚀 Simplified Project Initialization
+- **`ait3 init`** - Redesigned to generate 3 files for Claude Code integration
+- **No more subcommands** - Removed confusing `init claude-md` subcommand
+- **Git-friendly overwrites** - Always overwrites files, assuming version control
+- **Three essential files**:
+  - `CLAUDE.ait3.md` - Full AIT³ template with project analysis
+  - `.claude/CLAUDE.md` - Minimal working version
+  - `.claude/commands/ait3-init` - Integration guide
+
+#### 🔒 Security Enhancement
+- **`ait3 install security`** - Add security permissions to Claude Code
+- **Deny dangerous commands** - Block curl, wget, rm by default
+- **Smart permission merging** - Preserves existing settings
+- **Non-intrusive** - Only modifies permissions.deny array
+
 ### Enhanced
 
 #### 📝 Ticket Management
@@ -43,6 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enhanced error handling** - User-friendly messages across all commands
 - **Location information** - Display ticket storage location (local path/GitHub URL)
 - **Status tracking** - Improved state management for complex workflows
+- **Improved missing argument errors** - Helpful examples when ticket ID is missing
+- **Backend-aware help messages** - Different examples for local vs GitHub backends
 
 #### 🏗️ Service Architecture
 - **Extended TicketService interface** - Added delete operations support

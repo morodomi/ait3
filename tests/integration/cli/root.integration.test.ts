@@ -10,7 +10,7 @@ describe('CLI Integration: Root Commands', () => {
         timeout: 5000
       });
 
-      expect(result).toContain('1.1.0-dev');
+      expect(result).toContain('1.1.0');
     });
   });
 

@@ -25,8 +25,9 @@ ait3 migrate github local --tickets "1,3-5"  # Migrate specific tickets
 
 ### Project Analysis & Installation
 \`\`\`bash
-ait3 init claude-md                   # Generate CLAUDE.md with project analysis
+ait3 init                             # Generate 3 files for Claude Code integration
 ait3 install command                  # Install Claude Code command guides
+ait3 install security                 # Add security permissions to settings.local.json
 ait3 analyze project                  # Analyze project structure and dependencies
 \`\`\`
 
