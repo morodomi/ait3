@@ -5,6 +5,12 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
 
+// Helper to strip ANSI color codes
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 describe('CLI Integration: flow red', () => {
   let testDir: string;
   let originalTicketsDir: string;
@@ -31,17 +37,22 @@ describe('CLI Integration: flow red', () => {
   });
 
   describe('basic flow red command', () => {
-    it('should show help when no arguments provided', () => {
+    it('should show helpful error when no arguments provided', () => {
       try {
         execSync('node dist/cli.js flow red', {
           encoding: 'utf8',
           timeout: 5000,
-          stdio: 'pipe'
+          stdio: 'pipe',
+          env: { ...process.env, TICKETS_DIR: testDir }
         });
         expect.fail('Command should have failed');
       } catch (error: any) {
         expect(error.code).not.toBe(0);
-        expect(error.stderr || error.stdout).toContain("missing required argument 'ticketId'");
+        const output = stripAnsi(error.stderr);
+        expect(output).toContain('ERROR: Ticket ID is required');
+        expect(output).toContain('Usage: ait3 flow red <ticketId>');
+        expect(output).toContain('Examples:');
+        expect(output).toContain('ait3 flow red 0001    # Local ticket');
       }
     });
 
@@ -311,6 +322,45 @@ Implement user registration functionality
       } catch (error: any) {
         expect(error.code).not.toBe(0);
         expect(error.stderr || error.stdout).toContain('already completed');
+      }
+    });
+  });
+
+  describe('GitHub backend error messages', () => {
+    beforeEach(async () => {
+      // Create config to use GitHub backend
+      await mkdir(join(testDir, 'todo'), { recursive: true });
+      await mkdir(join(testDir, 'doing'), { recursive: true });
+      await mkdir(join(testDir, 'done'), { recursive: true });
+      
+      const config = {
+        backend: 'github',
+        github: {
+          owner: 'testowner',
+          repo: 'testrepo',
+          token: 'test-token'
+        }
+      };
+      await writeFile(join(testDir, 'config.json'), JSON.stringify(config, null, 2));
+    });
+
+    it('should show GitHub-specific help when ID is missing', () => {
+      try {
+        execSync('node dist/cli.js flow red', {
+          encoding: 'utf8',
+          timeout: 5000,
+          stdio: 'pipe',
+          env: { ...process.env, TICKETS_DIR: testDir }
+        });
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        const output = stripAnsi(error.stderr);
+        expect(output).toContain('ERROR: Ticket ID is required');
+        expect(output).toContain('Usage: ait3 flow red <ticketId>');
+        expect(output).toContain('Examples:');
+        expect(output).toContain('ait3 flow red 82      # GitHub issue #82');
+        expect(output).toContain('Note: For GitHub issues, use the number without \'#\' prefix');
       }
     });
   });

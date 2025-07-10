@@ -6,6 +6,12 @@ import { join } from 'path';
 import { randomBytes } from 'crypto';
 import matter from 'gray-matter';
 
+// Helper to strip ANSI color codes
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 describe('CLI Integration: ticket start', () => {
   let testDir: string;
   let originalTicketsDir: string;
@@ -334,7 +340,7 @@ This ticket is already completed.
       }
     });
 
-    it('should handle missing ticket ID argument', () => {
+    it('should handle missing ticket ID argument with helpful error message', () => {
       try {
         execSync(
           'node dist/cli.js ticket start',
@@ -348,6 +354,12 @@ This ticket is already completed.
         expect.fail('Command should have failed');
       } catch (error: any) {
         expect(error.code).not.toBe(0);
+        const output = stripAnsi(error.stderr);
+        expect(output).toContain('ERROR: Ticket ID is required');
+        expect(output).toContain('Usage: ait3 ticket start <id>');
+        expect(output).toContain('Examples:');
+        expect(output).toContain('ait3 ticket start 0001    # Local ticket');
+        expect(output).not.toContain('GitHub issue'); // Local backend
       }
     });
   });
@@ -512,6 +524,47 @@ This ticket is already completed.
       // After implementation, it should:
       // 1. Show manual git instructions
       // 2. LocalTicketService uses fallback file operations to move ticket to doing status
+    });
+  });
+
+  describe('GitHub backend error messages', () => {
+    beforeEach(async () => {
+      // Update config to use GitHub backend
+      await writeFile(
+        join(testDir, 'config.json'),
+        JSON.stringify({
+          backend: 'github',
+          github: {
+            owner: 'testowner',
+            repo: 'testrepo',
+            token: 'test-token'
+          }
+        }, null, 2)
+      );
+    });
+
+    it('should show GitHub-specific help when ID is missing', () => {
+      try {
+        execSync(
+          'node dist/cli.js ticket start',
+          {
+            encoding: 'utf8',
+            timeout: 5000,
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
+          }
+        );
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        const output = stripAnsi(error.stderr);
+        expect(output).toContain('ERROR: Ticket ID is required');
+        expect(output).toContain('Usage: ait3 ticket start <id>');
+        expect(output).toContain('Examples:');
+        expect(output).toContain('ait3 ticket start 82      # GitHub issue #82');
+        expect(output).toContain('ait3 ticket start 123     # GitHub issue #123');
+        expect(output).toContain('Note: For GitHub issues, use the number without \'#\' prefix');
+      }
     });
   });
 });
