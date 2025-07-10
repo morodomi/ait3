@@ -93,6 +93,19 @@ describe('listTickets pure function', () => {
       expect(result.success).toBe(true);
       expect(result.message).toContain('No tickets found');
     });
+
+    it('should use standardized prefixes', async () => {
+      const args: ListTicketsArgs = {};
+      const result = await listTickets(args, services);
+
+      expect(result.success).toBe(true);
+      // Strip ANSI color codes for comparison
+      const strippedMessage = result.message.replace(/\u001b\[[0-9;]*m/g, '');
+      
+      // Should use INFO: instead of LIST:
+      expect(strippedMessage).toContain('INFO: Found 3 tickets');
+      expect(strippedMessage).not.toContain('LIST:');
+    });
   });
 
   describe('status filtering', () => {

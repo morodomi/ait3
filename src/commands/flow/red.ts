@@ -62,12 +62,12 @@ export async function redPhase(
   
   if (type === 'unit' || type === 'both') {
     const unitPath = generateUnitTestPath(ticket);
-    results.push(`${STYLES.success('CHECK:')} Unit test generated: ${STYLES.info(unitPath)}`);
+    results.push(`${STYLES.success('INFO:')} Unit test generated: ${STYLES.info(unitPath)}`);
   }
 
   if (type === 'integration' || type === 'both') {
     const integrationPath = generateIntegrationTestPath(ticket);
-    results.push(`${STYLES.success('CHECK:')} Integration test generated: ${STYLES.info(integrationPath)}`);
+    results.push(`${STYLES.success('INFO:')} Integration test generated: ${STYLES.info(integrationPath)}`);
   }
 
   // Add test case count
@@ -80,7 +80,7 @@ export async function redPhase(
   }
 
   // Add pass rate
-  results.push(`${STYLES.danger('CROSS:')} Current pass rate: ${STYLES.danger('0% pass rate')} ${STYLES.muted('(all tests failing as expected)')}`);
+  results.push(`${STYLES.danger('INFO:')} Current pass rate: ${STYLES.danger('0% pass rate')} ${STYLES.muted('(all tests failing as expected)')}`);
 
   // Get ticket title for better formatting
   const ticketTitle = ticket.title || 'Feature';
@@ -110,7 +110,7 @@ ${STYLES.bold('LOCATION: Test Locations')}:
 
 ${results.join('\n')}
 
-${STYLES.info('Next Action')}:
+${STYLES.info('TODO: Next actions for AI')}:
 ├─ Read acceptance criteria:
 │  └─ Analyze ${STYLES.info(ticketLocation)}
 ├─ Create test files:
@@ -171,7 +171,7 @@ ${STYLES.info('[2]')} Review and customize test cases
 ${STYLES.info('[3]')} Add additional edge cases
 ${STYLES.info('[4]')} Skip and write tests manually
 
-${STYLES.info('Next Action')}:
+${STYLES.info('TODO: Next actions for AI')}:
 └─ Choose strategy and proceed with test creation
 
 ${STYLES.muted('Interactive mode: Select an option to continue')}
@@ -194,10 +194,10 @@ function generateDryRunOutput(ticket: Ticket, type: string, testCases: string[],
   return {
     success: true,
     message: `
-${STYLES.warning('SEARCH: DRY RUN')} - Preview mode for Ticket #${ticket.id}: ${ticket.title}
+${STYLES.warning('INFO: DRY RUN')} - Preview mode for Ticket #${ticket.id}: ${ticket.title}
 ${STYLES.info('LOCATION: Ticket location')}: ${STYLES.info(ticketLocation)}
 
-${STYLES.bold('BRAIN: Would execute')}:
+${STYLES.bold('INFO: Would execute')}:
 1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Generate test files:
 ${files.join('\n')}
@@ -206,7 +206,7 @@ ${STYLES.info('Test cases')}: ${testCases.length || 3}
 ${STYLES.info('Test type')}: ${type}
 ${STYLES.info('Expected pass rate')}: 0%
 
-${STYLES.info('Next Action')}:
+${STYLES.info('TODO: Next actions for AI')}:
 └─ Run without --dry-run flag to create test files
 
 ${STYLES.muted('Dry run mode: Preview only')}

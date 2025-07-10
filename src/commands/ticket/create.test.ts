@@ -52,6 +52,20 @@ describe('createTicket Pure Function', () => {
       });
     });
 
+    it('should use LOCATION: prefix for location display', async () => {
+      const args: CreateTicketArgs = {
+        title: 'Test Location Display'
+      };
+
+      const result = await createTicket(args, services);
+
+      expect(result.success).toBe(true);
+      // Strip ANSI color codes for comparison
+      const strippedMessage = result.message.replace(/\u001b\[[0-9;]*m/g, '');
+      expect(strippedMessage).toContain('LOCATION:');
+      expect(strippedMessage).not.toContain('Location:');
+    });
+
     it('should create ticket with custom priority', async () => {
       // This test will fail until createTicket function is implemented
       const args: CreateTicketArgs = {
@@ -182,7 +196,7 @@ describe('createTicket Pure Function', () => {
       expect(result.message).toContain('Title: Formatting Test');
       expect(result.message).toContain('Priority: medium');
       expect(result.message).toContain('Status: todo');
-      expect(result.message).toContain('Location:'); // File location info
+      expect(result.message).toContain('LOCATION:'); // File location info
     });
 
     it('should show local file location for LocalTicketService', async () => {
@@ -193,7 +207,7 @@ describe('createTicket Pure Function', () => {
 
       const result = await createTicket(args, services);
 
-      expect(result.message).toMatch(/Location:.*\.tickets\/todo\/0001-location-test\.md/);
+      expect(result.message).toMatch(/LOCATION:.*\.tickets\/todo\/0001-location-test\.md/);
     });
 
     it('should show GitHub URL location for GitHubTicketService', async () => {
@@ -221,7 +235,7 @@ describe('createTicket Pure Function', () => {
 
       const result = await createTicket(args, githubServices);
 
-      expect(result.message).toContain('Location: https://github.com/testowner/testrepo/issues/82');
+      expect(result.message).toContain('LOCATION: https://github.com/testowner/testrepo/issues/82');
     });
   });
 

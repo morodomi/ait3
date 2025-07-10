@@ -33,7 +33,7 @@ export async function listTickets(
     if (tickets.length === 0) {
       return {
         success: true,
-        message: STYLES.warning('LIST: No tickets found'),
+        message: STYLES.warning('INFO: No tickets found'),
         data: tickets
       };
     }
@@ -47,7 +47,7 @@ export async function listTickets(
     ];
 
     const messageParts = [
-      STYLES.success(`LIST: Found ${tickets.length} tickets`),
+      STYLES.success(`INFO: Found ${tickets.length} tickets`),
       '',
       ...createTableHeader(columns)
     ];

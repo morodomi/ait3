@@ -58,7 +58,7 @@ export async function createTicket(
     // Add location (Local file or GitHub URL)
     const locationDisplay = formatTicketLocation(ticket, services.ticketService);
     messageParts.push(
-      STYLES.muted(`   Location: ${locationDisplay}`)
+      STYLES.muted(`   LOCATION: ${locationDisplay}`)
     );
 
     return {

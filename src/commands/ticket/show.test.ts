@@ -97,7 +97,17 @@ describe('showTicket pure function', () => {
       const result = await showTicket(args, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toMatch(/Location.*\.tickets\/todo\/0001-/);
+      expect(result.message).toMatch(/LOCATION.*\.tickets\/todo\/0001-/);
+    });
+
+    it('should use LOCATION: prefix in uppercase for location display', async () => {
+      const args: ShowTicketArgs = { id: '0001' };
+      const result = await showTicket(args, services);
+
+      expect(result.success).toBe(true);
+      // Should use uppercase LOCATION: prefix
+      expect(stripAnsi(result.message)).toContain('LOCATION:');
+      expect(stripAnsi(result.message)).not.toContain('Location:');
     });
 
     it('should show GitHub URL location for GitHubTicketService', async () => {
@@ -124,7 +134,7 @@ describe('showTicket pure function', () => {
       const result = await showTicket(args, githubServices);
 
       expect(result.success).toBe(true);
-      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
+      expect(stripAnsi(result.message)).toContain('LOCATION: https://github.com/testowner/testrepo/issues/82');
     });
 
     it('should display ticket with minimal metadata', async () => {
@@ -251,6 +261,16 @@ describe('showTicket pure function', () => {
       expect(result.success).toBe(true);
       // Should contain ANSI color codes for status/priority
       expect(result.message).toMatch(/\[3\d*m/); // ANSI color codes
+    });
+
+    it('should use INFO: prefix for Details section', async () => {
+      const args: ShowTicketArgs = { id: '0001' };
+      const result = await showTicket(args, services);
+
+      expect(result.success).toBe(true);
+      // Should use INFO: instead of Details:
+      expect(stripAnsi(result.message)).toContain('INFO:');
+      expect(stripAnsi(result.message)).not.toContain('Details:');
     });
 
     it('should handle empty labels gracefully', async () => {

@@ -79,7 +79,28 @@ describe('refactorPhase Pure Function', () => {
       const result = await refactorPhase({ ticketId: '0001' }, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toMatch(/Location.*\.tickets\/doing\/0001-location-test-refactor\.md/);
+      expect(result.message).toMatch(/LOCATION.*\.tickets\/doing\/0001-location-test-refactor\.md/);
+    });
+
+    it('should use standardized prefixes', async () => {
+      // Create and start ticket
+      await services.ticketService.createTicket('Prefix Test Refactor');
+      await services.ticketService.startTicket('0001');
+
+      const result = await refactorPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      const strippedMessage = stripAnsi(result.message);
+      
+      // Should use INFO: for status messages
+      expect(strippedMessage).toContain('INFO:');
+      
+      // Should use TODO: for AI instructions
+      expect(strippedMessage).toContain('TODO:');
+      expect(strippedMessage).not.toContain('Next Action:');
+      
+      // Should use STATUS: or INFO: for analysis results
+      expect(strippedMessage).toMatch(/STATUS:|INFO:/);
     });
 
     it('should show GitHub URL location for GitHubTicketService', async () => {
@@ -104,7 +125,7 @@ describe('refactorPhase Pure Function', () => {
       const result = await refactorPhase({ ticketId: '82' }, githubServices);
 
       expect(result.success).toBe(true);
-      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
+      expect(stripAnsi(result.message)).toContain('LOCATION: https://github.com/testowner/testrepo/issues/82');
     });
   });
 
@@ -232,7 +253,7 @@ describe('refactorPhase Pure Function', () => {
       const result = await refactorPhase({ ticketId: '0001' }, services);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Next Action');
+      expect(result.message).toContain('TODO:');
       expect(result.message).toContain('Review analysis:');
       expect(result.message).toContain('Apply improvements:');
       expect(result.message).toContain('Verify 100% test pass:');

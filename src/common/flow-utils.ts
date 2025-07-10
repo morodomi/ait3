@@ -61,7 +61,7 @@ export function formatTicketHeader(ticketId: string, title: string, phase: strin
     // Fallback to old behavior
     locationDisplay = getTicketLocation(ticketId, title, 'doing');
   }
-  return `${STYLES.bold(phase)} for Ticket #${ticketId}: ${title}\n${STYLES.info('Location')}: ${STYLES.info(locationDisplay)}`;
+  return `${STYLES.bold(phase)} for Ticket #${ticketId}: ${title}\n${STYLES.info('LOCATION')}: ${STYLES.info(locationDisplay)}`;
 }
 
 /**

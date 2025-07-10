@@ -214,7 +214,7 @@ ${STYLES.warning('CONSTRAINT: Requirement')}: Maintain 100% test pass rate`);
 
   // Code Quality Summary
   sections.push(`
-${STYLES.bold('STATS: Code Quality Summary')}:
+${STYLES.bold('INFO: Code Quality Summary')}:
 ├─ Files analyzed: ${analysis.filesAnalyzed}
 ├─ Improvement opportunities: ${analysis.improvements}
 ├─ Estimated effort: ${analysis.estimatedEffort}
@@ -226,7 +226,7 @@ ${STYLES.bold('STATS: Code Quality Summary')}:
   }
 
   // Refactoring Suggestions
-  sections.push(`\n${STYLES.bold('LIST: Refactoring Suggestions')}:`);
+  sections.push(`\n${STYLES.bold('INFO: Refactoring Suggestions')}:`);
 
   // Code Duplication
   if (!focusAreas || focusAreas.includes('duplication')) {
@@ -276,7 +276,7 @@ ${STYLES.bold('STATS: Code Quality Summary')}:
 
   // Verbose mode additions
   if (verbose) {
-    sections.push(`\n${STYLES.bold('LIST: Detailed Analysis')}:`);
+    sections.push(`\n${STYLES.bold('INFO: Detailed Analysis')}:`);
     sections.push(`├─ ${STYLES.info('Line-by-line analysis')}: Available`);
     sections.push(`├─ ${STYLES.info('Complexity metrics')}: Calculated`);
     sections.push(`└─ ${STYLES.info('Performance hints')}: Identified`);
@@ -291,7 +291,7 @@ ${STYLES.bold('STATS: Code Quality Summary')}:
   }
 
   // Next Action section
-  sections.push(`\n${STYLES.info('Next Action')}:
+  sections.push(`\n${STYLES.info('TODO: Next actions for AI')}:
 ├─ Review analysis:
 │  └─ Examine refactor opportunities
 ├─ Apply improvements:
