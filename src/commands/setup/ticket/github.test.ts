@@ -231,7 +231,7 @@ describe('setupTicketGitHub', () => {
 });
 
 // Helper function for tests
-async function readFile(path: string, encoding: BufferEncoding): Promise<string> {
+async function readFile(path: string, encoding: 'utf8' | 'utf-8'): Promise<string> {
   const { readFile: fsReadFile } = await import('fs/promises');
   return fsReadFile(path, encoding);
 }

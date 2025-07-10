@@ -57,7 +57,12 @@ ait3 flow plan "project-setup"
 ```bash
 ait3 ticket create "Feature name"             # Create new ticket
 ait3 ticket list                              # List all tickets
-ait3 ticket start 001                         # Start working on ticket
+
+# ID Format Support - Works with both Local and GitHub formats:
+ait3 ticket start 001                         # Local format (0001)
+ait3 ticket start 123                         # GitHub format (123)  
+ait3 ticket start #123                        # GitHub format (#123)
+
 ait3 ticket complete 001                      # Complete ticket
 ait3 ticket show 001                          # Show ticket details
 ```
@@ -65,7 +70,12 @@ ait3 ticket show 001                          # Show ticket details
 ### AIT³ Workflow
 ```bash
 ait3 flow plan "feature-name"                 # PLANNING: Socratic dialogue
+
+# All flow commands support both Local and GitHub ID formats:
 ait3 flow red 001                             # RED: Create failing tests
+ait3 flow red 123                             # Works with GitHub issues too
+ait3 flow red #123                            # GitHub format with #
+
 ait3 flow green 001                           # GREEN: Implement feature
 ait3 flow refactor 001                        # REFACTOR: Optimize code
 ait3 flow squash 001                          # SQUASH: Clean commits
@@ -80,12 +90,26 @@ ait3 install claude-md                        # Simple template generation
 
 ## AIT³ Workflow (AI + Ticket + Test + Tool)
 
+### Backend Support
+
+**Local Backend**: File-based tickets in `.tickets/` directory
+**GitHub Backend**: GitHub Issues integration with API access
+
+### ID Format Compatibility
+
+| Backend | Format | Examples | Location Display |
+|---------|--------|----------|------------------|
+| **Local** | 4-digit zero-padded | `0001`, `0042` | `.tickets/doing/0001-feature.md` |
+| **GitHub** | Issue numbers | `123`, `#123`, `1` | `https://github.com/owner/repo/issues/123` |
+
+**Universal Support**: All `ticket` and `flow` commands accept both formats seamlessly.
+
 ### Phase 1: PLANNING (Socratic Dialogue)
 
 **Purpose**: Validate approach through dialectical reasoning before implementation.
 
 ```bash
-# 1. Claude proposes approach
+# 1. Claude proposes approach (works with both backends)
 ait3 flow plan "user-authentication" --requirements "security,oauth,persistence"
 
 # 2. Human reviews Claude's proposal, then challenges with Gemini
@@ -152,6 +176,27 @@ ait3 flow squash 123
 # - Comprehensive commit message templates
 # - Safe push commands with --force-with-lease
 # - Pull request creation guidance
+```
+
+## Backend Configuration
+
+### Local Backend (Default)
+File-based ticket management with markdown files in `.tickets/` directory.
+
+```bash
+# Configure local backend (default)
+ait3 setup ticket local
+```
+
+### GitHub Issues Backend
+Integration with GitHub Issues for team collaboration.
+
+```bash
+# Configure GitHub backend
+ait3 setup ticket github --owner your-username --repo your-repo
+
+# Requires GitHub token in environment
+export GITHUB_TOKEN=your_github_token
 ```
 
 ## Claude Code Integration
@@ -233,31 +278,35 @@ gemini -p "@src/ Critique this approach for [feature-name]"
 ### New Feature Development
 
 ```bash
-# 1. Create and start ticket
+# 1. Create and start ticket (works with both backends)
 ait3 ticket create "User profile management"
-ait3 ticket start 001
+ait3 ticket start 001    # Local format
+# OR
+ait3 ticket start 123    # GitHub format (if using GitHub backend)
 
 # 2. PLANNING phase with AI collaboration
 ait3 flow plan "user-profile" --requirements "crud,validation,security"
 # → Claude proposes approach
+# → Shows ticket location: Local file path OR GitHub URL
 # → Challenge with Gemini: gemini -p "@src/ Critique this user profile approach"
 # → Human decides on final approach
 
 # 3. RED phase - create comprehensive tests
-ait3 flow red 001
+ait3 flow red 001        # Works with both Local and GitHub IDs
 # → Creates failing tests for all requirements
 
 # 4. GREEN phase - implement to pass tests
-ait3 flow green 001  
+ait3 flow green 001      # Universal ID support
 # → Minimal implementation for 100% test pass
 
 # 5. REFACTOR phase - optimize and clean
-ait3 flow refactor 001
+ait3 flow refactor 001   # Cross-backend compatibility
 # → Improve performance and maintainability
 
 # 6. SQUASH phase - clean integration
-ait3 flow squash 001
+ait3 flow squash 001     # Unified ID handling
 # → Git command suggestions for clean history
+# → Auto-completes ticket (Local: move to done, GitHub: close issue)
 ```
 
 ### Project Integration

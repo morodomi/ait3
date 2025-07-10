@@ -294,7 +294,7 @@ describe('squashPhase Pure Function', () => {
       
       // Mock the completeTicket to fail
       const originalComplete = services.ticketService.completeTicket;
-      services.ticketService.completeTicket = async () => {
+      services.ticketService.completeTicket = async (): Promise<void> => {
         throw new Error('Database error');
       };
       

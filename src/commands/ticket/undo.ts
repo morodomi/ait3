@@ -1,5 +1,6 @@
 import type { CLIResult, Services, UndoTicketArgs } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
+import { IDUtils } from '../../common/utils.js';
 import chalk from 'chalk';
 
 /**
@@ -21,9 +22,9 @@ export async function undoTicket(
 
     const ticketId = args.id.trim();
     
-    // Validate ticket ID format (4 digits)
-    if (!/^\d{4}$/.test(ticketId)) {
-      throw new ValidationError('Invalid ticket ID format. Must be a 4-digit number (e.g., 0001)');
+    // Validate ticket ID format
+    if (!IDUtils.isValidTicketId(ticketId)) {
+      throw new ValidationError('Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)');
     }
 
     // Get current ticket to check status and show transition

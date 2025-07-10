@@ -81,7 +81,7 @@ export async function setupTicketGitHub(
   
   try {
     const { stdout } = await exec('git remote -v', { cwd: context.cwd });
-    const match = stdout.match(/origin\s+(?:git@github\.com:|https:\/\/github\.com\/)([^\/]+)\/([^\.]+)/);
+    const match = stdout.match(/origin\s+(?:git@github\.com:|https:\/\/github\.com\/)([^/]+)\/([^.]+)/);
     
     if (match) {
       owner = match[1];

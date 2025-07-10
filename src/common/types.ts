@@ -3,7 +3,7 @@ import type { GitService } from '../services/interfaces/GitService.js';
 import type { ProjectAnalyzer } from '../services/interfaces/ProjectAnalyzer.js';
 
 export interface Ticket {
-  id: string;              // Format: "0001" (4-digit zero-padded)
+  id: string;              // Format: "0001" (4-digit zero-padded) or GitHub format "#1"
   title: string;
   status: 'todo' | 'doing' | 'done';
   priority: 'low' | 'medium' | 'high' | 'critical';
@@ -14,6 +14,12 @@ export interface Ticket {
   assignee?: string;
   labels: string[];
   description?: string;    // Markdown body content
+  location?: {            // Location information for ticket access
+    type: 'local' | 'github';
+    path?: string;        // Local: .tickets/doing/0001-feature.md
+    url?: string;         // GitHub: https://github.com/owner/repo/issues/70
+    apiUrl?: string;      // GitHub API: https://api.github.com/repos/owner/repo/issues/70
+  };
 }
 
 export interface CreateTicketOptions {

@@ -1,4 +1,7 @@
 // Utility functions for common operations
+export { IDUtils } from './utils/id-utils.js';
+export { FileUtils } from './utils/file-utils.js';
+
 export class SlugUtils {
   /**
    * Convert title to filename-safe slug
@@ -36,28 +39,5 @@ export class TimeUtils {
   }
 }
 
-export class IDUtils {
-  /**
-   * Format number as zero-padded ticket ID
-   */
-  static formatTicketId(id: number, length: number = 4): string {
-    return id.toString().padStart(length, '0');
-  }
-
-  /**
-   * Validate ticket ID format (4-digit number)
-   */
-  static isValidTicketId(id: string): boolean {
-    return /^\d{4}$/.test(id);
-  }
-}
-
-export class FileUtils {
-  /**
-   * Generate ticket filename from ID and title
-   */
-  static generateTicketFilename(id: string, title: string): string {
-    const slug = SlugUtils.titleToSlug(title);
-    return `${id}-${slug}.md`;
-  }
-}
+// IDUtils is now in ./utils/id-utils.ts
+// FileUtils is now in ./utils/file-utils.ts

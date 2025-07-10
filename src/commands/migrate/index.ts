@@ -1,9 +1,8 @@
 import type { MigrateArgs, Services, CLIResult } from '../../common/types.js';
 import { TicketMigrationService } from '../../services/implementations/TicketMigrationService.js';
-import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
 import { GitHubTicketService } from '../../services/implementations/GitHubTicketService.js';
-import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
+import type { TicketService } from '../../services/interfaces/TicketService.js';
 
 export async function migrateCommand(
   args: MigrateArgs,
@@ -159,7 +158,7 @@ function createServiceFromType(
   type: 'local' | 'github',
   services: Services,
   args: MigrateArgs
-) {
+): TicketService {
   if (type === 'local') {
     return services.ticketService; // Use existing local service
   }

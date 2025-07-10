@@ -347,9 +347,16 @@ export class LocalTicketService implements TicketService {
               // Extract full markdown content as description
               const description = markdownContent.trim();
               
+              // Add location information
+              const relativePath = `.tickets/${dir}/${targetFile}`;
+              
               return {
                 ...ticket,
-                description: description || undefined
+                description: description || undefined,
+                location: {
+                  type: 'local' as const,
+                  path: relativePath
+                }
               };
             } catch {
               // Skip invalid ticket files

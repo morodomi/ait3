@@ -187,6 +187,9 @@ describe('TicketMigrationService', () => {
       ];
 
       vi.mocked(mockLocalService.listTickets).mockResolvedValue(localTickets);
+      vi.mocked(mockLocalService.getTicket)
+        .mockResolvedValueOnce(localTickets[0])
+        .mockResolvedValueOnce(localTickets[1]);
       vi.mocked(mockGitHubService.createTicket)
         .mockResolvedValueOnce(migratedTickets[0])
         .mockResolvedValueOnce(migratedTickets[1]);
@@ -225,6 +228,9 @@ describe('TicketMigrationService', () => {
       ];
 
       vi.mocked(mockLocalService.listTickets).mockResolvedValue(localTickets);
+      vi.mocked(mockLocalService.getTicket)
+        .mockResolvedValueOnce(localTickets[0])
+        .mockResolvedValueOnce(localTickets[1]);
       vi.mocked(mockGitHubService.createTicket)
         .mockResolvedValueOnce({
           id: '#1',
@@ -262,6 +268,7 @@ describe('TicketMigrationService', () => {
       };
 
       vi.mocked(mockLocalService.listTickets).mockResolvedValue([localTicket]);
+      vi.mocked(mockLocalService.getTicket).mockResolvedValue(localTicket);
       vi.mocked(mockGitHubService.createTicket).mockResolvedValue({
         id: '#1',
         title: 'Test Ticket',
@@ -328,6 +335,80 @@ describe('TicketMigrationService', () => {
       );
 
       expect(nextAvailableId).toBe(1);
+    });
+  });
+
+  describe('migrateLocalToGitHub with full ticket details', () => {
+    it('should fetch full ticket details including description', async () => {
+      const summaryTickets: Ticket[] = [
+        {
+          id: '0001',
+          title: 'Test ticket',
+          status: 'done',
+          priority: 'high',
+          created: '2024-01-01T00:00:00Z',
+          updated: '2024-01-01T00:00:00Z',
+          labels: ['feature']
+          // Note: description missing in list
+        }
+      ];
+
+      const fullTicket: Ticket = {
+        ...summaryTickets[0],
+        description: '# Full Description\n\nThis is the complete markdown content.'
+      };
+
+      vi.mocked(mockLocalService.listTickets).mockResolvedValue(summaryTickets);
+      vi.mocked(mockLocalService.getTicket).mockResolvedValue(fullTicket);
+      vi.mocked(mockGitHubService.createTicket).mockResolvedValue({
+        id: '#70',
+        ...fullTicket
+      });
+
+      const result = await migrationService.migrateLocalToGitHub(
+        mockLocalService,
+        mockGitHubService
+      );
+
+      // Should call getTicket for each ticket
+      expect(mockLocalService.getTicket).toHaveBeenCalledWith('0001');
+      
+      // Should create with full description
+      expect(mockGitHubService.createTicket).toHaveBeenCalledWith(
+        'Test ticket',
+        expect.objectContaining({
+          description: '# Full Description\n\nThis is the complete markdown content.'
+        })
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.migratedCount).toBe(1);
+    });
+
+    it('should skip tickets when getTicket returns null', async () => {
+      const tickets: Ticket[] = [
+        { id: '0001', title: 'Ticket 1', status: 'todo', priority: 'high', created: '', updated: '', labels: [] },
+        { id: '0002', title: 'Ticket 2', status: 'todo', priority: 'medium', created: '', updated: '', labels: [] }
+      ];
+
+      vi.mocked(mockLocalService.listTickets).mockResolvedValue(tickets);
+      vi.mocked(mockLocalService.getTicket)
+        .mockResolvedValueOnce(null) // First ticket not found
+        .mockResolvedValueOnce({ ...tickets[1], description: 'Content' });
+      
+      vi.mocked(mockGitHubService.createTicket).mockResolvedValue({
+        id: '#71',
+        ...tickets[1]
+      });
+
+      const result = await migrationService.migrateLocalToGitHub(
+        mockLocalService,
+        mockGitHubService
+      );
+
+      expect(result.migratedCount).toBe(1);
+      expect(result.failedCount).toBe(1);
+      expect(result.errors[0]).toContain('Failed to get full details for ticket 0001');
     });
   });
 });

@@ -12,7 +12,7 @@ export async function startTicket(
   // Input validation - ID format
   if (!args.id || !IDUtils.isValidTicketId(args.id)) {
     throw new ValidationError(
-      'Invalid ticket ID format. Must be a 4-digit number (e.g., 0001)',
+      'Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)',
       'id'
     );
   }

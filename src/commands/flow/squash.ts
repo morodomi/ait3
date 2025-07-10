@@ -2,7 +2,7 @@ import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
-import { SlugUtils } from '../../common/utils.js';
+import { SlugUtils, IDUtils } from '../../common/utils.js';
 
 export interface SquashArgs {
   ticketId: string;
@@ -18,6 +18,11 @@ export async function squashPhase(
   // Validate ticket ID
   if (!args.ticketId || args.ticketId.trim() === '') {
     throw new ValidationError(FLOW_MESSAGES.TICKET_ID_REQUIRED('SQUASH'), 'ticketId');
+  }
+
+  // Validate ID format
+  if (!IDUtils.isValidTicketId(args.ticketId)) {
+    throw new ValidationError('Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)', 'ticketId');
   }
 
   const { ticketId } = args;
@@ -137,7 +142,7 @@ async function generateGitSuggestions(ticket: Ticket, args: SquashArgs, services
           sections.push(`└─ ${STYLES.muted('No commits found in this branch')}`);
         }
       }
-    } catch (error) {
+    } catch {
       // Fall back to placeholder commits
       sections.push(`├─ ${STYLES.muted('xxxxxxx planning(#' + ticketId + '): design approach')}`);
       sections.push(`├─ ${STYLES.muted('xxxxxxx test(#' + ticketId + '): create failing tests')}`);

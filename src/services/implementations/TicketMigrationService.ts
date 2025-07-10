@@ -67,18 +67,26 @@ export class TicketMigrationService implements MigrationService {
       
       for (const ticket of localTickets) {
         try {
-          const createdTicket = await githubService.createTicket(ticket.title, {
-            priority: ticket.priority,
-            labels: ticket.labels,
-            description: ticket.description,
-            assignee: ticket.assignee
+          // Get full ticket details including description
+          const fullTicket = await localService.getTicket(ticket.id);
+          if (!fullTicket) {
+            failedCount++;
+            errors.push(`Failed to get full details for ticket ${ticket.id}`);
+            continue;
+          }
+
+          const createdTicket = await githubService.createTicket(fullTicket.title, {
+            priority: fullTicket.priority,
+            labels: fullTicket.labels,
+            description: fullTicket.description,
+            assignee: fullTicket.assignee
           });
           
           // Update status based on original ticket
           try {
-            if (ticket.status === 'done') {
+            if (fullTicket.status === 'done') {
               await githubService.completeTicket(createdTicket.id);
-            } else if (ticket.status === 'doing') {
+            } else if (fullTicket.status === 'doing') {
               await githubService.startTicket(createdTicket.id);
             }
           } catch {

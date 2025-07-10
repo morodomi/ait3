@@ -1,5 +1,4 @@
 import { writeFile, access, readFile } from 'fs/promises';
-import { join } from 'path';
 import type { CLIResult } from '../../common/types.js';
 import { STYLES } from '../../common/styles.js';
 import { ensureMultipleDirectories } from '../../common/file-operations.js';
@@ -111,7 +110,7 @@ export async function initClaudeMdCommand(args: InitClaudeMdArgs): Promise<CLIRe
     if (error instanceof Error && error.message.includes('Malformed package.json')) {
       // For malformed package.json, still generate files but with warning
       try {
-        const createdDirectories = await ensureDirectories();
+        await ensureDirectories();
         const defaultAnalysis: ProjectAnalysis = {
           language: 'unknown',
           framework: 'unknown',
@@ -211,7 +210,7 @@ async function analyzeProject(): Promise<ProjectAnalysis> {
         analysis.commands.dev = pkg.scripts.dev ? 'npm run dev' : pkg.scripts.start ? 'npm start' : 'echo "No dev script"';
       }
       
-    } catch (parseError) {
+    } catch {
       throw new Error('Malformed package.json');
     }
     

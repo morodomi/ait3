@@ -2,7 +2,7 @@ import type { Services, CLIResult } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
-import { SlugUtils } from '../../common/utils.js';
+import { SlugUtils, IDUtils } from '../../common/utils.js';
 import { getTicketLocation, generateCommitMessage, formatTicketHeader, getTicketOrThrow } from '../../common/flow-utils.js';
 
 export interface RedArgs {
@@ -19,6 +19,11 @@ export async function redPhase(
   // Validate ticket ID
   if (!args.ticketId || args.ticketId.trim() === '') {
     throw new ValidationError(FLOW_MESSAGES.TICKET_ID_REQUIRED('RED'), 'ticketId');
+  }
+
+  // Validate ID format
+  if (!IDUtils.isValidTicketId(args.ticketId)) {
+    throw new ValidationError('Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)', 'ticketId');
   }
 
   const { ticketId, type = 'unit', interactive = false, dryRun = false } = args;
