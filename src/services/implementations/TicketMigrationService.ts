@@ -3,6 +3,50 @@ import type { TicketService } from '../interfaces/TicketService.js';
 
 export class TicketMigrationService implements MigrationService {
   /**
+   * Parse ticket filter string into array of local ticket IDs
+   * Supports formats: "1,3,5", "1-10", "1,3-5"
+   * Always returns local format: ["0001", "0003", "0005"]
+   */
+  parseTicketFilter(filter: string): string[] {
+    const result: string[] = [];
+    
+    // Split by comma first
+    const parts = filter.split(',').map(s => s.trim());
+    
+    for (const part of parts) {
+      // Check if it's a range (contains '-')
+      if (part.includes('-') && !part.startsWith('-')) {
+        const [start, end] = part.split('-').map(s => s.trim());
+        
+        // Extract numbers
+        const startNum = parseInt(start, 10);
+        const endNum = parseInt(end, 10);
+        
+        if (isNaN(startNum) || isNaN(endNum)) {
+          throw new Error(`Invalid range format: ${part}`);
+        }
+        
+        if (startNum > endNum) {
+          throw new Error(`Invalid range: start (${startNum}) must be <= end (${endNum})`);
+        }
+        
+        // Generate range with local format (zero-padded)
+        for (let i = startNum; i <= endNum; i++) {
+          result.push(i.toString().padStart(4, '0'));
+        }
+      } else {
+        // Single ID - convert to local format
+        const num = parseInt(part, 10);
+        if (isNaN(num)) {
+          throw new Error(`Invalid ticket ID format: ${part}`);
+        }
+        result.push(num.toString().padStart(4, '0'));
+      }
+    }
+    
+    return result;
+  }
+  /**
    * Validate migration between two ticket services
    */
   async validateMigration(from: TicketService, to: TicketService): Promise<ValidationResult> {
@@ -48,11 +92,20 @@ export class TicketMigrationService implements MigrationService {
   /**
    * Migrate tickets from local service to GitHub service
    */
-  async migrateLocalToGitHub(localService: TicketService, githubService: TicketService): Promise<MigrationResult> {
+  async migrateLocalToGitHub(localService: TicketService, githubService: TicketService, ticketFilter?: string[]): Promise<MigrationResult> {
     try {
-      const localTickets = await localService.listTickets();
+      let ticketsToMigrate: string[] = [];
       
-      if (localTickets.length === 0) {
+      if (ticketFilter && ticketFilter.length > 0) {
+        // Use provided filter
+        ticketsToMigrate = ticketFilter;
+      } else {
+        // Get all tickets
+        const localTickets = await localService.listTickets();
+        ticketsToMigrate = localTickets.map(t => t.id);
+      }
+      
+      if (ticketsToMigrate.length === 0) {
         return {
           success: true,
           migratedCount: 0,
@@ -65,13 +118,13 @@ export class TicketMigrationService implements MigrationService {
       let failedCount = 0;
       const errors: string[] = [];
       
-      for (const ticket of localTickets) {
+      for (const ticketId of ticketsToMigrate) {
         try {
           // Get full ticket details including description
-          const fullTicket = await localService.getTicket(ticket.id);
+          const fullTicket = await localService.getTicket(ticketId);
           if (!fullTicket) {
             failedCount++;
-            errors.push(`Failed to get full details for ticket ${ticket.id}`);
+            errors.push(`Failed to get full details for ticket ${ticketId}`);
             continue;
           }
 
@@ -97,7 +150,7 @@ export class TicketMigrationService implements MigrationService {
           migratedCount++;
         } catch (error: unknown) {
           failedCount++;
-          errors.push(`Failed to migrate ticket ${ticket.id}: ${error instanceof Error ? error.message : String(error)}`);
+          errors.push(`Failed to migrate ticket ${ticketId}: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
       

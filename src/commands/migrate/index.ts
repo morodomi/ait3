@@ -1,8 +1,32 @@
-import type { MigrateArgs, Services, CLIResult } from '../../common/types.js';
+import type { MigrateArgs, Services, CLIResult, Ticket } from '../../common/types.js';
 import { TicketMigrationService } from '../../services/implementations/TicketMigrationService.js';
 import { GitHubTicketService } from '../../services/implementations/GitHubTicketService.js';
 import { STYLES } from '../../common/styles.js';
 import type { TicketService } from '../../services/interfaces/TicketService.js';
+
+/**
+ * Get tickets to migrate based on filter
+ */
+async function getTicketsToMigrate(
+  fromService: TicketService, 
+  ticketFilter?: string[]
+): Promise<Pick<Ticket, 'title'>[]> {
+  if (ticketFilter && ticketFilter.length > 0) {
+    // Get filtered tickets
+    const tickets: Pick<Ticket, 'title'>[] = [];
+    for (const ticketId of ticketFilter) {
+      const ticket = await fromService.getTicket(ticketId);
+      if (ticket) {
+        tickets.push({ title: ticket.title });
+      }
+    }
+    return tickets;
+  } else {
+    // Get all tickets
+    const allTickets = await fromService.listTickets();
+    return allTickets.map(t => ({ title: t.title }));
+  }
+}
 
 export async function migrateCommand(
   args: MigrateArgs,
@@ -55,6 +79,19 @@ export async function migrateCommand(
     const fromService = createServiceFromType(args.from, services, args);
     const toService = createServiceFromType(args.to, services, args);
 
+    // Parse ticket filter if provided
+    let ticketFilter: string[] | undefined;
+    if (args.tickets) {
+      try {
+        ticketFilter = migrationService.parseTicketFilter(args.tickets);
+      } catch (error) {
+        return {
+          success: false,
+          message: STYLES.danger(`Invalid ticket filter format: ${error instanceof Error ? error.message : String(error)}`)
+        };
+      }
+    }
+
     // Handle validation mode
     if (args.validate) {
       const validation = await migrationService.validateMigration(fromService, toService);
@@ -88,14 +125,14 @@ export async function migrateCommand(
     // Handle dry run mode
     if (args.dryRun) {
       const validation = await migrationService.validateMigration(fromService, toService);
-      const fromTickets = await fromService.listTickets();
+      const ticketsToShow = await getTicketsToMigrate(fromService, ticketFilter);
       
       const messageParts = [
         STYLES.success('Dry run completed'),
         '',
-        STYLES.info(`${fromTickets.length} tickets will be migrated`),
+        STYLES.info(`${ticketsToShow.length} tickets will be migrated`),
         '',
-        ...fromTickets.map(ticket => `  • ${ticket.title}`),
+        ...ticketsToShow.map(ticket => `  • ${ticket.title}`),
         '',
         ...validation.warnings.map(w => STYLES.warning(`  • ${w}`))
       ];
@@ -108,7 +145,7 @@ export async function migrateCommand(
 
     // Perform actual migration
     if (args.from === 'local' && args.to === 'github') {
-      const result = await migrationService.migrateLocalToGitHub(fromService, toService);
+      const result = await migrationService.migrateLocalToGitHub(fromService, toService, ticketFilter);
       
       if (result.success) {
         return {

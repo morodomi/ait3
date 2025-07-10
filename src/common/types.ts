@@ -104,6 +104,7 @@ export interface MigrateArgs {
   repo?: string;
   validate?: boolean;
   dryRun?: boolean;
+  tickets?: string;  // Comma-separated list or range (e.g., "1,3,5" or "1-10" or "1,3-5")
 }
 
 export interface BackendConfig {

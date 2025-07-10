@@ -46,7 +46,8 @@ export class LocalTicketService implements TicketService {
       priority = 'medium',
       assignee,
       labels = [],
-      status = 'todo'
+      status = 'todo',
+      description
     } = options;
 
     // Use file locking for safe ID generation
@@ -96,7 +97,7 @@ export class LocalTicketService implements TicketService {
       const filePath = join(this.basePath, status, filename);
 
       // Create file content
-      const content = this.generateFileContent(validatedTicket);
+      const content = this.generateFileContent(validatedTicket, description);
 
       // Write file
       try {
@@ -157,7 +158,7 @@ export class LocalTicketService implements TicketService {
   }
 
 
-  private generateFileContent(ticket: Ticket): string {
+  private generateFileContent(ticket: Ticket, description?: string): string {
     // Type-safe frontmatter without any types
     const frontmatter: {
       id: string;
@@ -182,9 +183,14 @@ export class LocalTicketService implements TicketService {
       frontmatter.assignee = ticket.assignee;
     }
 
+    // Use description if provided, otherwise use default template
+    const markdownContent = description 
+      ? `# Ticket #${ticket.id}: ${ticket.title}\n\n## Description\n\n${description}\n`
+      : `# Ticket #${ticket.id}: ${ticket.title}\n\n## Description\n\n[Add ticket description here]\n`;
+
     // Use gray-matter to create content with YAML frontmatter
     const content = matter.stringify(
-      `# Ticket #${ticket.id}: ${ticket.title}\n\n## Description\n\n[Add ticket description here]\n`,
+      markdownContent,
       frontmatter
     );
 
