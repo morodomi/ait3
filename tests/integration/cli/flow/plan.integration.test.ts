@@ -41,26 +41,42 @@ describe('CLI Integration: flow plan', () => {
         expect.fail('Command should have failed');
       } catch (error: any) {
         expect(error.code).not.toBe(0);
-        expect(error.stderr || error.stdout).toContain("missing required argument 'featureName'");
+        expect(error.stderr || error.stdout).toContain("missing required argument 'ticketId'");
       }
     });
 
-    it('should execute guided mode by default', () => {
-      const result = execSync('node dist/cli.js flow plan "test-feature"', {
+    it('should execute with local ticket ID', () => {
+      // First create a ticket using the CLI
+      execSync('node dist/cli.js ticket create "Test Planning Feature"', {
         encoding: 'utf8',
-        timeout: 5000
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
+      });
+
+      const result = execSync('node dist/cli.js flow plan 0001', {
+        encoding: 'utf8',
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
       });
 
       expect(result).toContain('PLANNING Phase');
       expect(result).toContain('Claude Code Instructions');
       expect(result).toContain('Next Action');
-      expect(result).toContain('test-feature');
+      expect(result).toContain('test-planning-feature'); // Converted to kebab-case
     });
 
     it('should support express mode flag', () => {
-      const result = execSync('node dist/cli.js flow plan "quick-feature" --mode express', {
+      // First create a ticket
+      execSync('node dist/cli.js ticket create "Quick Feature"', {
         encoding: 'utf8',
-        timeout: 5000
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
+      });
+
+      const result = execSync('node dist/cli.js flow plan 0001 --mode express', {
+        encoding: 'utf8',
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
       });
 
       expect(result).toContain('PLANNING Phase (Express)');
@@ -70,9 +86,17 @@ describe('CLI Integration: flow plan', () => {
     });
 
     it('should support manual mode flag', () => {
-      const result = execSync('node dist/cli.js flow plan "manual-feature" --mode manual', {
+      // First create a ticket
+      execSync('node dist/cli.js ticket create "Manual Feature"', {
         encoding: 'utf8',
-        timeout: 5000
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
+      });
+
+      const result = execSync('node dist/cli.js flow plan 0001 --mode manual', {
+        encoding: 'utf8',
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
       });
 
       expect(result).toContain('Dialectical Process');
@@ -84,9 +108,17 @@ describe('CLI Integration: flow plan', () => {
 
   describe('requirements flag', () => {
     it('should accept requirements comma-separated', () => {
-      const result = execSync('node dist/cli.js flow plan "auth-feature" --requirements "security,oauth,jwt"', {
+      // First create a ticket
+      execSync('node dist/cli.js ticket create "Auth Feature"', {
         encoding: 'utf8',
-        timeout: 5000
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
+      });
+
+      const result = execSync('node dist/cli.js flow plan 0001 --requirements "security,oauth,jwt"', {
+        encoding: 'utf8',
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
       });
 
       expect(result).toContain('security');
@@ -95,9 +127,17 @@ describe('CLI Integration: flow plan', () => {
     });
 
     it('should work without requirements flag', () => {
-      const result = execSync('node dist/cli.js flow plan "simple-feature"', {
+      // First create a ticket
+      execSync('node dist/cli.js ticket create "Simple Feature"', {
         encoding: 'utf8',
-        timeout: 5000
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
+      });
+
+      const result = execSync('node dist/cli.js flow plan 0001', {
+        encoding: 'utf8',
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
       });
 
       expect(result).toContain('Claude Code Instructions');
@@ -106,41 +146,50 @@ describe('CLI Integration: flow plan', () => {
   });
 
   describe('ticket integration', () => {
-    it('should work without ticket flag', () => {
-      const result = execSync('node dist/cli.js flow plan "standalone-feature"', {
-        encoding: 'utf8',
-        timeout: 5000
-      });
-
-      expect(result).toContain('Claude Code Instructions');
-      expect(result).toContain('standalone-feature');
+    it('should show error for non-existent ticket', () => {
+      try {
+        execSync('node dist/cli.js flow plan 9999', {
+          encoding: 'utf8',
+          timeout: 5000,
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
+        });
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("Ticket with ID '9999' not found");
+      }
     });
 
-    it('should reference ticket when provided', () => {
-      // First create a ticket using the CLI
-      execSync('node dist/cli.js ticket create "Test Planning Integration"', {
-        encoding: 'utf8',
-        timeout: 5000,
-        env: { ...process.env, TICKETS_DIR: testDir }
-      });
-
-      const result = execSync('node dist/cli.js flow plan "integration-test" --ticket 0001', {
-        encoding: 'utf8',
-        timeout: 5000,
-        env: { ...process.env, TICKETS_DIR: testDir }
-      });
-
-      expect(result).toContain('Ticket #0001') || expect(result).toContain('integration-test');
+    it('should accept GitHub-style ticket IDs', () => {
+      // This will fail with local backend, but should validate the ID format
+      try {
+        execSync('node dist/cli.js flow plan 72', {
+          encoding: 'utf8',
+          timeout: 5000,
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
+        });
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("Ticket with ID '72' not found");
+      }
     });
 
-    it('should handle invalid ticket ID gracefully', () => {
-      const result = execSync('node dist/cli.js flow plan "test-feature" --ticket 9999', {
-        encoding: 'utf8',
-        timeout: 5000
-      });
-
-      // Should not crash, should show planning phase output
-      expect(result).toContain('PLANNING Phase') || expect(result).toContain('Claude Code Instructions');
+    it('should show error for invalid ticket ID format', () => {
+      try {
+        execSync('node dist/cli.js flow plan invalid-id', {
+          encoding: 'utf8',
+          timeout: 5000,
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
+        });
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        expect(error.code).not.toBe(0);
+        expect(error.stderr || error.stdout).toContain("Invalid ticket ID format");
+      }
     });
   });
 
@@ -165,40 +214,30 @@ describe('CLI Integration: flow plan', () => {
       expect(result).toContain('PLANNING Phase');
       expect(result).toContain('--mode');
       expect(result).toContain('--requirements');
-      expect(result).toContain('--ticket');
+      expect(result).toContain('<ticketId>');
     });
   });
 
   describe('error handling', () => {
     it('should validate mode flag values', () => {
+      // First create a ticket
+      execSync('node dist/cli.js ticket create "Test Mode Validation"', {
+        encoding: 'utf8',
+        timeout: 5000,
+        env: { ...process.env, TICKETS_DIR: testDir }
+      });
+
       try {
-        execSync('node dist/cli.js flow plan "test" --mode invalid', {
+        execSync('node dist/cli.js flow plan 0001 --mode invalid', {
           encoding: 'utf8',
           timeout: 5000,
+          env: { ...process.env, TICKETS_DIR: testDir },
           stdio: 'pipe'
         });
         expect.fail('Command should have failed');
       } catch (error: any) {
         expect(error.code).not.toBe(0);
       }
-    });
-
-    it('should handle special characters in feature name', () => {
-      const result = execSync('node dist/cli.js flow plan "feature-with-dashes_and_underscores"', {
-        encoding: 'utf8',
-        timeout: 5000
-      });
-
-      expect(result).toContain('feature-with-dashes_and_underscores');
-    });
-
-    it('should handle quoted feature names with spaces', () => {
-      const result = execSync('node dist/cli.js flow plan "Feature With Spaces"', {
-        encoding: 'utf8',
-        timeout: 5000
-      });
-
-      expect(result).toContain('Feature With Spaces');
     });
   });
 });

@@ -1,69 +1,62 @@
 import type { Services, CLIResult, Ticket } from '../../common/types.js';
-import { ValidationError } from '../../common/errors.js';
+import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
-import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { IDUtils } from '../../common/utils.js';
 import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
 
+const INVALID_TICKET_ID_MESSAGE = 'Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)';
+
+/**
+ * Convert ticket title to kebab-case feature name
+ */
+function titleToFeatureName(title: string): string {
+  return title.toLowerCase().replace(/\s+/g, '-');
+}
+
 export interface PlanArgs {
-  featureName?: string;
+  ticketId: string;
   mode?: 'guided' | 'express' | 'manual';
   requirements?: string[];
-  ticketId?: string;
 }
 
 export async function planPhase(
   args: PlanArgs,
   services: Services
 ): Promise<CLIResult> {
-  // Validate feature name
-  if (!args.featureName) {
-    throw new ValidationError(FLOW_MESSAGES.FEATURE_REQUIRED, 'featureName');
+  const { ticketId, mode = 'guided', requirements } = args;
+  
+  // Validate ticket ID format
+  if (!IDUtils.isValidTicketId(ticketId)) {
+    throw new ValidationError(INVALID_TICKET_ID_MESSAGE, 'ticketId');
   }
-
-  const { featureName, mode = 'guided', requirements, ticketId } = args;
-
-  // Validate ticket ID format if provided
-  if (ticketId && !IDUtils.isValidTicketId(ticketId)) {
-    throw new ValidationError('Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)', 'ticketId');
+  
+  // Fetch ticket to get feature name
+  const ticket = await services.ticketService.getTicket(ticketId);
+  if (!ticket) {
+    throw new TicketNotFoundError(ticketId);
   }
+  
+  // Use ticket title as feature name
+  const featureName = titleToFeatureName(ticket.title);
 
-  // Handle ticket reference if provided
-  let ticketInfo = '';
-  let ticket: Ticket | undefined;
-  if (ticketId) {
-    try {
-      const foundTicket = await services.ticketService.getTicket(ticketId);
-      if (foundTicket) {
-        ticket = foundTicket;
-        ticketInfo = `\n${STYLES.info('LIST: Ticket #' + ticketId)}: ${ticket.title}`;
-      } else {
-        ticketInfo = `\n${STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
-      }
-    } catch {
-      ticketInfo = `\n${STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
-    }
-  }
+  // Create ticket info for display
+  const ticketInfo = `\n${STYLES.info('LIST: Ticket #' + ticketId)}: ${ticket.title}`;
 
   switch (mode) {
   case 'express':
-    return expressPlan(featureName, requirements, ticketInfo, ticket);
+    return expressPlan(ticketId, featureName, ticket, requirements, ticketInfo);
   case 'manual':
-    return manualPlan(featureName, ticketInfo, ticket);
+    return manualPlan(ticketId, featureName, ticket, ticketInfo);
   case 'guided':
   default:
-    return guidedPlan(featureName, requirements, ticketInfo, ticket);
+    return guidedPlan(ticketId, featureName, ticket, requirements, ticketInfo);
   }
 }
 
-function expressPlan(featureName: string, requirements?: string[], ticketInfo?: string, ticket?: Ticket): CLIResult {
+function expressPlan(ticketId: string, featureName: string, ticket: Ticket, requirements?: string[], _ticketInfo?: string): CLIResult {
   const requirementsText = requirements?.length 
     ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
-
-  // Find ticket ID from ticketInfo if available
-  const ticketIdMatch = ticketInfo?.match(/#(\d+)/);
-  const ticketId = ticketIdMatch ? ticketIdMatch[1] : '001';
   const ticketLocation = getTicketLocation(ticketId, featureName, 'doing', ticket);
 
   return {
@@ -90,10 +83,7 @@ ${STYLES.muted('Express mode: ait3 flow red after quick approval')}
   };
 }
 
-function manualPlan(featureName: string, ticketInfo?: string, ticket?: Ticket): CLIResult {
-  // Find ticket ID from ticketInfo if available
-  const ticketIdMatch = ticketInfo?.match(/#(\d+)/);
-  const ticketId = ticketIdMatch ? ticketIdMatch[1] : '001';
+function manualPlan(ticketId: string, featureName: string, ticket: Ticket, _ticketInfo?: string): CLIResult {
   const ticketLocation = getTicketLocation(ticketId, featureName, 'doing', ticket);
 
   return {
@@ -130,14 +120,10 @@ ${STYLES.muted('Manual mode: Proceed to ait3 flow red after decision')}
   };
 }
 
-function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: string, ticket?: Ticket): CLIResult {
+function guidedPlan(ticketId: string, featureName: string, ticket: Ticket, requirements?: string[], _ticketInfo?: string): CLIResult {
   const requirementsSection = requirements?.length 
     ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
-
-  // Find ticket ID from ticketInfo if available
-  const ticketIdMatch = ticketInfo?.match(/#(\d+)/);
-  const ticketId = ticketIdMatch ? ticketIdMatch[1] : '001';
   const ticketLocation = getTicketLocation(ticketId, featureName, 'doing', ticket);
 
   return {
@@ -178,76 +164,3 @@ ${STYLES.muted('After approval: ait3 flow red')}
   };
 }
 
-interface ProposalTemplate {
-  summary: string;
-  details: string;
-}
-
-function generateClaudeProposal(featureName: string, requirements?: string[]): ProposalTemplate {
-  // Pattern matching for intelligent proposal generation
-  const lowerFeature = featureName.toLowerCase();
-  const lowerReqs = requirements?.map(r => r.toLowerCase()) || [];
-  
-  const patterns = {
-    isAuth: lowerFeature.includes('auth') || lowerReqs.includes('security') || lowerReqs.includes('oauth'),
-    isUser: lowerFeature.includes('user'),
-    isAPI: lowerFeature.includes('api')
-  };
-
-  const proposalTemplates: Record<string, ProposalTemplate> = {
-    auth: {
-      summary: 'JWT-based authentication with OAuth2 integration',
-      details: formatProposalDetails([
-        ['Architecture', 'JWT token-based authentication'],
-        ['OAuth Integration', 'Google, GitHub providers via Passport.js'],
-        ['Session Management', 'Secure httpOnly cookies with CSRF protection'],
-        ['Security', 'Rate limiting, refresh token rotation'],
-        ['Storage', 'Redis session store for scalability']
-      ])
-    },
-    user: {
-      summary: 'CRUD user management with validation',
-      details: formatProposalDetails([
-        ['Data Layer', 'User model with Zod validation'],
-        ['API Design', 'RESTful endpoints (/users CRUD)'],
-        ['Validation', 'Email format, password strength, unique constraints'],
-        ['Security', 'Input sanitization, SQL injection protection'],
-        ['Testing', 'Comprehensive unit and integration tests']
-      ])
-    },
-    api: {
-      summary: 'RESTful API with Express.js and TypeScript',
-      details: formatProposalDetails([
-        ['Framework', 'Express.js with TypeScript strict mode'],
-        ['Architecture', 'Controller → Service → Repository pattern'],
-        ['Validation', 'Zod schema validation for requests'],
-        ['Error Handling', 'Centralized error middleware'],
-        ['Documentation', 'OpenAPI/Swagger integration']
-      ])
-    },
-    default: {
-      summary: 'Pure function implementation with service injection',
-      details: formatProposalDetails([
-        ['Architecture', 'Pure functions following existing patterns'],
-        ['Service Layer', 'Dependency injection for testability'],
-        ['Error Handling', 'Custom error classes with proper typing'],
-        ['Testing', 'Unit tests with isolated service mocks'],
-        ['Integration', 'Commander.js CLI integration']
-      ])
-    }
-  };
-
-  if (patterns.isAuth) return proposalTemplates.auth;
-  if (patterns.isUser) return proposalTemplates.user;
-  if (patterns.isAPI) return proposalTemplates.api;
-  return proposalTemplates.default;
-}
-
-function formatProposalDetails(items: [string, string][]): string {
-  return items
-    .map(([label, desc], index, array) => {
-      const prefix = index === array.length - 1 ? '└─' : '├─';
-      return `${prefix} ${STYLES.info(label)}: ${desc}`;
-    })
-    .join('\n');
-}

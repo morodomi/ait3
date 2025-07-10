@@ -17,10 +17,10 @@ export const flowCommand = new Command('flow')
   .description('AIT³ workflow commands - AI + Ticket + Test + Tool driven development')
   .addHelpText('after', `
 Examples:
-  $ ait3 flow plan "user-auth" --requirements "security,oauth"
-  $ ait3 flow plan "feature-name" --mode guided
-  $ ait3 flow plan "quick-feature" --mode express
-  $ ait3 flow plan "manual-feature" --mode manual
+  $ ait3 flow plan 0001
+  $ ait3 flow plan 0001 --requirements "security,oauth"
+  $ ait3 flow plan 0001 --mode express
+  $ ait3 flow plan 72 --mode manual
   $ ait3 flow red 0001
   $ ait3 flow red 0001 --type both --interactive
   $ ait3 flow green 0001
@@ -36,22 +36,20 @@ Philosophy:
 
 // flow plan subcommand
 flowCommand
-  .command('plan <featureName>')
+  .command('plan <ticketId>')
   .description('PLANNING Phase - Socratic dialogue for approach validation')
   .addOption(new Option('-m, --mode <mode>', 'Planning mode').choices(['guided', 'express', 'manual']).default('guided'))
   .option('-r, --requirements <requirements>', 'Comma-separated requirements (e.g., "security,oauth,jwt")')
-  .option('-t, --ticket <ticketId>', 'Associate with specific ticket ID')
-  .action(async (featureName: string, options) => {
+  .action(async (ticketId: string, options) => {
     try {
       // Parse requirements
       const requirements = options.requirements?.split(',').map((r: string) => r.trim()).filter(Boolean) || [];
       
       const result = await planPhase(
         {
-          featureName,
+          ticketId,
           mode: options.mode,
-          requirements: requirements.length > 0 ? requirements : undefined,
-          ticketId: options.ticket
+          requirements: requirements.length > 0 ? requirements : undefined
         },
         services
       );
@@ -62,6 +60,12 @@ flowCommand
       // Enhanced error handling
       if (error instanceof ValidationError) {
         console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
+        if (error.field === 'ticketId') {
+          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
+        }
+      } else if (error instanceof TicketNotFoundError) {
+        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
+        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
       } else {
         console.error(STYLES.danger('ERROR in planning phase:'), error instanceof Error ? error.message : String(error));
       }
