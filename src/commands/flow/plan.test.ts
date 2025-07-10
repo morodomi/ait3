@@ -29,10 +29,15 @@ describe('planPhase Pure Function', () => {
   });
 
   describe('guided mode (default)', () => {
-    it('should generate Claude proposal for feature', async () => {
+    it('should generate Claude proposal using ticket ID', async () => {
+      // Create a test ticket
+      await services.ticketService.createTicket('User Authentication', {
+        priority: 'high'
+      });
+
       const result = await planPhase(
         { 
-          featureName: 'user-authentication',
+          ticketId: '0001',
           mode: 'guided'
         },
         services
@@ -44,9 +49,14 @@ describe('planPhase Pure Function', () => {
     });
 
     it('should prepare Gemini analysis command', async () => {
+      // Create a test ticket
+      await services.ticketService.createTicket('User Auth', {
+        priority: 'high'
+      });
+
       const result = await planPhase(
         { 
-          featureName: 'user-auth',
+          ticketId: '0001',
           mode: 'guided' 
         },
         services
@@ -59,9 +69,14 @@ describe('planPhase Pure Function', () => {
     });
 
     it('should provide user choice options', async () => {
+      // Create a test ticket
+      await services.ticketService.createTicket('Test Feature', {
+        priority: 'medium'
+      });
+
       const result = await planPhase(
         { 
-          featureName: 'test-feature',
+          ticketId: '0001',
           mode: 'guided' 
         },
         services
@@ -73,18 +88,23 @@ describe('planPhase Pure Function', () => {
       expect(result.message).toContain('ait3 flow red');
     });
 
-    it('should handle missing feature name gracefully', async () => {
+    it('should handle missing ticket ID gracefully', async () => {
       await expect(
-        planPhase({ mode: 'guided' }, services)
-      ).rejects.toThrow('Feature name is required');
+        planPhase({ ticketId: '', mode: 'guided' }, services)
+      ).rejects.toThrow('Invalid ticket ID format');
     });
   });
 
   describe('express mode', () => {
     it('should provide quick Claude proposal only', async () => {
+      // Create a test ticket
+      await services.ticketService.createTicket('Quick Feature', {
+        priority: 'low'
+      });
+
       const result = await planPhase(
         { 
-          featureName: 'quick-feature',
+          ticketId: '0001',
           mode: 'express' 
         },
         services
@@ -100,9 +120,14 @@ describe('planPhase Pure Function', () => {
 
   describe('manual mode', () => {
     it('should provide AIT³ philosophy and guidance only', async () => {
+      // Create a test ticket
+      await services.ticketService.createTicket('Manual Feature', {
+        priority: 'medium'
+      });
+
       const result = await planPhase(
         { 
-          featureName: 'manual-feature',
+          ticketId: '0001',
           mode: 'manual' 
         },
         services
@@ -117,20 +142,7 @@ describe('planPhase Pure Function', () => {
   });
 
   describe('ticket integration', () => {
-    it('should work without ticket ID', async () => {
-      const result = await planPhase(
-        { 
-          featureName: 'standalone-feature',
-          mode: 'guided' 
-        },
-        services
-      );
-
-      expect(result.success).toBe(true);
-      expect(result.message).toContain('Claude Code Instructions');
-    });
-
-    it('should reference ticket when ID provided', async () => {
+    it('should accept ticket ID as primary argument', async () => {
       // First create a test ticket
       await services.ticketService.createTicket('Test Planning Feature', {
         priority: 'high',
@@ -140,7 +152,6 @@ describe('planPhase Pure Function', () => {
 
       const result = await planPhase(
         { 
-          featureName: 'test-feature',
           ticketId: '0001',
           mode: 'guided' 
         },
@@ -151,28 +162,41 @@ describe('planPhase Pure Function', () => {
       expect(result.message).toContain('Ticket #0001');
     });
 
-    it('should handle invalid ticket ID gracefully', async () => {
-      const result = await planPhase(
-        { 
-          featureName: 'test-feature',
-          ticketId: '9999',
-          mode: 'guided' 
-        },
-        services
-      );
+    it('should handle invalid ticket ID format', async () => {
+      await expect(
+        planPhase(
+          { 
+            ticketId: 'invalid-id',
+            mode: 'guided' 
+          },
+          services
+        )
+      ).rejects.toThrow('Invalid ticket ID format');
+    });
 
-      // Should still succeed but show ticket ID in message
-      expect(result.success).toBe(true);
-      expect(result.message).toContain('Ticket #');
-      expect(result.message).toContain('Claude Code Instructions');
+    it('should handle non-existent ticket ID', async () => {
+      await expect(
+        planPhase(
+          { 
+            ticketId: '9999',
+            mode: 'guided' 
+          },
+          services
+        )
+      ).rejects.toThrow('Ticket with ID \'9999\' not found');
     });
   });
 
   describe('requirements integration', () => {
     it('should include requirements in proposal when provided', async () => {
+      // Create a test ticket
+      await services.ticketService.createTicket('Secure Auth', {
+        priority: 'critical'
+      });
+
       const result = await planPhase(
         { 
-          featureName: 'secure-auth',
+          ticketId: '0001',
           mode: 'guided',
           requirements: ['security', 'oauth', 'persistence']
         },
@@ -186,9 +210,14 @@ describe('planPhase Pure Function', () => {
     });
 
     it('should work without requirements', async () => {
+      // Create a test ticket
+      await services.ticketService.createTicket('Simple Feature', {
+        priority: 'low'
+      });
+
       const result = await planPhase(
         { 
-          featureName: 'simple-feature',
+          ticketId: '0001',
           mode: 'guided' 
         },
         services
@@ -207,7 +236,6 @@ describe('planPhase Pure Function', () => {
       
       const result = await planPhase(
         { 
-          featureName: 'test-feature',
           ticketId: '0001',
           mode: 'guided' 
         },
@@ -220,9 +248,12 @@ describe('planPhase Pure Function', () => {
     });
 
     it('should include structured Next Action section', async () => {
+      // Create test ticket
+      await services.ticketService.createTicket('Test Feature');
+      
       const result = await planPhase(
         { 
-          featureName: 'test-feature',
+          ticketId: '0001',
           mode: 'guided' 
         },
         services
@@ -232,7 +263,7 @@ describe('planPhase Pure Function', () => {
       expect(result.message).toContain('Next Action');
       expect(result.message).toContain('├─ Analyze ticket:');
       expect(result.message).toContain('│  └─ Read');
-      expect(result.message).toContain('.tickets/doing/001-test-feature.md');
+      expect(result.message).toContain('.tickets/todo/0001-test-feature.md');
       expect(result.message).toContain('├─ Research codebase:');
       expect(result.message).toContain('│  └─ Understand existing patterns');
       expect(result.message).toContain('├─ Propose approach:');
@@ -242,9 +273,11 @@ describe('planPhase Pure Function', () => {
     });
 
     it('should include git commit recommendation', async () => {
+      // Create test ticket
+      await services.ticketService.createTicket('Test Feature');
+      
       const result = await planPhase(
         { 
-          featureName: 'test-feature',
           ticketId: '0001',
           mode: 'guided' 
         },
@@ -253,7 +286,7 @@ describe('planPhase Pure Function', () => {
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('└─ Commit design:');
-      expect(result.message).toContain('git commit -m "planning(#001): test-feature design"');
+      expect(result.message).toContain('git commit -m "planning(#0001): test-feature design"');
     });
   });
 });

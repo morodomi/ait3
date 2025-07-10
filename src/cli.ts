@@ -12,7 +12,7 @@ const program = new Command();
 program
   .name('ait3')
   .description('AIT³ Development Platform - AI + Ticket + Test + Tool driven development')
-  .version('1.0.0');
+  .version('1.1.0-dev');
 
 // Add command groups
 program.addCommand(ticketCommand);
