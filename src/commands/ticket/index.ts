@@ -7,9 +7,9 @@ import { completeTicket } from './complete.js';
 import { undoTicket } from './undo.js';
 import { deleteTicket } from './delete.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError, TicketNotStartedError } from '../../common/errors.js';
-import type { Services } from '../../common/types.js';
 import { STYLES } from '../../common/styles.js';
 import { ServiceFactory } from '../../services/ServiceFactory.js';
+import { createMissingIdErrorHandler } from './error-handler.js';
 
 // Service container will be created per command to respect config changes
 
@@ -109,6 +109,8 @@ ticketCommand
 ticketCommand
   .command('show <id>')
   .description('Show ticket details')
+  .showHelpAfterError()
+  .exitOverride(createMissingIdErrorHandler('show'))
   .action(async (id: string) => {
     try {
       const services = ServiceFactory.createServices();
@@ -134,6 +136,8 @@ ticketCommand
 ticketCommand
   .command('start <id>')
   .description('Start working on a ticket')
+  .showHelpAfterError()
+  .exitOverride(createMissingIdErrorHandler('start'))
   .action(async (id: string) => {
     try {
       const services = ServiceFactory.createServices();
@@ -165,6 +169,8 @@ ticketCommand
 ticketCommand
   .command('complete <id>')
   .description('Complete a ticket')
+  .showHelpAfterError()
+  .exitOverride(createMissingIdErrorHandler('complete'))
   .action(async (id: string) => {
     try {
       const services = ServiceFactory.createServices();
@@ -197,6 +203,8 @@ ticketCommand
   .command('undo <id>')
   .description('Undo ticket to previous state')
   .option('--dry-run', 'Preview changes without executing')
+  .showHelpAfterError()
+  .exitOverride(createMissingIdErrorHandler('undo'))
   .action(async (id: string, options) => {
     try {
       const services = ServiceFactory.createServices();
@@ -223,6 +231,8 @@ ticketCommand
   .command('delete <id>')
   .description('Delete a ticket')
   .option('--dry-run', 'Preview deletion without executing')
+  .showHelpAfterError()
+  .exitOverride(createMissingIdErrorHandler('delete'))
   .action(async (id: string, options) => {
     try {
       const services = ServiceFactory.createServices();
