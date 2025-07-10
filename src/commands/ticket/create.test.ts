@@ -185,7 +185,7 @@ describe('createTicket Pure Function', () => {
       expect(result.message).toContain('Location:'); // File location info
     });
 
-    it('should include file location in message', async () => {
+    it('should show local file location for LocalTicketService', async () => {
       // This test will fail until createTicket function is implemented
       const args: CreateTicketArgs = {
         title: 'Location Test'
@@ -194,6 +194,34 @@ describe('createTicket Pure Function', () => {
       const result = await createTicket(args, services);
 
       expect(result.message).toMatch(/Location:.*\.tickets\/todo\/0001-location-test\.md/);
+    });
+
+    it('should show GitHub URL location for GitHubTicketService', async () => {
+      // Mock GitHubTicketService
+      const mockGitHubService = {
+        createTicket: async () => ({
+          id: '#82',
+          title: 'GitHub Location Test',
+          status: 'todo',
+          priority: 'medium',
+          created: '2025-01-01T00:00:00Z',
+          updated: '2025-01-01T00:00:00Z',
+          labels: []
+        }),
+        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
+      };
+
+      const githubServices: Services = {
+        ticketService: mockGitHubService as any
+      };
+
+      const args: CreateTicketArgs = {
+        title: 'GitHub Location Test'
+      };
+
+      const result = await createTicket(args, githubServices);
+
+      expect(result.message).toContain('Location: https://github.com/testowner/testrepo/issues/82');
     });
   });
 

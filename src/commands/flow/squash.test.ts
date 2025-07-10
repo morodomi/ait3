@@ -7,6 +7,12 @@ import { squashPhase } from './squash.js';
 import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
 import type { Services } from '@/common/types.js';
 
+// Helper to strip ANSI color codes for testing
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 describe('squashPhase Pure Function', () => {
   let testDir: string;
   let services: Services;
@@ -71,6 +77,43 @@ describe('squashPhase Pure Function', () => {
       
       // Should not contain auto-completion message
       expect(result.message).not.toContain('automatically complete');
+    });
+
+    it('should show local file location for LocalTicketService', async () => {
+      // Create and start ticket
+      await services.ticketService.createTicket('Location Test Squash');
+      await services.ticketService.startTicket('0001');
+
+      const result = await squashPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      expect(stripAnsi(result.message)).toContain('LOCATION: Ticket location: .tickets/done/0001-location-test-squash.md');
+    });
+
+    it('should show GitHub URL location for GitHubTicketService', async () => {
+      // Mock GitHubTicketService
+      const mockGitHubService = {
+        getTicket: async () => ({
+          id: '#82',
+          title: 'GitHub Squash Test',
+          status: 'done',
+          priority: 'medium',
+          created: '2025-01-01T00:00:00Z',
+          updated: '2025-01-01T00:00:00Z',
+          labels: []
+        }),
+        completeTicket: async () => {},
+        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
+      };
+
+      const githubServices: Services = {
+        ticketService: mockGitHubService as any
+      };
+
+      const result = await squashPhase({ ticketId: '82' }, githubServices);
+
+      expect(result.success).toBe(true);
+      expect(stripAnsi(result.message)).toContain('LOCATION: Ticket location: https://github.com/testowner/testrepo/issues/82');
     });
   });
 

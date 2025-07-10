@@ -1,9 +1,10 @@
-import type { Services, CLIResult } from '../../common/types.js';
+import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils, IDUtils } from '../../common/utils.js';
-import { getTicketLocation, generateCommitMessage, formatTicketHeader, getTicketOrThrow } from '../../common/flow-utils.js';
+import { generateCommitMessage, formatTicketHeader, getTicketOrThrow } from '../../common/flow-utils.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 
 export interface RedArgs {
   ticketId: string;
@@ -48,12 +49,12 @@ export async function redPhase(
 
   // Handle interactive mode
   if (interactive) {
-    return generateInteractiveOutput(ticket, testCases, dryRun);
+    return generateInteractiveOutput(ticket, testCases, dryRun, services);
   }
 
   // Handle dry run mode
   if (dryRun) {
-    return generateDryRunOutput(ticket, type, testCases);
+    return generateDryRunOutput(ticket, type, testCases, services);
   }
 
   // Generate test files based on type
@@ -83,12 +84,12 @@ export async function redPhase(
 
   // Get ticket title for better formatting
   const ticketTitle = ticket.title || 'Feature';
-  const ticketLocation = getTicketLocation(ticketId, ticketTitle, 'doing');
+  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
 
   return {
     success: true,
     message: `
-${formatTicketHeader(ticketId, ticketTitle, 'RED Phase')}${statusWarning}
+${formatTicketHeader(ticketId, ticketTitle, 'RED Phase', ticket, services)}${statusWarning}
 
 ${STYLES.bold('Claude Code Instructions')}:
 1. Read ticket: ${STYLES.info(ticketLocation)}
@@ -150,14 +151,14 @@ function generateIntegrationTestPath(ticket: { title: string }): string {
   return `tests/integration/cli/flow/${featureName}.integration.test.ts`;
 }
 
-function generateInteractiveOutput(ticket: { id: string; title: string }, testCases: string[], dryRun: boolean): CLIResult {
+function generateInteractiveOutput(ticket: Ticket, testCases: string[], dryRun: boolean, services: Services): CLIResult {
   const prefix = dryRun ? `${STYLES.warning('[DRY RUN]')} ` : '';
-  const ticketLocation = getTicketLocation(ticket.id, ticket.title, 'doing');
+  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
   
   return {
     success: true,
     message: `
-${prefix}${formatTicketHeader(ticket.id, ticket.title, 'RED Phase')}
+${prefix}${formatTicketHeader(ticket.id, ticket.title, 'RED Phase', ticket, services)}
 
 ${STYLES.bold('Claude Code Instructions')}:
 1. Read ticket: ${STYLES.info(ticketLocation)}
@@ -178,9 +179,9 @@ ${STYLES.muted('Interactive mode: Select an option to continue')}
   };
 }
 
-function generateDryRunOutput(ticket: any, type: string, testCases: string[]): CLIResult {
+function generateDryRunOutput(ticket: Ticket, type: string, testCases: string[], services: Services): CLIResult {
   const files: string[] = [];
-  const ticketLocation = getTicketLocation(ticket.id, ticket.title, 'doing');
+  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
   
   if (type === 'unit' || type === 'both') {
     files.push(`- ${generateUnitTestPath(ticket)}`);

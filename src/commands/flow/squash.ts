@@ -3,6 +3,7 @@ import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils, IDUtils } from '../../common/utils.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 
 export interface SquashArgs {
   ticketId: string;
@@ -58,6 +59,12 @@ export async function squashPhase(
       
       // Update ticket status for display
       ticket.status = 'done';
+      
+      // Get updated ticket for location display
+      const updatedTicket = await services.ticketService.getTicket(ticketId);
+      if (updatedTicket) {
+        ticket = updatedTicket;
+      }
     } catch (completeError) {
       // If auto-complete fails, abort the squash operation
       throw new Error(`Failed to auto-complete ticket: ${completeError instanceof Error ? completeError.message : 'Unknown error'}`);
@@ -69,9 +76,8 @@ export async function squashPhase(
     return generateDryRunOutput(ticket, args);
   }
 
-  // Generate Git command suggestions with ticket location
-  const ticketSlug = SlugUtils.titleToSlug(ticket.title);
-  const ticketLocation = `.tickets/done/${ticketId}-${ticketSlug}.md`;
+  // Generate Git command suggestions with ticket location  
+  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
   
   const locationInfo = `${STYLES.bold('SQUASH Phase')} for Ticket #${ticketId}: ${ticket.title}\n` +
                       `${STYLES.info('LOCATION: Ticket location')}: ${STYLES.info(ticketLocation)}\n`;

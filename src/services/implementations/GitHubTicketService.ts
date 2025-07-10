@@ -49,6 +49,16 @@ export class GitHubTicketService implements TicketService {
     };
   }
 
+  /**
+   * Get GitHub configuration for URL generation
+   */
+  getConfig(): { owner: string; repo: string } {
+    return {
+      owner: this.config.owner,
+      repo: this.config.repo
+    };
+  }
+
   async createTicket(title: string, options?: CreateTicketOptions): Promise<Ticket> {
     const body = this.formatTicketBody(options);
     

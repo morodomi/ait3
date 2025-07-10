@@ -2,7 +2,8 @@ import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { IDUtils } from '../../common/utils.js';
-import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
+import { generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 
 const INVALID_TICKET_ID_MESSAGE = 'Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)';
 
@@ -44,25 +45,25 @@ export async function planPhase(
 
   switch (mode) {
   case 'express':
-    return expressPlan(ticketId, featureName, ticket, requirements, ticketInfo);
+    return expressPlan(ticketId, featureName, ticket, services, requirements, ticketInfo);
   case 'manual':
-    return manualPlan(ticketId, featureName, ticket, ticketInfo);
+    return manualPlan(ticketId, featureName, ticket, services, ticketInfo);
   case 'guided':
   default:
-    return guidedPlan(ticketId, featureName, ticket, requirements, ticketInfo);
+    return guidedPlan(ticketId, featureName, ticket, services, requirements, ticketInfo);
   }
 }
 
-function expressPlan(ticketId: string, featureName: string, ticket: Ticket, requirements?: string[], _ticketInfo?: string): CLIResult {
+function expressPlan(ticketId: string, featureName: string, ticket: Ticket, services: Services, requirements?: string[], _ticketInfo?: string): CLIResult {
   const requirementsText = requirements?.length 
     ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
-  const ticketLocation = getTicketLocation(ticketId, featureName, 'doing', ticket);
+  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
 
   return {
     success: true,
     message: `
-${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Express)')}${requirementsText}
+${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Express)', ticket, services)}${requirementsText}
 
 ${STYLES.bold('BRAIN: Claude Code Quick Analysis')}:
 1. Read ticket: ${STYLES.info(ticketLocation)}
@@ -83,13 +84,13 @@ ${STYLES.muted('Express mode: ait3 flow red after quick approval')}
   };
 }
 
-function manualPlan(ticketId: string, featureName: string, ticket: Ticket, _ticketInfo?: string): CLIResult {
-  const ticketLocation = getTicketLocation(ticketId, featureName, 'doing', ticket);
+function manualPlan(ticketId: string, featureName: string, ticket: Ticket, services: Services, _ticketInfo?: string): CLIResult {
+  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
 
   return {
     success: true,
     message: `
-${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Manual)')}
+${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Manual)', ticket, services)}
 
 ${STYLES.bold('CYCLE: Dialectical Process')}:
 ├─ ${STYLES.info('Claude proposes')} → Generate technical approach with clear rationale
@@ -120,16 +121,16 @@ ${STYLES.muted('Manual mode: Proceed to ait3 flow red after decision')}
   };
 }
 
-function guidedPlan(ticketId: string, featureName: string, ticket: Ticket, requirements?: string[], _ticketInfo?: string): CLIResult {
+function guidedPlan(ticketId: string, featureName: string, ticket: Ticket, services: Services, requirements?: string[], _ticketInfo?: string): CLIResult {
   const requirementsSection = requirements?.length 
     ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
-  const ticketLocation = getTicketLocation(ticketId, featureName, 'doing', ticket);
+  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
 
   return {
     success: true,
     message: `
-${formatTicketHeader(ticketId, featureName, 'PLANNING Phase')}${requirementsSection}
+${formatTicketHeader(ticketId, featureName, 'PLANNING Phase', ticket, services)}${requirementsSection}
 
 ${STYLES.bold('Claude Code Instructions')}:
 1. Read ticket: ${STYLES.info(ticketLocation)}

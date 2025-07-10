@@ -2,6 +2,7 @@ import type { CreateTicketArgs, Services, CLIResult } from '../../common/types.j
 import { ValidationError } from '../../common/errors.js';
 import { TICKET_CONSTANTS } from '../../common/constants.js';
 import { STYLES } from '../../common/styles.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 
 export async function createTicket(
   args: CreateTicketArgs,
@@ -36,9 +37,6 @@ export async function createTicket(
       labels: args.labels || []
     });
 
-    // Generate filename slug for location display
-    const slug = generateSlug(ticket.title);
-
     // Create user-friendly colored output
     const messageParts = [
       STYLES.success('SUCCESS: Ticket created successfully'),
@@ -57,9 +55,10 @@ export async function createTicket(
       messageParts.push(`   Labels: ${ticket.labels.join(', ')}`);
     }
 
-    // Add file location
+    // Add location (Local file or GitHub URL)
+    const locationDisplay = formatTicketLocation(ticket, services.ticketService);
     messageParts.push(
-      STYLES.muted(`   Location: .tickets/${ticket.status}/${ticket.id}-${slug}.md`)
+      STYLES.muted(`   Location: ${locationDisplay}`)
     );
 
     return {
@@ -77,14 +76,4 @@ export async function createTicket(
     // Wrap other errors with context
     throw new Error(`Failed to create ticket: ${error instanceof Error ? error.message : String(error)}`);
   }
-}
-
-// Helper function to generate URL-safe slug from title
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')         // Replace spaces with hyphens
-    .replace(/-+/g, '-')          // Replace multiple hyphens with single
-    .replace(/^-|-$/g, '');       // Remove leading/trailing hyphens
 }

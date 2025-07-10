@@ -2,6 +2,7 @@ import type { CLIResult, Services, CompleteTicketArgs } from '../../common/types
 import { ValidationError, TicketNotFoundError, TicketNotStartedError, TicketAlreadyCompletedError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { IDUtils } from '../../common/utils.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 
 /**
  * Complete a ticket by moving it from 'doing' to 'done' status
@@ -32,9 +33,16 @@ export async function completeTicket(
       STYLES.success(`SUCCESS: Completed ticket #${id}`) + (ticket ? `: ${ticketTitle}` : ''),
       '',
       STYLES.muted('   Status updated: ') + STYLES.warning('doing') + STYLES.muted(' → ') + STYLES.success('done'),
-      STYLES.muted('   Moved from doing → done'),
-      ''
+      STYLES.muted('   Moved from doing → done')
     ];
+
+    // Add location information
+    if (ticket) {
+      const locationDisplay = formatTicketLocation(ticket, services.ticketService);
+      messageParts.push(`   Location: ${STYLES.info(locationDisplay)}`);
+    }
+    
+    messageParts.push('');
 
     return {
       success: true,

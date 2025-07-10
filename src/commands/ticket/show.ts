@@ -3,6 +3,7 @@ import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { getStatusColor, getPriorityColor } from '../../common/table-utils.js';
 import { TimeUtils, IDUtils } from '../../common/utils.js';
 import { STYLES } from '../../common/styles.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 
 export async function showTicket(
   args: ShowTicketArgs,
@@ -47,6 +48,10 @@ export async function showTicket(
       ? ticket.labels.join(', ')
       : '(none)';
     messageParts.push(formatMetadataField('Labels', labelsText));
+
+    // Add location information
+    const locationDisplay = formatTicketLocation(ticket, services.ticketService);
+    messageParts.push(formatMetadataField('Location', locationDisplay));
 
     // Separator
     messageParts.push('');

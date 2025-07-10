@@ -7,6 +7,12 @@ import { redPhase } from './red.js';
 import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
 import type { Services } from '@/common/types.js';
 
+// Helper to strip ANSI color codes for testing
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 describe('redPhase Pure Function', () => {
   let testDir: string;
   let services: Services;
@@ -54,6 +60,43 @@ describe('redPhase Pure Function', () => {
       expect(result.message).toContain('Unit test generated');
       expect(result.message).toContain('src/commands/');
       expect(result.message).toContain('0% pass rate');
+    });
+
+    it('should show local file location for LocalTicketService', async () => {
+      // Create test ticket
+      await services.ticketService.createTicket('Location Test Red', {
+        priority: 'high'
+      });
+
+      const result = await redPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toMatch(/Location.*\.tickets\/todo\/0001-location-test-red\.md/);
+    });
+
+    it('should show GitHub URL location for GitHubTicketService', async () => {
+      // Mock GitHubTicketService
+      const mockGitHubService = {
+        getTicket: async () => ({
+          id: '#82',
+          title: 'GitHub Red Test',
+          status: 'todo',
+          priority: 'medium',
+          created: '2025-01-01T00:00:00Z',
+          updated: '2025-01-01T00:00:00Z',
+          labels: []
+        }),
+        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
+      };
+
+      const githubServices: Services = {
+        ticketService: mockGitHubService as any
+      };
+
+      const result = await redPhase({ ticketId: '82' }, githubServices);
+
+      expect(result.success).toBe(true);
+      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
     });
   });
 
