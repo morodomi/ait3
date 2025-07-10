@@ -1,6 +1,17 @@
-import { initClaudeMdCommand } from './claude-md.js';
-import { installCommand } from '../install/command.js';
 import type { CLIResult } from '../../common/types.js';
+import { STYLES } from '../../common/styles.js';
+import { ensureMultipleDirectories } from '../../common/file-operations.js';
+import { writeFile } from 'fs/promises';
+import { 
+  generateComprehensiveTemplate, 
+  generateAiGuidelinesSection,
+  type TemplateVariables 
+} from '../../common/claude-md-templates.js';
+import { 
+  AIT3_METHODOLOGY_TEMPLATE,
+  AIT3_INIT_GUIDE_TEMPLATE 
+} from '../../common/ait3-templates.js';
+import { analyzeProject, type ProjectAnalysis } from '../../common/project-analyzer.js';
 
 interface InitArgs {
   subcommand?: string;
@@ -10,69 +21,125 @@ interface InitArgs {
   output?: string;
 }
 
-const CLAUDE_MD_INSTRUCTIONS = `
-
-Next steps to generate CLAUDE.md:
-1. Launch Claude Code in your terminal: claude
-2. In Claude Code, run: /ait3-init
-3. Follow the interactive guide to analyze your project and generate CLAUDE.md
-
-The ait3-init guide will help you:
-- Analyze your project structure and dependencies
-- Detect build, test, and lint commands
-- Understand your business logic
-- Create a comprehensive CLAUDE.md file`;
 
 /**
- * Handles the result of installing the ait3-init command guide
- */
-function handleInstallResult(installResult: CLIResult): CLIResult {
-  // If the guide already exists (not using force), still show instructions
-  if (!installResult.success && installResult.message.includes('already exists')) {
-    return {
-      success: true,
-      message: installResult.message + CLAUDE_MD_INSTRUCTIONS
-    };
-  }
-  
-  if (!installResult.success) {
-    return installResult;
-  }
-
-  return {
-    success: true,
-    message: installResult.message + CLAUDE_MD_INSTRUCTIONS
-  };
-}
-
-/**
- * Main init command router
- * Handles: ait3 init [subcommand]
+ * Main init command - simplified to generate 3 files
+ * No subcommands, always overwrites, Git-friendly
  */
 export async function initCommand(args: InitArgs): Promise<CLIResult> {
-  const { subcommand } = args;
-
-  switch (subcommand) {
-  case 'claude-md':
-    return initClaudeMdCommand(args);
-    
-  case undefined: {
-    // Default behavior: install ait3-init guide
-    const installResult = await installCommand({
-      name: 'ait3-init',
-      force: args.force
-    });
-    
-    return handleInstallResult(installResult);
-  }
-    
-  default:
+  // Reject subcommands - they are no longer supported
+  if (args.subcommand) {
     return {
       success: false,
-      message: `Unknown init subcommand: ${subcommand}
+      message: `Subcommands are no longer supported.
+Use 'ait3 init' to generate all required files.
 
-Available subcommands:
-  claude-md    Comprehensive project analysis and CLAUDE.md generation`
+New workflow:
+1. ait3 init
+2. claude
+3. /ait3-init`
     };
   }
+
+  try {
+    // 1. Analyze project
+    const analysis = await analyzeProject();
+    
+    // 2. Create directories
+    await ensureMultipleDirectories(['.claude/commands']);
+    
+    // 3. Generate all 3 files in parallel
+    await Promise.all([
+      generateClaudeAit3Md(analysis),
+      generateMinimalClaudeMd(analysis),
+      generateAit3InitCommand()
+    ]);
+    
+    // 4. Success message
+    return {
+      success: true,
+      message: formatSuccessMessage(analysis)
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `Failed to initialize: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
+
+async function generateClaudeAit3Md(analysis: ProjectAnalysis): Promise<void> {
+  const templateVariables: TemplateVariables = {
+    projectName: analysis.projectName,
+    language: analysis.language,
+    framework: analysis.framework,
+    architecture: analysis.architecture,
+    testFramework: analysis.testFramework,
+    buildSystem: analysis.buildSystem,
+    commands: analysis.commands
+  };
+  
+  // Generate comprehensive template with AIT³ methodology
+  let content = generateComprehensiveTemplate(templateVariables);
+  
+  // Add AI guidelines
+  content += '\n\n' + generateAiGuidelinesSection();
+  
+  // Add AIT³ methodology
+  content += AIT3_METHODOLOGY_TEMPLATE;
+  
+  await writeFile('CLAUDE.ait3.md', content, 'utf-8');
+}
+
+async function generateMinimalClaudeMd(analysis: ProjectAnalysis): Promise<void> {
+  const content = `# ${analysis.projectName}
+
+## Quick Start
+- **Project type**: ${analysis.language}
+- **Language**: ${analysis.language}
+- **Framework**: ${analysis.framework}
+- **Test runner**: ${analysis.testFramework}
+
+## Commands
+\`\`\`bash
+${analysis.commands.install}
+${analysis.commands.test}
+${analysis.commands.build}
+${analysis.commands.dev}
+\`\`\`
+
+## Next Steps
+Run \`/ait3-init\` to generate a comprehensive CLAUDE.md with AIT³ methodology integrated.
+`;
+  
+  await writeFile('.claude/CLAUDE.md', content, 'utf-8');
+}
+
+async function generateAit3InitCommand(): Promise<void> {
+  await writeFile('.claude/commands/ait3-init', AIT3_INIT_GUIDE_TEMPLATE, 'utf-8');
+}
+
+function formatSuccessMessage(analysis: ProjectAnalysis): string {
+  const messages: string[] = [];
+  
+  messages.push(`${STYLES.success('SUCCESS:')} 3 files generated`);
+  messages.push('');
+  
+  if (analysis.language !== 'Unknown') {
+    messages.push(`${STYLES.info('Detected:')} ${analysis.language} project`);
+  }
+  
+  messages.push('');
+  messages.push('Files created:');
+  messages.push('  - CLAUDE.ait3.md (temporary template)');
+  messages.push('  - .claude/CLAUDE.md (minimal working version)');
+  messages.push('  - .claude/commands/ait3-init (integration guide)');
+  messages.push('');
+  messages.push('Next steps:');
+  messages.push('  1. Launch Claude Code: claude');
+  messages.push('  2. Run: /ait3-init');
+  messages.push('  3. Delete CLAUDE.ait3.md after integration');
+  
+  return messages.join('\n');
 }
