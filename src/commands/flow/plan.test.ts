@@ -109,7 +109,31 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toMatch(/Location.*\.tickets\/todo\/0001-location-test\.md/);
+      expect(result.message).toMatch(/LOCATION.*\.tickets\/todo\/0001-location-test\.md/);
+    });
+
+    it('should use standardized prefixes', async () => {
+      // Create a test ticket
+      await services.ticketService.createTicket('Prefix Test', {
+        priority: 'medium'
+      });
+
+      const result = await planPhase(
+        { 
+          ticketId: '0001',
+          mode: 'guided' 
+        },
+        services
+      );
+
+      expect(result.success).toBe(true);
+      const strippedMessage = stripAnsi(result.message);
+      
+      // Should use TODO: for AI instructions
+      expect(strippedMessage).toContain('TODO:');
+      expect(strippedMessage).not.toContain('LIST:');
+      expect(strippedMessage).not.toContain('Next Action:');
+      expect(strippedMessage).not.toContain('Next Action');
     });
 
     it('should show GitHub URL location for GitHubTicketService', async () => {
@@ -140,7 +164,7 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
+      expect(stripAnsi(result.message)).toContain('LOCATION: https://github.com/testowner/testrepo/issues/82');
     });
 
     it('should handle missing ticket ID gracefully', async () => {
@@ -298,7 +322,7 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Location');
+      expect(result.message).toContain('LOCATION');
       expect(result.message).toContain('.tickets/doing/0001-');
     });
 
@@ -315,7 +339,7 @@ describe('planPhase Pure Function', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Next Action');
+      expect(result.message).toContain('TODO:');
       expect(result.message).toContain('├─ Analyze ticket:');
       expect(result.message).toContain('│  └─ Read');
       expect(result.message).toContain('.tickets/todo/0001-test-feature.md');

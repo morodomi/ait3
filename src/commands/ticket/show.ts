@@ -32,7 +32,7 @@ export async function showTicket(
       '',
       
       // Metadata section
-      STYLES.bold('Details:'),
+      STYLES.bold('INFO:'),
       formatMetadataField('Status', ticket.status, getStatusColor(ticket.status)),
       formatMetadataField('Priority', ticket.priority, getPriorityColor(ticket.priority)),
       formatMetadataField('Created', TimeUtils.formatDate(ticket.created)),
@@ -51,7 +51,7 @@ export async function showTicket(
 
     // Add location information
     const locationDisplay = formatTicketLocation(ticket, services.ticketService);
-    messageParts.push(formatMetadataField('Location', locationDisplay));
+    messageParts.push(formatMetadataField('LOCATION', locationDisplay));
 
     // Separator
     messageParts.push('');

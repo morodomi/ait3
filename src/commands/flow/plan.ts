@@ -41,7 +41,7 @@ export async function planPhase(
   const featureName = titleToFeatureName(ticket.title);
 
   // Create ticket info for display
-  const ticketInfo = `\n${STYLES.info('LIST: Ticket #' + ticketId)}: ${ticket.title}`;
+  const ticketInfo = `\n${STYLES.info('INFO: Ticket #' + ticketId)}: ${ticket.title}`;
 
   switch (mode) {
   case 'express':
@@ -56,7 +56,7 @@ export async function planPhase(
 
 function expressPlan(ticketId: string, featureName: string, ticket: Ticket, services: Services, requirements?: string[], _ticketInfo?: string): CLIResult {
   const requirementsText = requirements?.length 
-    ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
+    ? `\n${STYLES.info('INFO: Requirements')}: ${requirements.join(', ')}`
     : '';
   const ticketLocation = formatTicketLocation(ticket, services.ticketService);
 
@@ -65,13 +65,13 @@ function expressPlan(ticketId: string, featureName: string, ticket: Ticket, serv
     message: `
 ${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Express)', ticket, services)}${requirementsText}
 
-${STYLES.bold('BRAIN: Claude Code Quick Analysis')}:
+${STYLES.bold('INFO: Claude Code Quick Analysis')}:
 1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Analyze existing patterns in codebase
 3. Propose minimal viable implementation
 4. Skip Gemini analysis (express mode)
 
-${STYLES.info('Next Action')}:
+${STYLES.info('TODO: Next actions for AI')}:
 ├─ Quick analysis:
 │  └─ Read ${STYLES.info(ticketLocation)}
 ├─ Rapid proposal:
@@ -92,19 +92,19 @@ function manualPlan(ticketId: string, featureName: string, ticket: Ticket, servi
     message: `
 ${formatTicketHeader(ticketId, featureName, 'PLANNING Phase (Manual)', ticket, services)}
 
-${STYLES.bold('CYCLE: Dialectical Process')}:
+${STYLES.bold('INFO: Dialectical Process')}:
 ├─ ${STYLES.info('Claude proposes')} → Generate technical approach with clear rationale
 ├─ ${STYLES.danger('Gemini refutes')} → Challenge assumptions and identify alternatives  
 └─ ${STYLES.success('Human decides')} → Synthesize evidence and make informed decisions
 
-${STYLES.bold('LIST: Manual Planning Steps')}:
+${STYLES.bold('INFO: Manual Planning Steps')}:
 1. Read ticket: ${STYLES.info(ticketLocation)}
 2. Research existing approaches and patterns
 3. Consult: ${STYLES.info(`gemini -p "@src/ @CLAUDE.md @.tickets/doing/${ticketId}-*.md Critique approach"`)}
 4. Document architectural decisions
 5. Update ticket with reasoning
 
-${STYLES.info('Next Action')}:
+${STYLES.info('TODO: Next actions for AI')}:
 ├─ Research approaches:
 │  └─ Investigate existing patterns
 ├─ Create proposal:
@@ -123,7 +123,7 @@ ${STYLES.muted('Manual mode: Proceed to ait3 flow red after decision')}
 
 function guidedPlan(ticketId: string, featureName: string, ticket: Ticket, services: Services, requirements?: string[], _ticketInfo?: string): CLIResult {
   const requirementsSection = requirements?.length 
-    ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
+    ? `\n${STYLES.info('INFO: Requirements')}: ${requirements.join(', ')}`
     : '';
   const ticketLocation = formatTicketLocation(ticket, services.ticketService);
 
@@ -148,7 +148,7 @@ ${STYLES.bold('Claude Code Instructions')}:
 
 4. Present proposal for human decision
 
-${STYLES.info('Next Action')}:
+${STYLES.info('TODO: Next actions for AI')}:
 ├─ Analyze ticket:
 │  └─ Read ${STYLES.info(ticketLocation)}
 ├─ Research codebase:

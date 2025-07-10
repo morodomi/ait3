@@ -71,7 +71,31 @@ describe('redPhase Pure Function', () => {
       const result = await redPhase({ ticketId: '0001' }, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toMatch(/Location.*\.tickets\/todo\/0001-location-test-red\.md/);
+      expect(result.message).toMatch(/LOCATION.*\.tickets\/todo\/0001-location-test-red\.md/);
+    });
+
+    it('should use standardized prefixes', async () => {
+      // Create test ticket
+      await services.ticketService.createTicket('Prefix Test Red', {
+        priority: 'high'
+      });
+
+      const result = await redPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      const strippedMessage = stripAnsi(result.message);
+      
+      // Should use INFO: instead of non-standard prefixes
+      expect(strippedMessage).toContain('INFO:');
+      expect(strippedMessage).not.toContain('CHECK:');
+      expect(strippedMessage).not.toContain('CROSS:');
+      
+      // Should use TODO: for AI instructions
+      expect(strippedMessage).toContain('TODO:');
+      expect(strippedMessage).not.toContain('Next Action:');
+      
+      // Should use LOCATION: for test locations
+      expect(strippedMessage).toContain('LOCATION:');
     });
 
     it('should show GitHub URL location for GitHubTicketService', async () => {
@@ -96,7 +120,7 @@ describe('redPhase Pure Function', () => {
       const result = await redPhase({ ticketId: '82' }, githubServices);
 
       expect(result.success).toBe(true);
-      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
+      expect(stripAnsi(result.message)).toContain('LOCATION: https://github.com/testowner/testrepo/issues/82');
     });
   });
 
