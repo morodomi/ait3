@@ -8,16 +8,33 @@ AIT³ implements a disciplined AI + Ticket + Test + Tool driven development work
 \`\`\`bash
 ait3 ticket create "Feature name"     # Create new ticket
 ait3 ticket list                      # List all tickets
+ait3 ticket show <id>                 # View ticket details
 ait3 ticket start <id>                # Start working on ticket
 ait3 ticket complete <id>             # Mark ticket as done
-ait3 ticket show <id>                 # View ticket details
+ait3 ticket undo <id>                 # Undo ticket to previous state
+ait3 ticket delete <id>               # Delete a ticket (with --dry-run option)
+\`\`\`
+
+### Setup & Configuration
+\`\`\`bash
+ait3 setup ticket github              # Configure GitHub Issues backend
+ait3 setup ticket local               # Configure local file backend
+ait3 migrate local github             # Migrate tickets between backends
+ait3 migrate github local --tickets "1,3-5"  # Migrate specific tickets
+\`\`\`
+
+### Project Analysis & Installation
+\`\`\`bash
+ait3 init claude-md                   # Generate CLAUDE.md with project analysis
+ait3 install command                  # Install Claude Code command guides
+ait3 analyze project                  # Analyze project structure and dependencies
 \`\`\`
 
 ### AIT³ Workflow (MANDATORY SEQUENCE)
 
 #### 1. PLANNING Phase - Socratic Dialogue
 \`\`\`bash
-ait3 flow plan <featureName> [options]
+ait3 flow plan <ticketId> [options]
 \`\`\`
 **Purpose**: Validate approach through dialectical reasoning BEFORE any implementation.
 
@@ -106,7 +123,7 @@ ait3 ticket create "Add user authentication"
 ait3 ticket start 0001
 
 # 2. PLANNING - Validate approach
-ait3 flow plan "user-auth"
+ait3 flow plan 0001
 # Claude proposes JWT approach
 # Challenge: gemini -p "@src/ Critique JWT auth approach"
 # Human decides based on both perspectives
@@ -151,6 +168,36 @@ ait3 ticket complete 0001
 - Commit messages should include decision rationale
 - Review Gemini critiques seriously, even if you disagree
 
+## GitHub Integration (v1.1+)
+
+### Initial Setup
+\`\`\`bash
+# Configure GitHub Issues backend
+ait3 setup ticket github
+
+# Auto-detects repository from git remote
+# Validates gh CLI authentication
+# Stores configuration in .tickets/config.json
+\`\`\`
+
+### Ticket Backend Switching
+\`\`\`bash
+# Switch to GitHub Issues
+ait3 setup ticket github
+
+# Switch back to local files
+ait3 setup ticket local
+
+# Migrate existing tickets
+ait3 migrate local github        # All tickets
+ait3 migrate local github --tickets "1,3-5"  # Specific tickets
+\`\`\`
+
+### Requirements
+- GitHub CLI (\`gh\`) installed and authenticated
+- Repository access permissions
+- Issues enabled on GitHub repository
+
 ## Integration Tips
 
 - Works with any language/framework
@@ -158,6 +205,7 @@ ait3 ticket complete 0001
 - Integrates with standard Git workflows
 - Supports CI/CD pipelines
 - Language-agnostic principles
+- Seamless local ↔ GitHub ticket management
 
 Remember: The goal is thoughtful, evidence-based development through structured collaboration between human wisdom and AI capabilities.
 `;

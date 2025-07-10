@@ -350,6 +350,66 @@ version = "0.1.0"
     });
   });
 
+  describe('CLAUDE.md generation', () => {
+    it('should generate CLAUDE.md directly when it does not exist', async () => {
+      await writeFile('package.json', JSON.stringify({ name: 'test-project' }));
+      
+      const args = {};
+      
+      const result = await initClaudeMdCommand(args);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Created CLAUDE.md');
+      expect(result.message).toContain('Created CLAUDE_MD_GUIDE.md');
+      expect(result.message).toContain('Review and customize CLAUDE.md with Claude Code');
+      
+      // Check CLAUDE.md was created
+      const claudeMdPath = join(testDir, 'CLAUDE.md');
+      await expect(access(claudeMdPath)).resolves.toBeUndefined();
+      
+      // Check guide was created
+      const guidePath = join(testDir, 'CLAUDE_MD_GUIDE.md');
+      await expect(access(guidePath)).resolves.toBeUndefined();
+      
+      const guideContent = await readFile(guidePath, 'utf-8');
+      expect(guideContent).toContain('CLAUDE.md Customization Guide');
+      expect(guideContent).toContain('analyze this project more deeply');
+    });
+
+    it('should create merge files when CLAUDE.md already exists', async () => {
+      // Create existing CLAUDE.md
+      await writeFile('CLAUDE.md', '# Existing CLAUDE.md\n\nThis is the existing content.');
+      
+      await writeFile('package.json', JSON.stringify({ name: 'test-project' }));
+      
+      const args = {};
+      
+      const result = await initClaudeMdCommand(args);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Existing CLAUDE.md detected');
+      expect(result.message).toContain('Created CLAUDE.md.existing (backup)');
+      expect(result.message).toContain('Created CLAUDE.md.new (new template)');
+      expect(result.message).toContain('Created CLAUDE_MD_MERGE_GUIDE.md');
+      expect(result.message).toContain('Review the files and merge them with Claude Code');
+      
+      // Check all files were created
+      await expect(access(join(testDir, 'CLAUDE.md.existing'))).resolves.toBeUndefined();
+      await expect(access(join(testDir, 'CLAUDE.md.new'))).resolves.toBeUndefined();
+      await expect(access(join(testDir, 'CLAUDE_MD_MERGE_GUIDE.md'))).resolves.toBeUndefined();
+      
+      // Check merge guide content
+      const mergeGuide = await readFile(join(testDir, 'CLAUDE_MD_MERGE_GUIDE.md'), 'utf-8');
+      expect(mergeGuide).toContain('CLAUDE.md Merge Instructions');
+      expect(mergeGuide).toContain('merge CLAUDE.md.existing and CLAUDE.md.new');
+      
+      // Check existing content was preserved
+      const existingBackup = await readFile(join(testDir, 'CLAUDE.md.existing'), 'utf-8');
+      expect(existingBackup).toContain('Existing CLAUDE.md');
+      expect(existingBackup).toContain('This is the existing content');
+    });
+  });
+
   describe('AIT³ integration', () => {
     it('should include AIT³ workflow in template', async () => {
       await writeFile('package.json', JSON.stringify({ name: 'test-project' }));

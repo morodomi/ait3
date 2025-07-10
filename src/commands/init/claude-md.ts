@@ -94,6 +94,24 @@ export async function initClaudeMdCommand(args: InitClaudeMdArgs): Promise<CLIRe
     messages.push(`${STYLES.info('INFO:')} ${analysis.commands.test}`);
     messages.push(`${STYLES.info('INFO:')} ${analysis.commands.build}`);
     
+    // Add CLAUDE.md status
+    try {
+      await access('CLAUDE.md.existing');
+      messages.push('');
+      messages.push(`${STYLES.warning('⚠')} Existing CLAUDE.md detected`);
+      messages.push(`${STYLES.success('SUCCESS:')} Created CLAUDE.md.existing (backup)`);
+      messages.push(`${STYLES.success('SUCCESS:')} Created CLAUDE.md.new (new template)`);
+      messages.push(`${STYLES.success('SUCCESS:')} Created CLAUDE_MD_MERGE_GUIDE.md`);
+      messages.push('');
+      messages.push(`${STYLES.info('Next step:')} Review the files and merge them with Claude Code`);
+    } catch {
+      messages.push('');
+      messages.push(`${STYLES.success('SUCCESS:')} Created CLAUDE.md`);
+      messages.push(`${STYLES.success('SUCCESS:')} Created CLAUDE_MD_GUIDE.md`);
+      messages.push('');
+      messages.push(`${STYLES.info('Next step:')} Review and customize CLAUDE.md with Claude Code`);
+    }
+    
     return {
       success: true,
       message: messages.join('\n')
@@ -409,5 +427,71 @@ async function generateClaudeMdTemplate(analysis: ProjectAnalysis): Promise<void
   // Add AI guidelines section
   templateContent += '\n\n' + generateAiGuidelinesSection();
   
+  // Check if CLAUDE.md already exists
+  let existingClaudeMd: string | null = null;
+  try {
+    existingClaudeMd = await readFile('CLAUDE.md', 'utf-8');
+  } catch {
+    // CLAUDE.md doesn't exist
+  }
+  
+  if (existingClaudeMd) {
+    // Save as separate files for comparison
+    await writeFile('CLAUDE.md.new', templateContent, 'utf-8');
+    await writeFile('CLAUDE.md.existing', existingClaudeMd, 'utf-8');
+    
+    // Add merge instructions
+    const mergeInstructions = `# CLAUDE.md Merge Instructions
+
+You have both an existing CLAUDE.md and a newly generated template.
+
+## Files Created:
+- **CLAUDE.md.existing**: Your current CLAUDE.md file
+- **CLAUDE.md.new**: Newly generated template based on project analysis
+- **docs/references/project-analysis.md**: Detailed project analysis
+
+## Next Steps:
+1. Review all three files
+2. Merge the best parts of both CLAUDE.md files
+3. Include project-specific knowledge from the existing file
+4. Add newly detected features from the analysis
+5. Save the final version as CLAUDE.md
+
+## Claude Code Command:
+After reviewing the files, you can ask Claude to merge them:
+"Please merge CLAUDE.md.existing and CLAUDE.md.new, keeping the best of both and incorporating the project analysis results."
+`;
+    
+    await writeFile('CLAUDE_MD_MERGE_GUIDE.md', mergeInstructions, 'utf-8');
+  } else {
+    // No existing CLAUDE.md, create it directly
+    await writeFile('CLAUDE.md', templateContent, 'utf-8');
+    
+    // Add customization guide
+    const customizationGuide = `# CLAUDE.md Customization Guide
+
+A new CLAUDE.md has been generated for your project.
+
+## Files Created:
+- **CLAUDE.md**: Initial template based on project analysis
+- **docs/references/project-analysis.md**: Detailed project analysis
+- **docs/references/detected-commands.md**: Detected project commands
+
+## Next Steps:
+1. Review the generated CLAUDE.md
+2. Add project-specific business logic details
+3. Include any special setup instructions
+4. Document non-obvious behaviors or gotchas
+5. Add team conventions and standards
+
+## Claude Code Command:
+You can ask Claude to enhance the CLAUDE.md:
+"Please analyze this project more deeply and enhance the CLAUDE.md with specific business logic, patterns, and important details I should know when working on this codebase."
+`;
+    
+    await writeFile('CLAUDE_MD_GUIDE.md', customizationGuide, 'utf-8');
+  }
+  
+  // Always save template for reference
   await writeFile('src/assets/templates/claude-md-template.md', templateContent, 'utf-8');
 }
