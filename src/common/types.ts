@@ -96,6 +96,11 @@ export interface UndoTicketArgs {
   dryRun?: boolean;
 }
 
+export interface DeleteTicketArgs {
+  id: string;
+  dryRun?: boolean;
+}
+
 // Migration related types
 export interface MigrateArgs {
   from: 'local' | 'github';

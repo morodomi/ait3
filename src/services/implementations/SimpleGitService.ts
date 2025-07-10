@@ -91,4 +91,26 @@ export class SimpleGitService implements GitService {
       throw new Error(`Git move failed: ${errorMessage}`);
     }
   }
+
+  async removeFile(filePath: string): Promise<void> {
+    try {
+      await this.git.raw(['rm', filePath]);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // Enhanced error classification for better debugging
+      if (errorMessage.includes('does not exist in index')) {
+        throw new Error(`Git file not tracked: ${filePath} is not under version control`);
+      }
+      if (errorMessage.includes('Permission denied')) {
+        throw new Error(`Permission denied: Cannot remove ${filePath}`);
+      }
+      if (errorMessage.includes('fatal: not a git repository')) {
+        throw new Error('Not a Git repository: Cannot use git rm outside a Git repository');
+      }
+      
+      // Re-throw original error with additional context
+      throw new Error(`Git remove failed: ${errorMessage}`);
+    }
+  }
 }

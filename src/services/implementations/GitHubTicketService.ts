@@ -1,7 +1,12 @@
 import { Octokit } from '@octokit/rest';
 import { execSync } from 'child_process';
+import { promisify } from 'util';
+import { exec } from 'child_process';
 import type { TicketService } from '../interfaces/TicketService.js';
 import type { Ticket, CreateTicketOptions } from '../../common/types.js';
+import { TicketNotFoundError } from '../../common/errors.js';
+
+const execAsync = promisify(exec);
 
 interface GitHubConfig {
   owner: string;
@@ -18,8 +23,10 @@ interface GitHubConfig {
 export class GitHubTicketService implements TicketService {
   private octokit: Octokit;
   private config: Required<Omit<GitHubConfig, 'useGhCli'>> & { useGhCli?: boolean };
+  private basePath: string;
 
-  constructor(config: GitHubConfig) {
+  constructor(config: GitHubConfig, basePath: string = process.cwd()) {
+    this.basePath = basePath;
     let authToken = config.token || process.env.GITHUB_TOKEN;
     
     // Try to get token from gh CLI if not provided
@@ -289,5 +296,39 @@ export class GitHubTicketService implements TicketService {
     }
     
     return issueNumber;
+  }
+
+  async deleteTicket(id: string): Promise<void> {
+    try {
+      const issueNumber = this.parseTicketId(id);
+      
+      // Use GitHub CLI to delete the issue
+      const { stdout } = await execAsync(
+        `gh api -X DELETE repos/${this.config.owner}/${this.config.repo}/issues/${issueNumber}`,
+        { cwd: this.basePath }
+      );
+      
+      // GitHub API doesn't actually delete issues, it just allows closing them
+      // We'll close the issue instead since deletion isn't supported
+      await execAsync(
+        `gh issue close ${issueNumber} --reason "not planned"`,
+        { cwd: this.basePath }
+      );
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('Not Found')) {
+        throw new TicketNotFoundError(id);
+      }
+      if (errorMessage.includes('Bad credentials') || errorMessage.includes('authentication')) {
+        throw new Error('GitHub authentication failed. Please run: gh auth login');
+      }
+      if (errorMessage.includes('permission')) {
+        throw new Error(`Insufficient permissions to delete issue #${id}`);
+      }
+      
+      throw new Error(`Failed to delete GitHub issue: ${errorMessage}`);
+    }
   }
 }
