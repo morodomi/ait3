@@ -22,93 +22,103 @@ describe('CLI Integration: ait3 init', () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
-  describe('default behavior (no subcommand)', () => {
-    it('should install ait3-init command guide', async () => {
+  describe('default behavior', () => {
+    it('should generate 3 files for Claude Code integration', async () => {
       const { stdout, stderr } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init');
 
       expect(stderr).toBe('');
-      expect(stdout).toContain('Installed');
+      expect(stdout).toContain('SUCCESS:');
+      expect(stdout).toContain('3 files generated');
+      expect(stdout).toContain('CLAUDE.ait3.md');
+      expect(stdout).toContain('.claude/CLAUDE.md');
       expect(stdout).toContain('.claude/commands/ait3-init');
-      expect(stdout).toContain('Next steps to generate CLAUDE.md:');
-      expect(stdout).toContain('1. Launch Claude Code in your terminal: claude');
-      expect(stdout).toContain('2. In Claude Code, run: /ait3-init');
-      expect(stdout).toContain('3. Follow the interactive guide');
+      expect(stdout).toContain('Next steps:');
+      expect(stdout).toContain('Launch Claude Code: claude');
+      expect(stdout).toContain('Run: /ait3-init');
 
-      // Verify file was created
+      // Verify all 3 files were created
+      await expect(access(join(testDir, 'CLAUDE.ait3.md'))).resolves.not.toThrow();
+      await expect(access(join(testDir, '.claude/CLAUDE.md'))).resolves.not.toThrow();
       await expect(access(join(testDir, '.claude/commands/ait3-init'))).resolves.not.toThrow();
     });
 
-    it('should handle when command guide already exists', async () => {
-      // First installation
+    it('should overwrite existing files without warning', async () => {
+      // First generation
       await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init');
-
-      // Second installation
-      const { stdout } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init')
-        .catch(err => err);
-
-      // The command should show skipped message
-      expect(stdout).toContain('Skipped');
-      expect(stdout).toContain('.claude/commands/ait3-init');
-      expect(stdout).toContain('already exists');
-      expect(stdout).toContain('Next steps to generate CLAUDE.md:');
-    });
-
-    it('should overwrite with --force flag', async () => {
-      // First installation
-      await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init');
-
-      // Second installation with force
-      const { stdout, stderr } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init --force');
-
+      
+      // Verify files exist
+      const firstContent = await readFile(join(testDir, 'CLAUDE.ait3.md'), 'utf-8');
+      
+      // Second generation - should overwrite
+      const { stdout, stderr } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init');
+      
       expect(stderr).toBe('');
-      expect(stdout).toContain('Installed');
-      expect(stdout).toContain('.claude/commands/ait3-init');
-      expect(stdout).toContain('Next steps to generate CLAUDE.md:');
+      expect(stdout).toContain('SUCCESS:');
+      expect(stdout).toContain('3 files generated');
+      
+      // Verify files still exist and are overwritten
+      const secondContent = await readFile(join(testDir, 'CLAUDE.ait3.md'), 'utf-8');
+      expect(secondContent).toBe(firstContent); // Same content since same project
     });
 
     it('should create proper ait3-init guide content', async () => {
       await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init');
-
+      
       const content = await readFile(join(testDir, '.claude/commands/ait3-init'), 'utf-8');
       
-      // Verify key content
-      expect(content).toContain('AIT³ Initialize - Generate CLAUDE.md');
-      expect(content).toContain('ait3 analyze project');
-      expect(content).toContain('package.json');
-      expect(content).toContain('CLAUDE.md');
+      expect(content).toContain('Initialize Complete CLAUDE.md');
+      expect(content).toContain('ait3 install security');
+      expect(content).toContain('Read CLAUDE.ait3.md');
+      expect(content).toContain('Delete CLAUDE.ait3.md');
+    });
+
+    it('should detect project type and include in CLAUDE.ait3.md', async () => {
+      // Create a package.json to simulate Node.js project
+      await execAsync('echo \'{"name":"test-project","version":"1.0.0"}\' > package.json');
+      
+      const { stdout } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init');
+      
+      expect(stdout).toContain('Detected:');
+      expect(stdout).toContain('Node.js project');
+      
+      // Check CLAUDE.ait3.md content
+      const content = await readFile(join(testDir, 'CLAUDE.ait3.md'), 'utf-8');
+      expect(content).toContain('test-project');
+      expect(content).toContain('Node.js');
     });
   });
 
-  describe('claude-md subcommand', () => {
-    it('should maintain backward compatibility', async () => {
-      const { stdout, stderr } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init claude-md');
-
-      expect(stderr).toBe('');
-      // Should not install ait3-init guide
-      expect(stdout).not.toContain('ait3-init');
-      // Should run claude-md command instead
-      // Should show output from claude-md command (template creation)
-      expect(stdout).toContain('Generic template generated');
+  describe('subcommand behavior', () => {
+    it('should reject subcommands with helpful error', async () => {
+      try {
+        await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init claude-md');
+        expect.fail('Command should have failed');
+      } catch (err: any) {
+        const output = err.stdout || err.stderr;
+        expect(output).toContain('Subcommands are no longer supported');
+        expect(output).toContain('ait3 init');
+        expect(output).toContain('claude');
+        expect(output).toContain('/ait3-init');
+      }
     });
-  });
 
-  describe('unknown subcommand', () => {
-    it('should show error for unknown subcommand', async () => {
-      const result = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init unknown')
-        .catch(err => err);
-
-      expect(result.code).toBe(1);
-      expect(result.stdout).toContain('Unknown init subcommand: unknown');
-      expect(result.stdout).toContain('Available subcommands');
+    it('should reject unknown subcommands', async () => {
+      try {
+        await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init unknown');
+        expect.fail('Command should have failed');
+      } catch (err: any) {
+        const output = err.stdout || err.stderr;
+        expect(output).toContain('Subcommands are no longer supported');
+      }
     });
   });
 
   describe('help output', () => {
     it('should show help with --help flag', async () => {
       const { stdout } = await execAsync('node ' + join(originalCwd, 'dist/cli.js') + ' init --help');
-
-      expect(stdout).toContain('Initialize AIT³ components');
-      expect(stdout).toContain('init [options] [subcommand]');
+      
+      expect(stdout).toContain('Usage: ait3 init [options]');
+      expect(stdout).toContain('Initialize AIT³ for Claude Code integration');
     });
   });
 });

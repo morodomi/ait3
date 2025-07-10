@@ -1002,7 +1002,7 @@ ait3 flow plan "ait3-migration"
 
 **Package**: `@morodomi/ait3`  
 **Command**: `ait3`  
-**Version**: 1.0.0  
+**Version**: 1.1.0  
 **License**: MIT  
 **Repository**: https://github.com/morodomi/ait3  
 

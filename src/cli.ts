@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name('ait3')
   .description('AIT³ Development Platform - AI + Ticket + Test + Tool driven development')
-  .version('1.1.0-dev');
+  .version('1.1.0');
 
 // Create services
 const services = createServiceContainer({ cwd: process.cwd() });

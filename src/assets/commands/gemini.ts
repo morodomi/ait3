@@ -123,6 +123,12 @@ gemini -p "@.tickets/ @src/commands/ticket/ Does the ticket management implement
 
 # Status tracking accuracy
 gemini -p "@.tickets/ Are ticket statuses accurately reflecting the actual development state?"
+
+# GitHub integration analysis
+gemini -p "@src/services/implementations/GitHubTicketService.ts Is the GitHub Issues integration robust? Check error handling and API usage."
+
+# Backend switching validation
+gemini -p "@src/commands/setup/ @src/commands/migrate/ Are the setup and migration commands reliable for switching between local and GitHub backends?"
 \`\`\`
 
 ## Claude Code Integration Verification

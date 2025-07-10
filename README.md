@@ -24,6 +24,16 @@ AIT³ embodies **Socratic epistemology** - wisdom emerges through questioning, d
 2. **Antithesis** (Gemini): Challenges assumptions and identifies flaws  
 3. **Synthesis** (Human): Weighs evidence and makes informed decisions
 
+## What's New in v1.1.0
+
+🎉 **Major Features**:
+- **GitHub Issues Integration**: Seamlessly switch between local and GitHub Issues backends
+- **Simplified `ait3 init`**: Now generates 3 files for easy Claude Code integration
+- **Backend Migration**: Move tickets between local and GitHub with `ait3 migrate`
+- **Enhanced Security**: New `ait3 install security` command for Claude Code permissions
+- **AI-Friendly Delete**: Smart ticket deletion with recovery hints
+- **Better Error Messages**: Helpful guidance when arguments are missing
+
 ## Quick Start
 
 ### Installation
@@ -39,9 +49,16 @@ ait3 --version
 ### Initialize Your First Project
 
 ```bash
-# Initialize AIT³ for your project
+# NEW in v1.1: Simplified initialization
 ait3 init
-# This installs the ait3-init guide and shows instructions for generating CLAUDE.md
+# Generates 3 files:
+# - CLAUDE.ait3.md (temporary template)
+# - .claude/CLAUDE.md (minimal working version)
+# - .claude/commands/ait3-init (integration guide)
+
+# Launch Claude Code and run:
+claude
+/ait3-init
 
 # Create your first ticket
 ait3 ticket create "Setup project structure"
@@ -57,14 +74,15 @@ ait3 flow plan "project-setup"
 ```bash
 ait3 ticket create "Feature name"             # Create new ticket
 ait3 ticket list                              # List all tickets
+ait3 ticket start <id>                        # Start working on ticket
+ait3 ticket complete <id>                     # Complete ticket
+ait3 ticket show <id>                         # Show ticket details
+ait3 ticket delete <id>                       # Delete ticket (NEW in v1.1)
 
-# ID Format Support - Works with both Local and GitHub formats:
-ait3 ticket start 001                         # Local format (0001)
-ait3 ticket start 123                         # GitHub format (123)  
-ait3 ticket start #123                        # GitHub format (#123)
-
-ait3 ticket complete 001                      # Complete ticket
-ait3 ticket show 001                          # Show ticket details
+# Backend Switching (NEW in v1.1)
+ait3 setup ticket github                      # Use GitHub Issues
+ait3 setup ticket local                       # Use local files
+ait3 migrate local github                     # Migrate tickets to GitHub
 ```
 
 ### AIT³ Workflow

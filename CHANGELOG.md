@@ -5,6 +5,106 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-07-10
+
+### Added
+
+#### 🔗 GitHub Issues Integration
+- **`ait3 setup ticket github`** - Configure GitHub Issues as ticket backend
+- **`ait3 setup ticket local`** - Switch back to local file backend
+- **Automatic repository detection** - From git remotes with validation
+- **GitHub CLI integration** - Authentication and permission checking
+- **Dual backend support** - Seamless switching between local and GitHub
+
+#### 🚚 Ticket Migration System
+- **`ait3 migrate local github`** - Migrate all tickets to GitHub Issues
+- **`ait3 migrate github local`** - Migrate all tickets to local files
+- **`ait3 migrate --tickets "1,3-5"`** - Selective migration by ID or range
+- **Description preservation** - Full markdown content migration
+- **Bidirectional migration** - Complete roundtrip compatibility
+
+#### 🗑️ AI-Optimized Ticket Deletion
+- **`ait3 ticket delete <id>`** - Delete tickets with complete information output
+- **`--dry-run` option** - Preview deletion without execution
+- **Workflow protection** - Blocks deletion of tickets in 'doing' status
+- **AI recovery support** - Outputs complete ticket content for context window recovery
+- **Git integration** - Uses `git rm` with filesystem fallback
+
+#### ⚙️ Enhanced Setup & Configuration
+- **Multiple remote handling** - Intelligent GitHub repository detection
+- **Configuration validation** - Comprehensive error handling and user guidance
+- **Idempotent operations** - Safe to run multiple times with status checking
+- **Interactive guidance** - Clear next-step instructions for setup
+
+#### 🚀 Simplified Project Initialization
+- **`ait3 init`** - Redesigned to generate 3 files for Claude Code integration
+- **No more subcommands** - Removed confusing `init claude-md` subcommand
+- **Git-friendly overwrites** - Always overwrites files, assuming version control
+- **Three essential files**:
+  - `CLAUDE.ait3.md` - Full AIT³ template with project analysis
+  - `.claude/CLAUDE.md` - Minimal working version
+  - `.claude/commands/ait3-init` - Integration guide
+
+#### 🔒 Security Enhancement
+- **`ait3 install security`** - Add security permissions to Claude Code
+- **Deny dangerous commands** - Block curl, wget, rm by default
+- **Smart permission merging** - Preserves existing settings
+- **Non-intrusive** - Only modifies permissions.deny array
+
+### Enhanced
+
+#### 📝 Ticket Management
+- **`ait3 ticket undo <id>`** - Undo ticket to previous state
+- **Enhanced error handling** - User-friendly messages across all commands
+- **Location information** - Display ticket storage location (local path/GitHub URL)
+- **Status tracking** - Improved state management for complex workflows
+- **Improved missing argument errors** - Helpful examples when ticket ID is missing
+- **Backend-aware help messages** - Different examples for local vs GitHub backends
+
+#### 🏗️ Service Architecture
+- **Extended TicketService interface** - Added delete operations support
+- **GitService file removal** - New `removeFile()` method with git integration
+- **Robust error handling** - Comprehensive GitHub API error classification
+- **Backend abstraction** - Clean separation between local and GitHub operations
+
+#### 📚 Documentation & Integration
+- **Updated command templates** - Current implementation in `.claude/commands/ait3`
+- **GitHub integration examples** - Setup workflows and usage patterns
+- **Gemini CLI analysis patterns** - Backend validation and architecture analysis
+- **Enhanced CLAUDE.md** - v1.1 feature documentation and examples
+
+### Technical Improvements
+
+#### 🔒 Type Safety & Validation
+- **Enhanced TypeScript types** - `DeleteTicketArgs` and extended service interfaces
+- **Input validation** - Comprehensive ID format and parameter checking
+- **API error handling** - GitHub authentication, permissions, and network failures
+- **Configuration management** - Type-safe backend configuration with validation
+
+#### 🧪 Testing & Quality
+- **18 comprehensive unit tests** - Delete command with full scenario coverage
+- **Integration testing** - Setup and migration command validation
+- **Mock GitHub API testing** - Error scenario and edge case handling
+- **Maintained 100% test coverage** - All new functionality fully tested
+
+#### 🔄 Git Integration
+- **`git rm` integration** - Safe file removal with version control awareness
+- **Repository detection** - Automatic Git repository validation
+- **Fallback mechanisms** - Graceful degradation for non-Git environments
+- **Multi-remote support** - Handle complex Git remote configurations
+
+### Requirements Update
+- **GitHub CLI (`gh`)** - Required for GitHub Issues integration
+- **Git repository** - Recommended for advanced file operations
+- **Repository permissions** - Issues read/write access for GitHub backend
+- **Node.js 18+ and npm 8+** - Unchanged from v1.0
+
+### Migration from v1.0
+- **Fully backward compatible** - All v1.0 commands work unchanged
+- **Optional GitHub integration** - Local backend remains default
+- **Existing tickets preserved** - No data migration required
+- **Progressive enhancement** - Add GitHub integration when needed
+
 ## [1.0.0] - 2025-07-09
 
 ### Added
