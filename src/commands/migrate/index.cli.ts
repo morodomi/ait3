@@ -13,6 +13,8 @@ Examples:
   $ ait3 migrate --from local --to github --owner myuser --repo myproject
   $ ait3 migrate --from local --to github --owner myuser --repo myproject --validate
   $ ait3 migrate --from local --to github --owner myuser --repo myproject --dry-run
+  $ ait3 migrate --from local --to github --owner myuser --repo myproject --tickets 1,3,5
+  $ ait3 migrate --from local --to github --owner myuser --repo myproject --tickets 1-10
   `)
   .requiredOption('--from <backend>', 'Source backend (local or github)')
   .requiredOption('--to <backend>', 'Target backend (local or github)')
@@ -20,6 +22,7 @@ Examples:
   .option('--repo <repo>', 'GitHub repository name')
   .option('--validate', 'Validate migration without performing it')
   .option('--dry-run', 'Preview migration without executing')
+  .option('--tickets <ids>', 'Migrate specific local tickets (e.g., "1,3,5" or "1-10" or "1,3-5")')
   .action(async (options) => {
     try {
       const result = await migrateCommand(
@@ -29,7 +32,8 @@ Examples:
           owner: options.owner,
           repo: options.repo,
           validate: options.validate,
-          dryRun: options.dryRun
+          dryRun: options.dryRun,
+          tickets: options.tickets
         },
         services
       );

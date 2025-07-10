@@ -4,7 +4,7 @@ import { TicketMigrationService } from '../../services/implementations/TicketMig
 import { LocalTicketService } from '../../services/implementations/LocalTicketService.js';
 import { GitHubTicketService } from '../../services/implementations/GitHubTicketService.js';
 import type { Services } from '../../common/types.js';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
+import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
@@ -17,7 +17,7 @@ vi.mock('../../services/implementations/GitHubTicketService.js');
 describe('migrate command', () => {
   let testDir: string;
   let services: Services;
-  let mockMigrationService: TicketMigrationService;
+  let _mockMigrationService: TicketMigrationService;
   let mockLocalService: LocalTicketService;
   let mockGitHubService: GitHubTicketService;
 
@@ -30,7 +30,7 @@ describe('migrate command', () => {
     vi.clearAllMocks();
     
     // Create mock services
-    mockMigrationService = new TicketMigrationService();
+    _mockMigrationService = new TicketMigrationService();
     mockLocalService = new LocalTicketService(testDir);
     
     try {
@@ -38,9 +38,9 @@ describe('migrate command', () => {
         owner: 'testowner',
         repo: 'testrepo'
       });
-    } catch (error) {
+    } catch (_error) {
       // Handle mock creation errors in specific tests
-      mockGitHubService = {} as any;
+      mockGitHubService = {} as GitHubTicketService;
     }
     
     services = {
@@ -253,6 +253,122 @@ describe('migrate command', () => {
       expect(result.success).toBe(false);
       expect(result.message).toContain('Migration failed');
       expect(result.message).toContain('Unexpected error');
+    });
+  });
+
+  describe('specific ticket migration', () => {
+    it('should migrate specific tickets when --tickets flag is provided', async () => {
+      const mockMigrationResult = {
+        success: true,
+        migratedCount: 2,
+        failedCount: 0,
+        errors: []
+      };
+
+      vi.mocked(TicketMigrationService.prototype.migrateLocalToGitHub).mockResolvedValue(mockMigrationResult);
+
+      const result = await migrateCommand({
+        from: 'local',
+        to: 'github',
+        owner: 'testowner',
+        repo: 'testrepo',
+        tickets: '1,3'
+      }, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('2 tickets migrated');
+    });
+
+    it('should support range notation in --tickets flag', async () => {
+      const mockMigrationResult = {
+        success: true,
+        migratedCount: 5,
+        failedCount: 0,
+        errors: []
+      };
+
+      vi.mocked(TicketMigrationService.prototype.migrateLocalToGitHub).mockResolvedValue(mockMigrationResult);
+
+      const result = await migrateCommand({
+        from: 'local',
+        to: 'github',
+        owner: 'testowner',
+        repo: 'testrepo',
+        tickets: '1-5'
+      }, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('5 tickets migrated');
+    });
+
+    it('should support mixed notation (comma and range) in --tickets flag', async () => {
+      const mockMigrationResult = {
+        success: true,
+        migratedCount: 7,
+        failedCount: 0,
+        errors: []
+      };
+
+      vi.mocked(TicketMigrationService.prototype.migrateLocalToGitHub).mockResolvedValue(mockMigrationResult);
+
+      const result = await migrateCommand({
+        from: 'local',
+        to: 'github',
+        owner: 'testowner',
+        repo: 'testrepo',
+        tickets: '1,3,10-15'
+      }, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('7 tickets migrated');
+    });
+
+    it('should handle non-existent ticket IDs gracefully', async () => {
+      const mockMigrationResult = {
+        success: false,
+        migratedCount: 1,
+        failedCount: 1,
+        errors: ['Ticket with ID 9999 not found']
+      };
+
+      vi.mocked(TicketMigrationService.prototype.migrateLocalToGitHub).mockResolvedValue(mockMigrationResult);
+
+      const result = await migrateCommand({
+        from: 'local',
+        to: 'github',
+        owner: 'testowner',
+        repo: 'testrepo',
+        tickets: '1,9999'
+      }, services);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('1 tickets migrated');
+      expect(result.message).toContain('1 tickets failed');
+      expect(result.message).toContain('Ticket with ID 9999 not found');
+    });
+  });
+
+  describe('description migration bug fix', () => {
+    it('should migrate tickets with description content', async () => {
+      const mockMigrationResult = {
+        success: true,
+        migratedCount: 1,
+        failedCount: 0,
+        errors: []
+      };
+
+      vi.mocked(TicketMigrationService.prototype.migrateLocalToGitHub).mockResolvedValue(mockMigrationResult);
+
+      const result = await migrateCommand({
+        from: 'local',
+        to: 'github',
+        owner: 'testowner',
+        repo: 'testrepo',
+        tickets: '1'
+      }, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('1 tickets migrated');
     });
   });
 

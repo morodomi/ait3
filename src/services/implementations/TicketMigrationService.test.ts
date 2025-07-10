@@ -3,7 +3,7 @@ import { TicketMigrationService } from './TicketMigrationService.js';
 import { LocalTicketService } from './LocalTicketService.js';
 import { GitHubTicketService } from './GitHubTicketService.js';
 import type { Ticket } from '../../common/types.js';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
+import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
@@ -409,6 +409,110 @@ describe('TicketMigrationService', () => {
       expect(result.migratedCount).toBe(1);
       expect(result.failedCount).toBe(1);
       expect(result.errors[0]).toContain('Failed to get full details for ticket 0001');
+    });
+  });
+
+  describe('parseTicketFilter', () => {
+    it('should parse comma-separated ticket IDs', () => {
+      const filter = '1,3,5';
+      const result = migrationService.parseTicketFilter(filter);
+      
+      expect(result).toEqual(['0001', '0003', '0005']);
+    });
+
+    it('should parse range notation', () => {
+      const filter = '1-5';
+      const result = migrationService.parseTicketFilter(filter);
+      
+      expect(result).toEqual(['0001', '0002', '0003', '0004', '0005']);
+    });
+
+    it('should parse mixed notation (comma and range)', () => {
+      const filter = '1,3,10-12';
+      const result = migrationService.parseTicketFilter(filter);
+      
+      expect(result).toEqual(['0001', '0003', '0010', '0011', '0012']);
+    });
+
+    it('should validate range order', () => {
+      const filter = '5-1'; // Invalid: start > end
+      expect(() => migrationService.parseTicketFilter(filter)).toThrow('Invalid range: start (5) must be <= end (1)');
+    });
+
+    it('should handle invalid format gracefully', () => {
+      const filter = 'invalid';
+      expect(() => migrationService.parseTicketFilter(filter)).toThrow();
+    });
+  });
+
+  describe('migrateLocalToGitHub with ticket filter', () => {
+    it('should migrate only specified tickets', async () => {
+      const allTickets: Ticket[] = [
+        { id: '0001', title: 'Ticket 1', status: 'todo', priority: 'high', created: '2025-01-01T00:00:00Z', updated: '2025-01-01T00:00:00Z', labels: [] },
+        { id: '0002', title: 'Ticket 2', status: 'todo', priority: 'medium', created: '2025-01-01T00:00:00Z', updated: '2025-01-01T00:00:00Z', labels: [] },
+        { id: '0003', title: 'Ticket 3', status: 'todo', priority: 'low', created: '2025-01-01T00:00:00Z', updated: '2025-01-01T00:00:00Z', labels: [] }
+      ];
+
+      vi.mocked(mockLocalService.getTicket)
+        .mockResolvedValueOnce(allTickets[0])
+        .mockResolvedValueOnce(allTickets[2]);
+      vi.mocked(mockGitHubService.createTicket).mockResolvedValue({
+        id: '#1',
+        title: 'Test',
+        status: 'todo',
+        priority: 'medium',
+        created: '2025-01-01T00:00:00Z',
+        updated: '2025-01-01T00:00:00Z',
+        labels: []
+      });
+
+      const result = await migrationService.migrateLocalToGitHub(
+        mockLocalService,
+        mockGitHubService,
+        ['0001', '0003'] // Filter to only migrate tickets 1 and 3
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.migratedCount).toBe(2);
+      expect(mockGitHubService.createTicket).toHaveBeenCalledTimes(2);
+      expect(mockLocalService.getTicket).toHaveBeenCalledWith('0001');
+      expect(mockLocalService.getTicket).toHaveBeenCalledWith('0003');
+      expect(mockLocalService.getTicket).not.toHaveBeenCalledWith('0002');
+    });
+
+    it('should report error for non-existent ticket IDs', async () => {
+      vi.mocked(mockLocalService.getTicket)
+        .mockResolvedValueOnce({
+          id: '0001',
+          title: 'Ticket 1',
+          status: 'todo',
+          priority: 'high',
+          created: '2025-01-01T00:00:00Z',
+          updated: '2025-01-01T00:00:00Z',
+          labels: []
+        })
+        .mockResolvedValueOnce(null); // Ticket 9999 doesn't exist
+
+      vi.mocked(mockGitHubService.createTicket).mockResolvedValue({
+        id: '#1',
+        title: 'Ticket 1',
+        status: 'todo',
+        priority: 'high',
+        created: '2025-01-01T00:00:00Z',
+        updated: '2025-01-01T00:00:00Z',
+        labels: []
+      });
+
+      const result = await migrationService.migrateLocalToGitHub(
+        mockLocalService,
+        mockGitHubService,
+        ['0001', '9999']
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.migratedCount).toBe(1);
+      expect(result.failedCount).toBe(1);
+      expect(result.errors).toContain('Failed to get full details for ticket 9999');
     });
   });
 });

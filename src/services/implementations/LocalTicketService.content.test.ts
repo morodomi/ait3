@@ -27,6 +27,45 @@ describe('LocalTicketService content extraction', () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
+  describe('createTicket with description', () => {
+    it('should create ticket with provided description', async () => {
+      const description = `This is a detailed description.
+
+It has multiple paragraphs.
+
+And includes **markdown** formatting.`;
+
+      const ticket = await service.createTicket('Test ticket with description', {
+        priority: 'high',
+        labels: ['feature'],
+        description
+      });
+
+      expect(ticket.id).toBe('0001');
+      expect(ticket.title).toBe('Test ticket with description');
+
+      // Read the created file to verify content
+      const fileContent = await service.getTicket('0001');
+      expect(fileContent).not.toBeNull();
+      expect(fileContent?.description).toContain('This is a detailed description');
+      expect(fileContent?.description).toContain('It has multiple paragraphs');
+      expect(fileContent?.description).toContain('And includes **markdown** formatting');
+    });
+
+    it('should create ticket without description when not provided', async () => {
+      const ticket = await service.createTicket('Test ticket without description', {
+        priority: 'medium'
+      });
+
+      expect(ticket.id).toBe('0001');
+
+      // Read the created file to verify default content
+      const fileContent = await service.getTicket('0001');
+      expect(fileContent).not.toBeNull();
+      expect(fileContent?.description).toContain('[Add ticket description here]');
+    });
+  });
+
   describe('getTicket with full content', () => {
     it('should extract full markdown content from ticket', async () => {
       const ticketData = {
