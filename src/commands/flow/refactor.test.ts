@@ -7,6 +7,12 @@ import { refactorPhase, type RefactorArgs } from './refactor.js';
 import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
 import type { Services } from '@/common/types.js';
 
+// Helper to strip ANSI color codes for testing
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 describe('refactorPhase Pure Function', () => {
   let testDir: string;
   let services: Services;
@@ -63,6 +69,42 @@ describe('refactorPhase Pure Function', () => {
       expect(result.message).toContain('REFACTOR Phase');
       expect(result.message).toContain('Ticket #0001');
       expect(result.message).toContain('Claude Code Instructions');
+    });
+
+    it('should show local file location for LocalTicketService', async () => {
+      // Create and start ticket
+      await services.ticketService.createTicket('Location Test Refactor');
+      await services.ticketService.startTicket('0001');
+
+      const result = await refactorPhase({ ticketId: '0001' }, services);
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toMatch(/Location.*\.tickets\/doing\/0001-location-test-refactor\.md/);
+    });
+
+    it('should show GitHub URL location for GitHubTicketService', async () => {
+      // Mock GitHubTicketService
+      const mockGitHubService = {
+        getTicket: async () => ({
+          id: '#82',
+          title: 'GitHub Refactor Test',
+          status: 'doing',
+          priority: 'medium',
+          created: '2025-01-01T00:00:00Z',
+          updated: '2025-01-01T00:00:00Z',
+          labels: []
+        }),
+        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
+      };
+
+      const githubServices: Services = {
+        ticketService: mockGitHubService as any
+      };
+
+      const result = await refactorPhase({ ticketId: '82' }, githubServices);
+
+      expect(result.success).toBe(true);
+      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
     });
   });
 

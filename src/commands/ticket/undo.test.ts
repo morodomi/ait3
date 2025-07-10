@@ -3,6 +3,12 @@ import { undoTicket } from './undo.js';
 import type { Services, UndoTicketArgs } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 
+// Helper to strip ANSI color codes for testing
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 describe('undoTicket', () => {
   let mockServices: Services;
 
@@ -67,6 +73,35 @@ describe('undoTicket', () => {
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('SUCCESS');
+    });
+
+    it('should show GitHub URL location for GitHubTicketService', async () => {
+      const args: UndoTicketArgs = { id: '82' };
+      const mockTicket = {
+        id: '#82',
+        title: 'GitHub Undo Test',
+        status: 'doing' as const,
+        priority: 'medium' as const,
+        created: '2025-01-01T00:00:00Z',
+        updated: '2025-01-01T00:00:00Z',
+        labels: []
+      };
+
+      // Mock GitHubTicketService with getConfig method
+      const mockGitHubService = {
+        getTicket: vi.fn().mockResolvedValue(mockTicket),
+        undoTicket: vi.fn().mockResolvedValue(undefined),
+        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
+      };
+
+      const githubServices: Services = {
+        ticketService: mockGitHubService as any
+      };
+
+      const result = await undoTicket(args, githubServices);
+
+      expect(result.success).toBe(true);
+      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
     });
   });
 

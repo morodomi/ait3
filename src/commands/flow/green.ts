@@ -3,7 +3,8 @@ import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { IDUtils } from '../../common/utils.js';
-import { getTicketLocation, generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
+import { generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 
 export interface GreenArgs {
   ticketId: string;
@@ -99,15 +100,14 @@ ${STYLES.info('TIP: Check test configuration and ensure all dependencies are ins
 
   // Get ticket title for better formatting
   const ticketTitle = ticket.title || 'Feature';
-  const ticketLocation = getTicketLocation(ticketId, ticketTitle, 'doing');
 
   return {
     success: true,
     message: `
-${formatTicketHeader(ticketId, ticketTitle, 'GREEN Phase')}
+${formatTicketHeader(ticketId, ticketTitle, 'GREEN Phase', ticket, services)}
 
 ${STYLES.bold('Claude Code Instructions')}:
-1. Read ticket: ${STYLES.info(ticketLocation)}
+1. Read ticket: ${STYLES.info(formatTicketLocation(ticket, services.ticketService))}
 2. Run tests and analyze failures
 3. Implement minimal code to pass tests:
    ├─ Follow existing codebase patterns

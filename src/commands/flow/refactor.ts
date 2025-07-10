@@ -2,8 +2,9 @@ import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
-import { SlugUtils, IDUtils } from '../../common/utils.js';
-import { getTicketLocation, generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
+import { IDUtils } from '../../common/utils.js';
+import { generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 
 const REFACTOR_MESSAGES = {
   INVALID_FOCUS_AREA: (area: string) => `Invalid focus area: ${area}`
@@ -74,7 +75,7 @@ ${STYLES.info('TIP: Tip')}: Make sure you're running from the project root direc
 
   // Generate analysis based on mode and focus
   const analysis = performAnalysis(ticket, focusAreas);
-  const output = formatAnalysisOutput(analysis, verbose, focusAreas, ticket);
+  const output = formatAnalysisOutput(analysis, verbose, focusAreas, ticket, services);
 
   return {
     success: true,
@@ -173,15 +174,16 @@ function formatAnalysisOutput(
   analysis: AnalysisResult, 
   verbose: boolean,
   focusAreas?: FocusArea[],
-  ticket?: Ticket
+  ticket?: Ticket,
+  services?: Services
 ): string {
   const sections: string[] = [];
   const ticketId = ticket?.id || '0001';
   const ticketTitle = ticket?.title || 'Feature';
 
   // Header
-  const ticketLocation = getTicketLocation(ticketId, ticketTitle, 'doing');
-  sections.push(`${formatTicketHeader(ticketId, ticketTitle, 'REFACTOR Phase')}`);
+  const ticketLocation = ticket && services ? formatTicketLocation(ticket, services.ticketService) : '.tickets/doing/0001-feature.md';
+  sections.push(`${formatTicketHeader(ticketId, ticketTitle, 'REFACTOR Phase', ticket, services)}`);
   
   // Claude Code Instructions
   sections.push(`\n${STYLES.bold('Claude Code Instructions')}:

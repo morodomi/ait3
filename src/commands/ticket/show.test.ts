@@ -9,6 +9,12 @@ import chalk from 'chalk';
 // Enable colors in tests
 chalk.level = 3;
 
+// Helper to strip ANSI color codes for testing
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 // Mock TicketService for unit testing
 class MockTicketService implements TicketService {
   private tickets: Map<string, Ticket> = new Map();
@@ -84,6 +90,41 @@ describe('showTicket pure function', () => {
       expect(result.message).toContain('Requirements');
       
       expect(result.data).toEqual(sampleTicket);
+    });
+
+    it('should show local file location for LocalTicketService', async () => {
+      const args: ShowTicketArgs = { id: '0001' };
+      const result = await showTicket(args, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toMatch(/Location.*\.tickets\/todo\/0001-/);
+    });
+
+    it('should show GitHub URL location for GitHubTicketService', async () => {
+      // Mock GitHubTicketService
+      const mockGitHubService = {
+        getTicket: async () => ({
+          id: '#82',
+          title: 'GitHub Show Test',
+          status: 'todo',
+          priority: 'medium',
+          created: '2025-01-01T00:00:00Z',
+          updated: '2025-01-01T00:00:00Z',
+          labels: [],
+          description: 'Test description'
+        }),
+        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
+      };
+
+      const githubServices: Services = {
+        ticketService: mockGitHubService as any
+      };
+
+      const args: ShowTicketArgs = { id: '82' };
+      const result = await showTicket(args, githubServices);
+
+      expect(result.success).toBe(true);
+      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
     });
 
     it('should display ticket with minimal metadata', async () => {

@@ -3,6 +3,7 @@ import { STYLES } from './styles.js';
 import { Services, Ticket } from './types.js';
 import { TicketNotFoundError, ValidationError } from './errors.js';
 import { FLOW_MESSAGES } from './flow-messages.js';
+import { formatTicketLocation } from './utils/location-utils.js';
 
 /**
  * Common utilities for flow commands to reduce code duplication
@@ -52,9 +53,15 @@ export function generateCommitMessage(phase: FlowPhase, ticketId: string, title:
 /**
  * Generate formatted ticket location header for flow commands
  */
-export function formatTicketHeader(ticketId: string, title: string, phase: string, status: TicketStatus = 'doing'): string {
-  const ticketLocation = getTicketLocation(ticketId, title, status);
-  return `${STYLES.bold(phase)} for Ticket #${ticketId}: ${title}\n${STYLES.info('Location')}: ${STYLES.info(ticketLocation)}`;
+export function formatTicketHeader(ticketId: string, title: string, phase: string, ticket?: Ticket, services?: Services): string {
+  let locationDisplay = '';
+  if (ticket && services) {
+    locationDisplay = formatTicketLocation(ticket, services.ticketService);
+  } else {
+    // Fallback to old behavior
+    locationDisplay = getTicketLocation(ticketId, title, 'doing');
+  }
+  return `${STYLES.bold(phase)} for Ticket #${ticketId}: ${title}\n${STYLES.info('Location')}: ${STYLES.info(locationDisplay)}`;
 }
 
 /**

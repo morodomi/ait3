@@ -5,6 +5,12 @@ import type { TicketService } from '@/services/interfaces/TicketService.js';
 import type { GitService } from '@/services/interfaces/GitService.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError } from '@/common/errors.js';
 
+// Helper to strip ANSI color codes for testing
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 // Mock TicketService for unit testing
 class MockTicketService implements TicketService {
   private shouldThrowError: Error | null = null;
@@ -171,6 +177,34 @@ describe('startTicket pure function', () => {
       expect(result.message).toContain('Started ticket #0042');
       expect(result.message).toContain('Status:');
       expect(result.message).toContain('doing');
+    });
+
+    it('should show GitHub URL location for GitHubTicketService', async () => {
+      // Mock GitHubTicketService
+      const mockGitHubService = {
+        getTicket: async () => ({
+          id: '#82',
+          title: 'GitHub Start Test',
+          status: 'todo',
+          priority: 'medium',
+          created: '2025-01-01T00:00:00Z',
+          updated: '2025-01-01T00:00:00Z',
+          labels: []
+        }),
+        startTicket: async () => {},
+        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
+      };
+
+      const githubServices: Services = {
+        ticketService: mockGitHubService as any,
+        gitService: mockGitService
+      };
+
+      const args: StartTicketArgs = { id: '82' };
+      const result = await startTicket(args, githubServices);
+
+      expect(result.success).toBe(true);
+      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
     });
   });
 

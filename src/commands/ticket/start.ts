@@ -3,7 +3,7 @@ import type { GitService } from '../../services/interfaces/GitService.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError } from '../../common/errors.js';
 import { IDUtils, SlugUtils } from '../../common/utils.js';
 import { STYLES } from '../../common/styles.js';
-import { getTicketLocation } from '../../common/flow-utils.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 
 export async function startTicket(
   args: StartTicketArgs,
@@ -80,7 +80,13 @@ export async function startTicket(
     // Add status information
     messageParts.push(STYLES.info('Details:'));
     messageParts.push(`   Status: ${STYLES.warning('doing')}`);
-    messageParts.push(`   Location: ${STYLES.info(getTicketLocation(args.id, ticket?.title || 'unknown', 'doing'))}`);
+    
+    // Get updated ticket to show current location
+    const updatedTicket = await services.ticketService.getTicket(args.id);
+    if (updatedTicket) {
+      const locationDisplay = formatTicketLocation(updatedTicket, services.ticketService);
+      messageParts.push(`   Location: ${STYLES.info(locationDisplay)}`);
+    }
     messageParts.push('');
     
     // Add Git message if available

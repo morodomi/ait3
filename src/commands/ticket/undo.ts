@@ -1,6 +1,7 @@
 import type { CLIResult, Services, UndoTicketArgs } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { IDUtils } from '../../common/utils.js';
+import { formatTicketLocation } from '../../common/utils/location-utils.js';
 import chalk from 'chalk';
 
 /**
@@ -59,11 +60,16 @@ export async function undoTicket(
     // Execute undo operation
     await services.ticketService.undoTicket(ticketId);
 
+    // Get updated ticket for location display
+    const updatedTicket = await services.ticketService.getTicket(ticketId);
+    const locationDisplay = updatedTicket ? formatTicketLocation(updatedTicket, services.ticketService) : '';
+
     return {
       success: true,
       message: `${chalk.green('SUCCESS:')} Undid ticket #${ticketId}\n` +
               `  Title: ${ticket.title}\n` +
-              `  Transition: ${transition}`
+              `  Transition: ${transition}\n` +
+              (locationDisplay ? `  Location: ${locationDisplay}` : '')
     };
 
   } catch (error) {
