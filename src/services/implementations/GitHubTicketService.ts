@@ -234,6 +234,11 @@ export class GitHubTicketService implements TicketService {
       assignee: (issue.assignee as {login?: string} | null)?.login,
       labels: (issue.labels as Array<{name: string}>).map((label) => label.name),
       description: (issue.body as string) || '',
+      location: {
+        type: 'github' as const,
+        url: issue.html_url as string,
+        apiUrl: issue.url as string,
+      },
     };
   }
 

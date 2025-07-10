@@ -59,6 +59,7 @@ describe('TicketMigrationService status handling', () => {
       };
 
       vi.mocked(mockLocalService.listTickets).mockResolvedValue([doneTicket]);
+      vi.mocked(mockLocalService.getTicket).mockResolvedValue(doneTicket);
 
       const result = await migrationService.migrateLocalToGitHub(
         mockLocalService,
@@ -90,6 +91,7 @@ describe('TicketMigrationService status handling', () => {
       };
 
       vi.mocked(mockLocalService.listTickets).mockResolvedValue([doingTicket]);
+      vi.mocked(mockLocalService.getTicket).mockResolvedValue(doingTicket);
 
       const result = await migrationService.migrateLocalToGitHub(
         mockLocalService,
@@ -116,6 +118,7 @@ describe('TicketMigrationService status handling', () => {
       };
 
       vi.mocked(mockLocalService.listTickets).mockResolvedValue([todoTicket]);
+      vi.mocked(mockLocalService.getTicket).mockResolvedValue(todoTicket);
 
       const result = await migrationService.migrateLocalToGitHub(
         mockLocalService,
@@ -162,6 +165,10 @@ describe('TicketMigrationService status handling', () => {
       ];
 
       vi.mocked(mockLocalService.listTickets).mockResolvedValue(tickets);
+      vi.mocked(mockLocalService.getTicket)
+        .mockResolvedValueOnce(tickets[0])
+        .mockResolvedValueOnce(tickets[1])
+        .mockResolvedValueOnce(tickets[2]);
 
       const result = await migrationService.migrateLocalToGitHub(
         mockLocalService,
@@ -191,6 +198,7 @@ describe('TicketMigrationService status handling', () => {
       };
 
       vi.mocked(mockLocalService.listTickets).mockResolvedValue([doneTicket]);
+      vi.mocked(mockLocalService.getTicket).mockResolvedValue(doneTicket);
       vi.mocked(mockGitHubService.completeTicket).mockRejectedValue(
         new Error('GitHub API error')
       );

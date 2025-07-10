@@ -1,6 +1,7 @@
 import type { CLIResult, Services, CompleteTicketArgs } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError, TicketNotStartedError, TicketAlreadyCompletedError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
+import { IDUtils } from '../../common/utils.js';
 
 /**
  * Complete a ticket by moving it from 'doing' to 'done' status
@@ -13,9 +14,9 @@ export async function completeTicket(
   const { id } = args;
   const { ticketService } = services;
 
-  // Validate ID format (4 digits)
-  if (!id || !/^\d{4}$/.test(id)) {
-    throw new ValidationError('Ticket ID must be exactly 4 digits (e.g., 0001)');
+  // Validate ID format
+  if (!id || !IDUtils.isValidTicketId(id)) {
+    throw new ValidationError('Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)');
   }
 
   try {

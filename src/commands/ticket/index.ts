@@ -118,7 +118,7 @@ ticketCommand
       // Enhanced error handling with better UX
       if (error instanceof ValidationError) {
         console.error(STYLES.danger('ERROR:'), error.message);
-        console.error(STYLES.warning('TIP: Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
       } else if (error instanceof TicketNotFoundError) {
         console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
         console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
@@ -143,7 +143,7 @@ ticketCommand
       // Enhanced error handling with better UX
       if (error instanceof ValidationError) {
         console.error(STYLES.danger('ERROR:'), error.message);
-        console.error(STYLES.warning('TIP: Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
       } else if (error instanceof TicketNotFoundError) {
         console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
         console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
@@ -174,7 +174,7 @@ ticketCommand
       // Enhanced error handling with better UX
       if (error instanceof ValidationError) {
         console.error(STYLES.danger('ERROR:'), error.message);
-        console.error(STYLES.warning('TIP: Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
       } else if (error instanceof TicketNotFoundError) {
         console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
         console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
@@ -206,7 +206,7 @@ ticketCommand
       // Enhanced error handling with better UX
       if (error instanceof ValidationError) {
         console.error(STYLES.danger('ERROR:'), error.message);
-        console.error(STYLES.warning('TIP: Ticket ID must be a 4-digit number (e.g., 0001, 0042, 1234)'));
+        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
       } else if (error instanceof TicketNotFoundError) {
         console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
         console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));

@@ -91,7 +91,7 @@ describe('completeTicket pure function', () => {
 
   describe('input validation', () => {
     it('should validate ticket ID format', async () => {
-      const invalidIds = ['', 'abc', '1', '00001', 'invalid'];
+      const invalidIds = ['', 'abc', '00001', 'invalid', '0', '10000'];
       
       for (const invalidId of invalidIds) {
         const args: CompleteTicketArgs = { id: invalidId };
@@ -99,10 +99,15 @@ describe('completeTicket pure function', () => {
       }
     });
 
-    it('should validate that ID is exactly 4 digits', async () => {
-      const args: CompleteTicketArgs = { id: '123' };
+    it('should accept both local and GitHub ID formats', async () => {
+      const validIds = ['0001', '1', '123', '#70', '9999'];
       
-      await expect(completeTicket(args, services)).rejects.toThrow(ValidationError);
+      for (const validId of validIds) {
+        const args: CompleteTicketArgs = { id: validId };
+        // Should not throw ValidationError
+        const result = await completeTicket(args, services);
+        expect(result.success).toBe(true);
+      }
     });
 
     it('should accept valid 4-digit IDs', async () => {

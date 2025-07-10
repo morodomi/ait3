@@ -2,6 +2,7 @@ import type { Services, CLIResult } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
+import { IDUtils } from '../../common/utils.js';
 import { getTicketLocation, generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
 
 export interface GreenArgs {
@@ -20,6 +21,11 @@ export async function greenPhase(
   // Validate ticket ID
   if (!args.ticketId || args.ticketId.trim() === '') {
     throw new ValidationError(FLOW_MESSAGES.TICKET_ID_REQUIRED('GREEN'), 'ticketId');
+  }
+
+  // Validate ID format
+  if (!IDUtils.isValidTicketId(args.ticketId)) {
+    throw new ValidationError('Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)', 'ticketId');
   }
 
   const { ticketId, strict = true, verbose = false, target } = args;

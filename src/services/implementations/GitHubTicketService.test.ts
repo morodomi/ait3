@@ -69,6 +69,8 @@ describe('GitHubTicketService', () => {
           created_at: '2025-01-01T00:00:00Z',
           updated_at: '2025-01-01T00:00:00Z',
           body: 'Test description',
+          html_url: 'https://github.com/testowner/testrepo/issues/123',
+          url: 'https://api.github.com/repos/testowner/testrepo/issues/123',
         },
       });
 
@@ -92,6 +94,11 @@ describe('GitHubTicketService', () => {
         assignee: undefined,
         labels: ['status:todo', 'priority:medium'],
         description: 'Test description',
+        location: {
+          type: 'github',
+          url: 'https://github.com/testowner/testrepo/issues/123',
+          apiUrl: 'https://api.github.com/repos/testowner/testrepo/issues/123',
+        },
       });
     });
 
@@ -223,6 +230,8 @@ describe('GitHubTicketService', () => {
           created_at: '2025-01-01T00:00:00Z',
           updated_at: '2025-01-01T00:00:00Z',
           body: 'Test body',
+          html_url: 'https://github.com/testowner/testrepo/issues/123',
+          url: 'https://api.github.com/repos/testowner/testrepo/issues/123',
         },
       });
 
@@ -244,6 +253,11 @@ describe('GitHubTicketService', () => {
         assignee: undefined,
         labels: ['status:doing'],
         description: 'Test body',
+        location: {
+          type: 'github',
+          url: 'https://github.com/testowner/testrepo/issues/123',
+          apiUrl: 'https://api.github.com/repos/testowner/testrepo/issues/123',
+        },
       });
     });
 

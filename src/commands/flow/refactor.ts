@@ -2,7 +2,7 @@ import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
-import { SlugUtils } from '../../common/utils.js';
+import { SlugUtils, IDUtils } from '../../common/utils.js';
 import { getTicketLocation, generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
 
 const REFACTOR_MESSAGES = {
@@ -26,6 +26,11 @@ export async function refactorPhase(
   // Validate ticket ID
   if (!args.ticketId || args.ticketId.trim() === '') {
     throw new ValidationError(FLOW_MESSAGES.TICKET_ID_REQUIRED('REFACTOR'), 'ticketId');
+  }
+
+  // Validate ID format
+  if (!IDUtils.isValidTicketId(args.ticketId)) {
+    throw new ValidationError('Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)', 'ticketId');
   }
 
   const { ticketId, verbose = false } = args;
@@ -111,7 +116,7 @@ interface OrganizationIssue {
 
 function performAnalysis(ticket: Ticket, focusAreas?: FocusArea[]): AnalysisResult {
   // Simulate analysis with realistic data
-  const shouldInclude = (area: FocusArea) => !focusAreas || focusAreas.includes(area);
+  const shouldInclude = (area: FocusArea): boolean => !focusAreas || focusAreas.includes(area);
 
   // Check if this is an empty project (based on ticket title for testing)
   const isEmptyProject = ticket.title && ticket.title.toLowerCase().includes('empty');
@@ -173,7 +178,6 @@ function formatAnalysisOutput(
   const sections: string[] = [];
   const ticketId = ticket?.id || '0001';
   const ticketTitle = ticket?.title || 'Feature';
-  const ticketSlug = SlugUtils.titleToSlug(ticketTitle);
 
   // Header
   const ticketLocation = getTicketLocation(ticketId, ticketTitle, 'doing');

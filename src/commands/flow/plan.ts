@@ -1,8 +1,8 @@
-import type { Services, CLIResult } from '../../common/types.js';
+import type { Services, CLIResult, Ticket } from '../../common/types.js';
 import { ValidationError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
-import { SlugUtils } from '../../common/utils.js';
+import { IDUtils } from '../../common/utils.js';
 import { getTicketLocation, generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
 
 export interface PlanArgs {
@@ -23,33 +23,40 @@ export async function planPhase(
 
   const { featureName, mode = 'guided', requirements, ticketId } = args;
 
+  // Validate ticket ID format if provided
+  if (ticketId && !IDUtils.isValidTicketId(ticketId)) {
+    throw new ValidationError('Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)', 'ticketId');
+  }
+
   // Handle ticket reference if provided
   let ticketInfo = '';
+  let ticket: Ticket | undefined;
   if (ticketId) {
     try {
-      const ticket = await services.ticketService.getTicket(ticketId);
-      if (ticket) {
+      const foundTicket = await services.ticketService.getTicket(ticketId);
+      if (foundTicket) {
+        ticket = foundTicket;
         ticketInfo = `\n${STYLES.info('LIST: Ticket #' + ticketId)}: ${ticket.title}`;
       } else {
         ticketInfo = `\n${STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
       }
-    } catch (error) {
+    } catch {
       ticketInfo = `\n${STYLES.warning('WARNING:  Warning')}: ${FLOW_MESSAGES.TICKET_NOT_FOUND(ticketId)}`;
     }
   }
 
   switch (mode) {
   case 'express':
-    return expressPlan(featureName, requirements, ticketInfo);
+    return expressPlan(featureName, requirements, ticketInfo, ticket);
   case 'manual':
-    return manualPlan(featureName, ticketInfo);
+    return manualPlan(featureName, ticketInfo, ticket);
   case 'guided':
   default:
-    return guidedPlan(featureName, requirements, ticketInfo);
+    return guidedPlan(featureName, requirements, ticketInfo, ticket);
   }
 }
 
-function expressPlan(featureName: string, requirements?: string[], ticketInfo?: string): CLIResult {
+function expressPlan(featureName: string, requirements?: string[], ticketInfo?: string, ticket?: Ticket): CLIResult {
   const requirementsText = requirements?.length 
     ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
@@ -57,7 +64,7 @@ function expressPlan(featureName: string, requirements?: string[], ticketInfo?: 
   // Find ticket ID from ticketInfo if available
   const ticketIdMatch = ticketInfo?.match(/#(\d+)/);
   const ticketId = ticketIdMatch ? ticketIdMatch[1] : '001';
-  const ticketLocation = getTicketLocation(ticketId, featureName, 'doing');
+  const ticketLocation = getTicketLocation(ticketId, featureName, 'doing', ticket);
 
   return {
     success: true,
@@ -83,11 +90,11 @@ ${STYLES.muted('Express mode: ait3 flow red after quick approval')}
   };
 }
 
-function manualPlan(featureName: string, ticketInfo?: string): CLIResult {
+function manualPlan(featureName: string, ticketInfo?: string, ticket?: Ticket): CLIResult {
   // Find ticket ID from ticketInfo if available
   const ticketIdMatch = ticketInfo?.match(/#(\d+)/);
   const ticketId = ticketIdMatch ? ticketIdMatch[1] : '001';
-  const ticketLocation = getTicketLocation(ticketId, featureName, 'doing');
+  const ticketLocation = getTicketLocation(ticketId, featureName, 'doing', ticket);
 
   return {
     success: true,
@@ -123,7 +130,7 @@ ${STYLES.muted('Manual mode: Proceed to ait3 flow red after decision')}
   };
 }
 
-function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: string): CLIResult {
+function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: string, ticket?: Ticket): CLIResult {
   const requirementsSection = requirements?.length 
     ? `\n${STYLES.info('LIST: Requirements')}: ${requirements.join(', ')}`
     : '';
@@ -131,7 +138,7 @@ function guidedPlan(featureName: string, requirements?: string[], ticketInfo?: s
   // Find ticket ID from ticketInfo if available
   const ticketIdMatch = ticketInfo?.match(/#(\d+)/);
   const ticketId = ticketIdMatch ? ticketIdMatch[1] : '001';
-  const ticketLocation = getTicketLocation(ticketId, featureName, 'doing');
+  const ticketLocation = getTicketLocation(ticketId, featureName, 'doing', ticket);
 
   return {
     success: true,

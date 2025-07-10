@@ -187,7 +187,7 @@ labels:
       expect(result).toContain('Simple description without assignee');
     });
 
-    it('should handle ticket without description content', () => {
+    it('should handle ticket with minimal description content', () => {
       const result = execSync(
         'node dist/cli.js ticket show 0003',
         {
@@ -202,7 +202,9 @@ labels:
       expect(result).toContain('Status:');
       expect(result).toContain('done');
       expect(result).toContain('Description:');
-      expect(result).toContain('(No description provided)');
+      // The ticket has markdown template content, not empty
+      expect(result).toContain('# Ticket #0003: No Description Ticket');
+      expect(result).toContain('## Description');
     });
 
     it('should find tickets across different status directories', () => {

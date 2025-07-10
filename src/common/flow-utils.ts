@@ -13,10 +13,20 @@ export type FlowPhase = 'planning' | 'test' | 'feat' | 'refactor';
 
 /**
  * Generate ticket file location based on status and ticket info
+ * For local tickets: returns file path
+ * For GitHub tickets: returns URL
  */
-export function getTicketLocation(ticketId: string, title: string, status: TicketStatus = 'doing'): string {
+export function getTicketLocation(ticketId: string, title: string, status: TicketStatus = 'doing', ticket?: Ticket): string {
+  // If we have a ticket object with location, use that
+  if (ticket?.location) {
+    return ticket.location.path || ticket.location.url || '';
+  }
+  
+  // Otherwise, generate local path (backward compatibility)
+  // Normalize ticket ID to remove # prefix for GitHub IDs
+  const normalizedId = ticketId.replace(/^#/, '');
   const ticketSlug = SlugUtils.titleToSlug(title);
-  return `.tickets/${status}/${ticketId}-${ticketSlug}.md`;
+  return `.tickets/${status}/${normalizedId}-${ticketSlug}.md`;
 }
 
 /**

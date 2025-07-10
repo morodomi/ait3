@@ -170,7 +170,7 @@ describe('showTicket pure function', () => {
 
   describe('input validation', () => {
     it('should validate ticket ID format', async () => {
-      const invalidIds = ['', 'abc', '1', '00001', 'invalid'];
+      const invalidIds = ['', 'abc', '00001', 'invalid', '10000', '#10000'];
       
       for (const invalidId of invalidIds) {
         const args: ShowTicketArgs = { id: invalidId };
@@ -178,10 +178,19 @@ describe('showTicket pure function', () => {
       }
     });
 
-    it('should validate that ID is exactly 4 digits', async () => {
-      const args: ShowTicketArgs = { id: '123' };
+    it('should accept both local and GitHub ID formats', async () => {
+      // These are valid formats that will throw TicketNotFoundError instead (except 0001 which exists)
+      const validIds = ['0002', '123', '#123', '1', '#1'];
       
-      await expect(showTicket(args, services)).rejects.toThrow(ValidationError);
+      for (const validId of validIds) {
+        const args: ShowTicketArgs = { id: validId };
+        await expect(showTicket(args, services)).rejects.toThrow(TicketNotFoundError);
+      }
+      
+      // Test that 0001 exists and returns successfully
+      const existingArgs: ShowTicketArgs = { id: '0001' };
+      const result = await showTicket(existingArgs, services);
+      expect(result.success).toBe(true);
     });
 
     it('should accept valid 4-digit IDs', async () => {

@@ -31,7 +31,7 @@ export class FileUtils {
   /**
    * Read and parse JSON file
    */
-  static async readJson<T = any>(filePath: string): Promise<T | null> {
+  static async readJson<T = unknown>(filePath: string): Promise<T | null> {
     try {
       const content = await readFile(filePath, 'utf-8');
       return JSON.parse(content);
@@ -54,14 +54,14 @@ export class FileUtils {
   /**
    * Read package.json from a directory
    */
-  static async readPackageJson(dirPath: string): Promise<any> {
+  static async readPackageJson(dirPath: string): Promise<unknown> {
     return this.readJson(join(dirPath, 'package.json'));
   }
 
   /**
    * Read composer.json from a directory
    */
-  static async readComposerJson(dirPath: string): Promise<any> {
+  static async readComposerJson(dirPath: string): Promise<unknown> {
     return this.readJson(join(dirPath, 'composer.json'));
   }
 
@@ -80,5 +80,22 @@ export class FileUtils {
     
     const match = versionString.match(/\d+\.\d+(\.\d+)?/);
     return match ? match[0] : undefined;
+  }
+
+  /**
+   * Generate filename for ticket based on ID and title
+   */
+  static generateTicketFilename(id: string, title: string): string {
+    // Normalize ID to remove # prefix for GitHub IDs
+    const normalizedId = id.replace(/^#/, '');
+    
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-')         // Replace spaces with hyphens
+      .replace(/-+/g, '-')          // Replace multiple hyphens with single
+      .replace(/^-|-$/g, '');       // Remove leading/trailing hyphens
+    
+    return `${normalizedId}-${slug}.md`;
   }
 }
