@@ -159,22 +159,40 @@ npm run dev           # Development mode with watch
 
 #### 🎫 Ticket Management
 ```bash
+# Local backend (default)
 ait3 ticket create "Feature name"             # Create new ticket
 ait3 ticket list                              # List all tickets
 ait3 ticket list --status doing               # Filter by status
-ait3 ticket start 001                         # Start working on ticket
-ait3 ticket show 001                          # Show ticket details
-ait3 ticket complete 001                      # Complete ticket
-ait3 ticket delete 001                        # Delete ticket
+ait3 ticket start 0001                        # Start working on ticket
+ait3 ticket show 0001                         # Show ticket details
+ait3 ticket complete 0001                     # Complete ticket
+ait3 ticket delete 0001                       # Delete ticket
+
+# GitHub backend 
+# IMPORTANT: Use issue numbers WITHOUT the '#' prefix
+ait3 ticket start 82                          # ✅ Correct - starts GitHub issue #82
+ait3 ticket start #82                         # ❌ Won't work - shell interprets # as comment
+ait3 ticket start '#82'                       # ⚠️ Works but not recommended
+
+# Examples with GitHub backend
+ait3 ticket complete 123                      # Complete GitHub issue #123
+ait3 ticket show 45                           # Show details of GitHub issue #45
 ```
 
 #### 🧠 AIT³ Workflow
 ```bash
+# Local backend
 ait3 flow plan "feature-name"                 # PLANNING: Socratic dialogue
-ait3 flow red 001                             # RED: Create failing tests
-ait3 flow green 001                           # GREEN: Implement feature
-ait3 flow refactor 001                        # REFACTOR: Optimize code
-ait3 flow squash 001                          # SQUASH: Clean commits & PR
+ait3 flow red 0001                            # RED: Create failing tests
+ait3 flow green 0001                          # GREEN: Implement feature
+ait3 flow refactor 0001                       # REFACTOR: Optimize code
+ait3 flow squash 0001                         # SQUASH: Clean commits & PR
+
+# GitHub backend - use issue numbers WITHOUT '#'
+ait3 flow red 82                              # RED phase for GitHub issue #82
+ait3 flow green 82                            # GREEN phase for GitHub issue #82
+ait3 flow refactor 82                         # REFACTOR phase for GitHub issue #82
+ait3 flow squash 82                           # SQUASH phase for GitHub issue #82
 ```
 
 #### 🔍 Project Analysis

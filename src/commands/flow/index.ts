@@ -8,6 +8,7 @@ import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
 import { STYLES } from '../../common/styles.js';
 import { ServiceFactory } from '../../services/ServiceFactory.js';
+import { createMissingFlowIdErrorHandler } from '../ticket/error-handler.js';
 
 // Service container - centralized dependency injection
 // Use ServiceFactory to ensure proper dependency inversion
@@ -80,6 +81,8 @@ flowCommand
   .addOption(new Option('-t, --type <type>', 'Test type to generate').choices(['unit', 'integration', 'both']).default('unit'))
   .option('-i, --interactive', 'Interactive mode for test customization')
   .option('-d, --dry-run', 'Preview what would be generated without creating files')
+  .showHelpAfterError()
+  .exitOverride(createMissingFlowIdErrorHandler('red'))
   .action(async (ticketId: string, options) => {
     try {
       const result = await redPhase(
@@ -116,6 +119,8 @@ flowCommand
   .command('green <ticketId>')
   .description('GREEN Phase - Make tests pass with minimal implementation')
   .option('-s, --strict', 'Enable strict mode for test immutability (default: true)', true)
+  .showHelpAfterError()
+  .exitOverride(createMissingFlowIdErrorHandler('green'))
   .option('--no-strict', 'Disable strict mode (not recommended)')
   .option('-v, --verbose', 'Show detailed progress and analysis')
   .option('-t, --target <testFile>', 'Focus on specific test file')
@@ -156,6 +161,8 @@ flowCommand
   .description('REFACTOR Phase - Analyze and suggest code optimizations')
   .option('-v, --verbose', 'Show detailed analysis results')
   .option('-f, --focus <areas>', 'Focus on specific areas (comma-separated: duplication,mocks,types,organization)')
+  .showHelpAfterError()
+  .exitOverride(createMissingFlowIdErrorHandler('refactor'))
   .action(async (ticketId: string, options) => {
     try {
       const result = await refactorPhase(
@@ -192,6 +199,8 @@ flowCommand
 flowCommand
   .command('squash <ticketId>')
   .description('SQUASH Phase - Git command suggestions for clean commit history')
+  .showHelpAfterError()
+  .exitOverride(createMissingFlowIdErrorHandler('squash'))
   .option('--pr', 'Include PR creation commands')
   .option('--no-squash', 'Skip squash suggestions, only show merge commands')
   .option('--dry-run', 'Show what would be suggested without analysis')
