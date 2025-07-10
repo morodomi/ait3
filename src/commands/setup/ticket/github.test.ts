@@ -30,7 +30,9 @@ describe('setupTicketGitHub', () => {
     mockExec = vi.fn();
     
     services = {
-      ticketService: {} as any,
+      ticketService: {
+        listTickets: vi.fn().mockResolvedValue([]),
+      } as any,
       gitService: {} as any,
       projectAnalyzer: {} as any,
     };
@@ -148,6 +150,58 @@ describe('setupTicketGitHub', () => {
         done: 'status:done',
       });
     });
+
+    it('should store remote name in configuration', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' })
+        .mockResolvedValueOnce({ stdout: 'origin\tgit@github.com:owner/repo.git' });
+
+      await setupTicketGitHub({}, services, { cwd: testDir }, mockExec);
+
+      const config = JSON.parse(
+        await readFile(join(testDir, '.tickets', 'config.json'), 'utf-8')
+      );
+
+      expect(config.github.remote).toBe('origin');
+    });
+
+    it('should handle multiple remotes by prompting user', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' })
+        .mockResolvedValueOnce({ 
+          stdout: 'origin\tgit@github.com:owner1/repo1.git (fetch)\nupstream\tgit@github.com:owner2/repo2.git (fetch)' 
+        });
+
+      const result = await setupTicketGitHub({}, services, { cwd: testDir }, mockExec);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Multiple remotes found');
+      expect(result.data?.details).toContain('origin: owner1/repo1');
+      expect(result.data?.details).toContain('upstream: owner2/repo2');
+      expect(result.data?.details).toContain('ait3 setup ticket github owner/repo');
+    });
+
+    it('should detect and notify about existing local tickets', async () => {
+      services.ticketService.listTickets = vi.fn().mockResolvedValue([
+        { id: '001', title: 'Test ticket 1' },
+        { id: '002', title: 'Test ticket 2' },
+        { id: '003', title: 'Test ticket 3' }
+      ]);
+
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' })
+        .mockResolvedValueOnce({ stdout: 'origin\tgit@github.com:owner/repo.git' });
+
+      const result = await setupTicketGitHub({}, services, { cwd: testDir }, mockExec);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('GitHub ticket backend configured successfully');
+      expect(result.data?.details).toContain('Found 3 local tickets');
+      expect(result.data?.details).toContain('Use \'ait3 migrate\' to transfer them');
+    });
   });
 
   describe('error handling', () => {
@@ -198,7 +252,7 @@ describe('setupTicketGitHub', () => {
       mockExec
         .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
         .mockResolvedValueOnce({ stdout: 'Logged in to github.com' })
-        .mockResolvedValueOnce({ stdout: 'origin\tgit@github.com:new/repo.git' });
+        .mockResolvedValueOnce({ stdout: 'origin\tgit@github.com:new/repo.git (fetch)' });
 
       const result = await setupTicketGitHub(
         { force: true }, 
@@ -224,8 +278,67 @@ describe('setupTicketGitHub', () => {
       const result = await setupTicketGitHub({}, services, { cwd: testDir }, mockExec);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('already configured');
+      expect(result.message).toContain('Already configured');
       expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    it('should show current configuration when already configured', async () => {
+      await writeFile(
+        join(testDir, '.tickets', 'config.json'),
+        JSON.stringify({ 
+          backend: 'github',
+          github: { owner: 'morodomi', repo: 'ait3' }
+        })
+      );
+
+      const result = await setupTicketGitHub({}, services, { cwd: testDir }, mockExec);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Already configured for GitHub (morodomi/ait3)');
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    it('should accept owner/repo argument', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' })
+        .mockResolvedValueOnce({ 
+          stdout: JSON.stringify({ owner: { login: 'testowner' }, name: 'testrepo' })
+        });
+
+      const result = await setupTicketGitHub(
+        { repository: 'testowner/testrepo' },
+        services,
+        { cwd: testDir },
+        mockExec
+      );
+
+      expect(result.success).toBe(true);
+      expect(mockExec).toHaveBeenCalledWith('gh api repos/testowner/testrepo', expect.anything());
+      
+      const config = JSON.parse(
+        await readFile(join(testDir, '.tickets', 'config.json'), 'utf-8')
+      );
+      expect(config.github.owner).toBe('testowner');
+      expect(config.github.repo).toBe('testrepo');
+    });
+
+    it('should validate repository access when owner/repo provided', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' })
+        .mockRejectedValueOnce(new Error('Could not resolve to a Repository'));
+
+      const result = await setupTicketGitHub(
+        { repository: 'invalid/repo' },
+        services,
+        { cwd: testDir },
+        mockExec
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Cannot access repository: invalid/repo');
+      expect(result.data?.details).toContain('Check repository name and access permissions');
     });
   });
 });
