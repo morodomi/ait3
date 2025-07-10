@@ -618,4 +618,67 @@ export class LocalTicketService implements TicketService {
       throw new FileSystemError(`Failed to undo ticket: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
     }
   }
+
+  async deleteTicket(id: string): Promise<void> {
+    try {
+      await this.ensureDirectoryStructure();
+
+      // Find the ticket in all directories
+      const directories = [
+        TICKET_CONSTANTS.DIRECTORIES.TODO,
+        TICKET_CONSTANTS.DIRECTORIES.DOING,
+        TICKET_CONSTANTS.DIRECTORIES.DONE
+      ];
+
+      let currentFilePath: string | null = null;
+
+      // Search for the ticket across all status directories
+      for (const dir of directories) {
+        const dirPath = join(this.basePath, dir);
+        try {
+          const files = await readdir(dirPath);
+          const targetFile = files.find(file => 
+            file.endsWith('.md') && file.startsWith(`${id}-`)
+          );
+          
+          if (targetFile) {
+            currentFilePath = join(dirPath, targetFile);
+            break;
+          }
+        } catch {
+          // Skip if directory doesn't exist or can't be read
+          continue;
+        }
+      }
+
+      // Check if ticket exists
+      if (!currentFilePath) {
+        throw new TicketNotFoundError(id);
+      }
+
+      // Delete the file with Git integration
+      if (this.gitService && await this.isGitRepository()) {
+        try {
+          // Use git rm to remove the file
+          await this.gitService.removeFile(currentFilePath);
+        } catch (error) {
+          // Git removal failed, fall back to file system operation
+          console.warn('Git removal failed, falling back to file system operation:', error instanceof Error ? error.message : String(error));
+          await rm(currentFilePath, { force: true });
+        }
+      } else {
+        // Direct file system deletion
+        await rm(currentFilePath, { force: true });
+      }
+
+    } catch (error) {
+      // Re-throw specific errors as-is
+      if (error instanceof TicketNotFoundError) {
+        throw error;
+      }
+      
+      // Wrap other errors
+      throw new FileSystemError(`Failed to delete ticket: ${error instanceof Error ? error.message : String(error)}`, this.basePath);
+    }
+  }
 }

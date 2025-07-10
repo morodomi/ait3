@@ -68,4 +68,11 @@ export interface GitService {
    * @throws Error if git mv fails
    */
   moveFile(oldPath: string, newPath: string): Promise<void>;
+
+  /**
+   * Remove a file using git rm command
+   * @param filePath - Path to the file to remove
+   * @throws Error if git rm fails
+   */
+  removeFile(filePath: string): Promise<void>;
 }

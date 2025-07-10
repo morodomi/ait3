@@ -5,6 +5,7 @@ import { showTicket } from './show.js';
 import { startTicket } from './start.js';
 import { completeTicket } from './complete.js';
 import { undoTicket } from './undo.js';
+import { deleteTicket } from './delete.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError, TicketNotStartedError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
 import { STYLES } from '../../common/styles.js';
@@ -212,6 +213,32 @@ ticketCommand
         console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
       } else {
         console.error(STYLES.danger('ERROR undoing ticket:'), error instanceof Error ? error.message : String(error));
+      }
+      process.exit(1);
+    }
+  });
+
+// ticket delete subcommand
+ticketCommand
+  .command('delete <id>')
+  .description('Delete a ticket')
+  .option('--dry-run', 'Preview deletion without executing')
+  .action(async (id: string, options) => {
+    try {
+      const services = ServiceFactory.createServices();
+      const result = await deleteTicket({ id, dryRun: options.dryRun }, services);
+      console.log(result.message);
+      process.exit(result.success ? 0 : 1);
+    } catch (error) {
+      // Enhanced error handling with better UX
+      if (error instanceof ValidationError) {
+        console.error(STYLES.danger('ERROR:'), error.message);
+        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
+      } else if (error instanceof TicketNotFoundError) {
+        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
+        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
+      } else {
+        console.error(STYLES.danger('ERROR deleting ticket:'), error instanceof Error ? error.message : String(error));
       }
       process.exit(1);
     }

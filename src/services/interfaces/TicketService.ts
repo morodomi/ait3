@@ -7,7 +7,7 @@ export interface TicketService {
   startTicket(id: string): Promise<void>;
   completeTicket(id: string): Promise<void>;
   undoTicket(id: string): Promise<void>;
+  deleteTicket(id: string): Promise<void>;
   // Future methods:
   // updateTicket(id: string, updates: Partial<Ticket>): Promise<Ticket>;
-  // deleteTicket(id: string): Promise<void>;
 }
