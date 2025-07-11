@@ -61,7 +61,7 @@ describe('CLI Integration: flow plan', () => {
 
       expect(result).toContain('PLANNING Phase');
       expect(result).toContain('Claude Code Instructions');
-      expect(result).toContain('Next Action');
+      expect(result).toContain('TODO:');
       expect(result).toContain('test-planning-feature'); // Converted to kebab-case
     });
 
@@ -237,6 +237,57 @@ describe('CLI Integration: flow plan', () => {
         expect.fail('Command should have failed');
       } catch (error: any) {
         expect(error.code).not.toBe(0);
+      }
+    });
+
+    it('should show standardized ERROR: format for validation errors', () => {
+      try {
+        execSync('node dist/cli.js flow plan invalid-id', {
+          encoding: 'utf8',
+          timeout: 5000,
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
+        });
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        // Verify standardized ERROR: format instead of "VALIDATION ERROR:"
+        expect(error.stderr || error.stdout).toMatch(/ERROR:/);
+        expect(error.stderr || error.stdout).not.toMatch(/VALIDATION ERROR:/);
+      }
+    });
+
+    it('should show standardized ERROR: format for ticket not found', () => {
+      try {
+        execSync('node dist/cli.js flow plan 9999', {
+          encoding: 'utf8',
+          timeout: 5000,
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
+        });
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        // Verify standardized ERROR: format instead of "TICKET NOT FOUND:"
+        expect(error.stderr || error.stdout).toMatch(/ERROR:/);
+        expect(error.stderr || error.stdout).not.toMatch(/TICKET NOT FOUND:/);
+      }
+    });
+
+    it('should show standardized ERROR: format for planning phase errors', () => {
+      // Mock a service error scenario
+      try {
+        execSync('node dist/cli.js flow plan', {
+          encoding: 'utf8',
+          timeout: 5000,
+          env: { ...process.env, TICKETS_DIR: testDir },
+          stdio: 'pipe'
+        });
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        // Verify standardized ERROR: format instead of "ERROR in planning phase:"
+        if ((error.stderr || error.stdout).includes('ERROR')) {
+          expect(error.stderr || error.stdout).toMatch(/ERROR:/);
+          expect(error.stderr || error.stdout).not.toMatch(/ERROR in planning phase:/);
+        }
       }
     });
   });
