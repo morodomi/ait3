@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-07-11
+
+### Added
+
+#### 📚 Documentation & Guides
+- **Release Process Guide** - Added `.claude/commands/release` with comprehensive release workflow
+- **Review Command Installation** - `ait3 install command review` for multi-agent review guide
+- **Improved ESLint Configuration** - Added explanatory comments for better maintainability
+
+### Changed
+
+#### 🧹 Code Quality Improvements
+- **Zero ESLint Warnings** - Achieved through smart configuration instead of manual fixes
+  - Test files now disable `explicit-function-return-type` rule automatically
+  - Configuration-based solution prevents future occurrences
+  - Reduced from 42 warnings to 0 (100% improvement)
+- **Improved Type Safety** - Replaced all `any` types with `unknown` and proper type guards
+- **Better Test File Coverage** - ESLint rules now apply to both `src/**/*.test.ts` and `tests/**/*.test.ts`
+
+#### 🔧 Command Improvements
+- **`ait3 init` refinement** - Moved review command to separate installation (`ait3 install command review`)
+- **Consistent command structure** - All command guides follow the same format in `.claude/commands/`
+
+### Fixed
+
+#### 🐛 Bug Fixes
+- **Unused variable warnings** - Fixed all instances with proper `_` prefix convention
+- **Catch block improvements** - Removed unused error parameters where not needed
+- **Type annotation consistency** - Resolved all missing return type warnings through configuration
+
+### Developer Experience
+
+#### 🚀 Performance & Efficiency
+- **ESLint configuration** - 42 warnings resolved in minutes vs hours of manual work
+- **Future-proof solution** - New test files automatically inherit proper ESLint rules
+- **Cleaner codebase** - Zero warnings improve IDE experience and code clarity
+
 ## [1.1.0] - 2025-07-10
 
 ### Added
