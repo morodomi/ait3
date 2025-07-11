@@ -42,11 +42,16 @@ export class LinguistLanguageDetector implements LanguageDetector {
           const percentage = data && typeof data === 'object' && 'percentage' in data
             ? (data as { percentage?: number }).percentage || 0
             : 0;
-          const files = data && typeof data === 'object' && 'files' in data
-            ? Array.isArray((data as { files?: unknown }).files) 
-              ? ((data as { files?: unknown[] }).files?.length || 0)
-              : (typeof (data as { files?: number }).files === 'number' ? (data as { files?: number }).files : 0)
-            : 0;
+          
+          let files: number = 0;
+          if (data && typeof data === 'object' && 'files' in data) {
+            const filesData = (data as { files?: unknown }).files;
+            if (Array.isArray(filesData)) {
+              files = filesData.length;
+            } else if (typeof filesData === 'number') {
+              files = filesData;
+            }
+          }
           
           return {
             name,
