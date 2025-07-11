@@ -6,6 +6,19 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
 
+// Mock Octokit
+vi.mock('@octokit/rest', () => ({
+  Octokit: vi.fn().mockImplementation(() => ({
+    rest: {
+      repos: {
+        get: vi.fn().mockResolvedValue({
+          data: { owner: { login: 'test-user' }, name: 'my-repo.js' }
+        })
+      }
+    }
+  }))
+}));
+
 describe('setupTicketGitHub', () => {
   let testDir: string;
   let services: Services;
@@ -264,6 +277,160 @@ describe('setupTicketGitHub', () => {
     });
   });
 
+  describe('security: command injection protection', () => {
+    it('should prevent command injection via repository owner field', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' });
+
+      const maliciousRepository = 'test; rm -rf //repo';
+      
+      const result = await setupTicketGitHub(
+        { repository: maliciousRepository },
+        services,
+        { cwd: testDir },
+        mockExec
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Invalid repository format');
+      expect(result.data?.details).toContain('Use format: owner/repo');
+      
+      // Should NOT execute any dangerous commands
+      expect(mockExec).not.toHaveBeenCalledWith(
+        expect.stringContaining('rm -rf'),
+        expect.anything()
+      );
+    });
+
+    it('should prevent command injection via repository repo field', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' });
+
+      const maliciousRepository = 'validowner/test`whoami`';
+      
+      const result = await setupTicketGitHub(
+        { repository: maliciousRepository },
+        services,
+        { cwd: testDir },
+        mockExec
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Invalid repository format');
+      
+      // Should NOT execute command substitution
+      expect(mockExec).not.toHaveBeenCalledWith(
+        expect.stringContaining('whoami'),
+        expect.anything()
+      );
+    });
+
+    it('should prevent command injection via semicolon separator', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' });
+
+      const maliciousRepository = 'test/repo; cat /etc/passwd';
+      
+      const result = await setupTicketGitHub(
+        { repository: maliciousRepository },
+        services,
+        { cwd: testDir },
+        mockExec
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Invalid repository format');
+      
+      // Should NOT execute command injection attempts
+      expect(mockExec).not.toHaveBeenCalledWith(
+        expect.stringContaining('cat /etc/passwd'),
+        expect.anything()
+      );
+    });
+
+    it('should prevent command injection via pipe operator', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' });
+
+      const maliciousRepository = 'test/repo | id';
+      
+      const result = await setupTicketGitHub(
+        { repository: maliciousRepository },
+        services,
+        { cwd: testDir },
+        mockExec
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Invalid repository format');
+      
+      // Should NOT execute pipe injection
+      expect(mockExec).not.toHaveBeenCalledWith(
+        expect.stringContaining('| id'),
+        expect.anything()
+      );
+    });
+
+    it('should prevent command injection via command substitution variations', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' });
+
+      const attackVectors = [
+        'test/$(id)',        // Command substitution
+        'test/repo&id',      // Background execution
+        'test/repo||id',     // Logical OR
+        'test/repo&&id',     // Logical AND
+      ];
+
+      for (const maliciousRepository of attackVectors) {
+        const result = await setupTicketGitHub(
+          { repository: maliciousRepository },
+          services,
+          { cwd: testDir },
+          mockExec
+        );
+
+        expect(result.success).toBe(false);
+        expect(result.message).toContain('Invalid repository format');
+      }
+      
+      // Should NOT execute any malicious commands
+      expect(mockExec).not.toHaveBeenCalledWith(
+        expect.stringMatching(/id|whoami|cat|rm/),
+        expect.anything()
+      );
+    });
+
+    it('should allow legitimate repository names with valid characters', async () => {
+      mockExec
+        .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
+        .mockResolvedValueOnce({ stdout: 'Logged in to github.com' })
+        .mockResolvedValueOnce({ stdout: 'fake-auth-token' }); // Mock gh auth token
+
+      const legitimateRepository = 'test-user/my-repo.js';
+      
+      const result = await setupTicketGitHub(
+        { repository: legitimateRepository },
+        services,
+        { cwd: testDir },
+        mockExec
+      );
+
+      expect(result.success).toBe(true);
+      
+      // Should use Octokit API instead of shell command
+      expect(mockExec).not.toHaveBeenCalledWith(
+        expect.stringContaining('gh api repos'),
+        expect.anything()
+      );
+    });
+  });
+
   describe('options', () => {
     it('should force setup even if already configured', async () => {
       // Pre-configure as github
@@ -328,9 +495,7 @@ describe('setupTicketGitHub', () => {
       mockExec
         .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
         .mockResolvedValueOnce({ stdout: 'Logged in to github.com' })
-        .mockResolvedValueOnce({ 
-          stdout: JSON.stringify({ owner: { login: 'testowner' }, name: 'testrepo' })
-        });
+        .mockResolvedValueOnce({ stdout: 'fake-auth-token' }); // Mock gh auth token
 
       const result = await setupTicketGitHub(
         { repository: 'testowner/testrepo' },
@@ -340,7 +505,12 @@ describe('setupTicketGitHub', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(mockExec).toHaveBeenCalledWith('gh api repos/testowner/testrepo', expect.anything());
+      
+      // Should use Octokit API instead of shell command
+      expect(mockExec).not.toHaveBeenCalledWith(
+        expect.stringContaining('gh api repos'),
+        expect.anything()
+      );
       
       const config = JSON.parse(
         await readFile(join(testDir, '.tickets', 'config.json'), 'utf-8')
@@ -350,10 +520,21 @@ describe('setupTicketGitHub', () => {
     });
 
     it('should validate repository access when owner/repo provided', async () => {
+      // Mock Octokit to fail for this specific test
+      const { Octokit } = await import('@octokit/rest');
+      const mockOctokit = {
+        rest: {
+          repos: {
+            get: vi.fn().mockRejectedValue(new Error('Not Found'))
+          }
+        }
+      };
+      vi.mocked(Octokit).mockImplementationOnce(() => mockOctokit as unknown as InstanceType<typeof Octokit>);
+
       mockExec
         .mockResolvedValueOnce({ stdout: 'gh version 2.40.0' })
         .mockResolvedValueOnce({ stdout: 'Logged in to github.com' })
-        .mockRejectedValueOnce(new Error('Could not resolve to a Repository'));
+        .mockResolvedValueOnce({ stdout: 'fake-auth-token' }); // Mock gh auth token
 
       const result = await setupTicketGitHub(
         { repository: 'invalid/repo' },

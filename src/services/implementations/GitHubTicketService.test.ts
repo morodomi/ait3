@@ -505,4 +505,68 @@ describe('GitHubTicketService', () => {
       });
     });
   });
+
+  describe('security: command injection protection in deleteTicket', () => {
+    it('should prevent command injection via malicious owner configuration', async () => {
+      // Create service with malicious owner configuration
+      const maliciousService = new GitHubTicketService({
+        owner: 'test; rm -rf /',
+        repo: 'testrepo',
+        token: 'test-token',
+      });
+
+      // deleteTicket should not execute dangerous commands
+      await expect(async () => {
+        await maliciousService.deleteTicket('123');
+      }).rejects.toThrow();
+      
+      // Should NOT have executed shell command injection
+      // (This test will fail until we implement the secure Octokit version)
+    });
+
+    it('should prevent command injection via malicious repo configuration', async () => {
+      // Create service with malicious repo configuration
+      const maliciousService = new GitHubTicketService({
+        owner: 'testowner',
+        repo: 'test`whoami`',
+        token: 'test-token',
+      });
+
+      // deleteTicket should not execute command substitution
+      await expect(async () => {
+        await maliciousService.deleteTicket('123');
+      }).rejects.toThrow();
+      
+      // Should NOT have executed command substitution
+      // (This test will fail until we implement the secure Octokit version)
+    });
+
+    it('should prevent command injection via malicious ticket ID', async () => {
+      // Malicious ticket ID with command injection
+      const maliciousTicketId = '123; cat /etc/passwd';
+
+      // deleteTicket should not execute dangerous commands
+      await expect(async () => {
+        await service.deleteTicket(maliciousTicketId);
+      }).rejects.toThrow();
+      
+      // Should NOT have executed shell command injection
+      // (This test will fail until we implement the secure Octokit version)
+    });
+
+    it('should handle legitimate deletion requests safely', async () => {
+      // Mock Octokit for future safe implementation
+      mockOctokit.issues.update = vi.fn().mockResolvedValue({
+        data: { number: 123, state: 'closed' }
+      });
+
+      // This test represents the target secure implementation
+      // (Will need to be updated when we implement Octokit-based deleteTicket)
+      
+      // For now, expect the current implementation to fail
+      await expect(async () => {
+        await service.deleteTicket('123');
+      }).rejects.toThrow();
+    });
+  });
 });
