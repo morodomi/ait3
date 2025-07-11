@@ -37,7 +37,7 @@ ticketCommand
   .action(async (title: string, options) => {
     try {
       // Create services for this command execution
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       
       // Parse labels
       const labels = options.labels?.split(',').map((l: string) => l.trim()).filter(Boolean) || [];
@@ -73,7 +73,7 @@ ticketCommand
   .addOption(new Option('-p, --priority <priority>', 'Filter by priority').choices(['low', 'medium', 'high', 'critical']))
   .action(async (options) => {
     try {
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       const result = await listTickets(options, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
@@ -96,7 +96,7 @@ ticketCommand
   .exitOverride(createMissingIdErrorHandler('show'))
   .action(async (id: string) => {
     try {
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       const result = await showTicket({ id }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
@@ -118,7 +118,7 @@ ticketCommand
   .exitOverride(createMissingIdErrorHandler('start'))
   .action(async (id: string) => {
     try {
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       const result = await startTicket({ id }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
@@ -140,7 +140,7 @@ ticketCommand
   .exitOverride(createMissingIdErrorHandler('complete'))
   .action(async (id: string) => {
     try {
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       const result = await completeTicket({ id }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
@@ -163,7 +163,7 @@ ticketCommand
   .exitOverride(createMissingIdErrorHandler('undo'))
   .action(async (id: string, options) => {
     try {
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       const result = await undoTicket({ id, dryRun: options.dryRun }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
@@ -186,7 +186,7 @@ ticketCommand
   .exitOverride(createMissingIdErrorHandler('delete'))
   .action(async (id: string, options) => {
     try {
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       const result = await deleteTicket({ id, dryRun: options.dryRun }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);

@@ -4,14 +4,13 @@ import { redPhase } from './red.js';
 import { greenPhase } from './green.js';
 import { refactorPhase } from './refactor.js';
 import { squashPhase } from './squash.js';
-import type { Services } from '../../common/types.js';
 import { ServiceFactory } from '../../services/ServiceFactory.js';
 import { createMissingFlowIdErrorHandler } from '../ticket/error-handler.js';
 import { handleCommandError, COMMON_TIPS } from '../../common/command-error-handler.js';
 
 // Service container - centralized dependency injection
 // Use ServiceFactory to ensure proper dependency inversion
-const services: Services = ServiceFactory.createServices();
+// Services are created async per command to respect config changes
 
 export const flowCommand = new Command('flow')
   .description('AIT³ workflow commands - AI + Ticket + Test + Tool driven development')
@@ -42,6 +41,9 @@ flowCommand
   .option('-r, --requirements <requirements>', 'Comma-separated requirements (e.g., "security,oauth,jwt")')
   .action(async (ticketId: string, options) => {
     try {
+      // Create services for this command execution
+      const services = await ServiceFactory.createServices();
+      
       // Parse requirements
       const requirements = options.requirements?.split(',').map((r: string) => r.trim()).filter(Boolean) || [];
       
@@ -77,6 +79,9 @@ flowCommand
   .exitOverride(createMissingFlowIdErrorHandler('red'))
   .action(async (ticketId: string, options) => {
     try {
+      // Create services for this command execution
+      const services = await ServiceFactory.createServices();
+      
       const result = await redPhase(
         {
           ticketId,
@@ -111,6 +116,9 @@ flowCommand
   .option('-t, --target <testFile>', 'Focus on specific test file')
   .action(async (ticketId: string, options) => {
     try {
+      // Create services for this command execution
+      const services = await ServiceFactory.createServices();
+      
       const result = await greenPhase(
         {
           ticketId,
@@ -143,6 +151,9 @@ flowCommand
   .exitOverride(createMissingFlowIdErrorHandler('refactor'))
   .action(async (ticketId: string, options) => {
     try {
+      // Create services for this command execution
+      const services = await ServiceFactory.createServices();
+      
       const result = await refactorPhase(
         {
           ticketId,
@@ -177,6 +188,9 @@ flowCommand
   .option('--dry-run', 'Show what would be suggested without analysis')
   .action(async (ticketId: string, options) => {
     try {
+      // Create services for this command execution
+      const services = await ServiceFactory.createServices();
+      
       const result = await squashPhase(
         {
           ticketId,

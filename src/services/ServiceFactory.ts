@@ -9,7 +9,7 @@ import { DefaultProjectAnalyzer } from './implementations/DefaultProjectAnalyzer
 import { LinguistLanguageDetector } from './implementations/LinguistLanguageDetector.js';
 import { ConfigBasedCommandDetector } from './implementations/ConfigBasedCommandDetector.js';
 import { DirectoryStructureAnalyzer } from './implementations/DirectoryStructureAnalyzer.js';
-import { readFileSync } from 'fs';
+import { promises as fs } from 'fs';
 import { join } from 'path';
 
 /**
@@ -20,8 +20,8 @@ export class ServiceFactory {
   /**
    * Create default services for production use
    */
-  static createServices(): Services {
-    const config = this.loadConfig();
+  static async createServices(): Promise<Services> {
+    const config = await this.loadConfig();
     const gitService = this.createGitService();
     const projectAnalyzer = this.createProjectAnalyzer();
     
@@ -83,11 +83,11 @@ export class ServiceFactory {
   /**
    * Load backend configuration from .tickets/config.json
    */
-  private static loadConfig(): BackendConfig {
+  private static async loadConfig(): Promise<BackendConfig> {
     try {
       const ticketsPath = process.env.TICKETS_DIR || '.tickets';
       const configPath = join(process.cwd(), ticketsPath, 'config.json');
-      const configContent = readFileSync(configPath, 'utf-8');
+      const configContent = await fs.readFile(configPath, 'utf-8');
       const config = JSON.parse(configContent);
       
       return {

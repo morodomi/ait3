@@ -48,7 +48,7 @@ describe('ServiceFactory', () => {
 
   describe('backend configuration detection', () => {
     it('should default to local backend when no config file exists', async () => {
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       
       expect(services.ticketService).toBeDefined();
       expect(LocalTicketService).toHaveBeenCalled();
@@ -66,7 +66,7 @@ describe('ServiceFactory', () => {
         })
       );
 
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       
       expect(services.ticketService).toBeDefined();
       expect(LocalTicketService).toHaveBeenCalled();
@@ -88,7 +88,7 @@ describe('ServiceFactory', () => {
         })
       );
 
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       
       expect(services.ticketService).toBeDefined();
       expect(GitHubTicketService).toHaveBeenCalled();
@@ -103,7 +103,7 @@ describe('ServiceFactory', () => {
         'invalid json'
       );
 
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       
       // Should fallback to local backend
       expect(services.ticketService).toBeDefined();
@@ -122,9 +122,7 @@ describe('ServiceFactory', () => {
         })
       );
 
-      expect(() => {
-        ServiceFactory.createServices();
-      }).toThrow('GitHub backend configuration missing');
+      await expect(ServiceFactory.createServices()).rejects.toThrow('GitHub backend configuration missing');
     });
   });
 
@@ -150,7 +148,7 @@ describe('ServiceFactory', () => {
         })
       );
 
-      ServiceFactory.createServices();
+      await ServiceFactory.createServices();
       
       expect(GitHubTicketService).toHaveBeenCalledWith(githubConfig);
     });
@@ -167,7 +165,7 @@ describe('ServiceFactory', () => {
         JSON.stringify(localConfig)
       );
 
-      ServiceFactory.createServices();
+      await ServiceFactory.createServices();
       
       expect(LocalTicketService).toHaveBeenCalledWith(
         '.tickets',
@@ -188,7 +186,7 @@ describe('ServiceFactory', () => {
         })
       );
 
-      ServiceFactory.createServices();
+      await ServiceFactory.createServices();
       
       expect(LocalTicketService).toHaveBeenCalledWith(
         customPath,
@@ -201,7 +199,7 @@ describe('ServiceFactory', () => {
     it('should disable git service in test environment', async () => {
       process.env.NODE_ENV = 'test';
 
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       
       expect(services.gitService).toBeUndefined();
     });
@@ -209,9 +207,103 @@ describe('ServiceFactory', () => {
     it('should disable git service in vitest environment', async () => {
       process.env.VITEST = 'true';
 
-      const services = ServiceFactory.createServices();
+      const services = await ServiceFactory.createServices();
       
       expect(services.gitService).toBeUndefined();
+    });
+  });
+
+  describe('async behavior (ticket #120)', () => {
+    it('should return a Promise when createServices is called', async () => {
+      const result = ServiceFactory.createServices();
+      
+      // After async conversion, this should be a Promise
+      expect(result).toBeInstanceOf(Promise);
+      
+      const services = await result;
+      expect(services).toBeDefined();
+      expect(services.ticketService).toBeDefined();
+    });
+
+    it('should handle file reading asynchronously without blocking', async () => {
+      // Create config file
+      await mkdir(join(testDir, '.tickets'), { recursive: true });
+      await writeFile(
+        join(testDir, '.tickets', 'config.json'),
+        JSON.stringify({
+          backend: 'local',
+          path: '.tickets'
+        })
+      );
+
+      const startTime = Date.now();
+      
+      // This should not block the main thread
+      const servicesPromise = ServiceFactory.createServices();
+      
+      // Should return immediately (non-blocking)
+      const immediateTime = Date.now();
+      expect(immediateTime - startTime).toBeLessThan(10); // Should be nearly instant
+      
+      // Actual services should be available after await
+      const services = await servicesPromise;
+      expect(services.ticketService).toBeDefined();
+    });
+
+    it('should handle concurrent createServices calls properly', async () => {
+      // Create config file
+      await mkdir(join(testDir, '.tickets'), { recursive: true });
+      await writeFile(
+        join(testDir, '.tickets', 'config.json'),
+        JSON.stringify({
+          backend: 'local',
+          path: '.tickets'
+        })
+      );
+
+      // Multiple concurrent calls should not interfere
+      const promises = [
+        ServiceFactory.createServices(),
+        ServiceFactory.createServices(),
+        ServiceFactory.createServices()
+      ];
+
+      const results = await Promise.all(promises);
+      
+      results.forEach(services => {
+        expect(services.ticketService).toBeDefined();
+        expect(LocalTicketService).toHaveBeenCalled();
+      });
+    });
+
+    it('should handle async file reading errors gracefully', async () => {
+      // Create .tickets directory but with unreadable config file
+      await mkdir(join(testDir, '.tickets'), { recursive: true });
+      await writeFile(
+        join(testDir, '.tickets', 'config.json'),
+        'invalid json content'
+      );
+
+      // Should still resolve successfully with fallback config
+      const services = await ServiceFactory.createServices();
+      
+      expect(services.ticketService).toBeDefined();
+      expect(LocalTicketService).toHaveBeenCalled();
+    });
+
+    it('should maintain error handling behavior with async operations', async () => {
+      // Test missing GitHub config with async behavior
+      await mkdir(join(testDir, '.tickets'), { recursive: true });
+      await writeFile(
+        join(testDir, '.tickets', 'config.json'),
+        JSON.stringify({
+          backend: 'github'
+          // Missing github configuration
+        })
+      );
+
+      // Should reject the promise with proper error
+      await expect(ServiceFactory.createServices()).rejects.toThrow('GitHub backend configuration missing');
     });
   });
 });
