@@ -3,7 +3,7 @@ import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { IDUtils } from '../../common/utils.js';
 import { generateCommitMessage, formatTicketHeader } from '../../common/flow-utils.js';
-import { formatTicketLocation } from '../../common/utils/location-utils.js';
+import { formatTicketDisplay } from '../../common/utils/location-utils.js';
 
 const INVALID_TICKET_ID_MESSAGE = 'Invalid ticket ID format. Use local format (0001) or GitHub format (#70, 70)';
 
@@ -58,7 +58,7 @@ function expressPlan(ticketId: string, featureName: string, ticket: Ticket, serv
   const requirementsText = requirements?.length 
     ? `\n${STYLES.info('INFO: Requirements')}: ${requirements.join(', ')}`
     : '';
-  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
+  const ticketLocation = formatTicketDisplay(ticket, services.ticketService);
 
   return {
     success: true,
@@ -85,7 +85,7 @@ ${STYLES.muted('Express mode: ait3 flow red after quick approval')}
 }
 
 function manualPlan(ticketId: string, featureName: string, ticket: Ticket, services: Services, _ticketInfo?: string): CLIResult {
-  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
+  const ticketLocation = formatTicketDisplay(ticket, services.ticketService);
 
   return {
     success: true,
@@ -125,7 +125,7 @@ function guidedPlan(ticketId: string, featureName: string, ticket: Ticket, servi
   const requirementsSection = requirements?.length 
     ? `\n${STYLES.info('INFO: Requirements')}: ${requirements.join(', ')}`
     : '';
-  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
+  const ticketLocation = formatTicketDisplay(ticket, services.ticketService);
 
   return {
     success: true,

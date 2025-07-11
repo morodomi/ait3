@@ -3,7 +3,7 @@ import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils, IDUtils } from '../../common/utils.js';
-import { formatTicketLocation } from '../../common/utils/location-utils.js';
+import { formatTicketDisplay } from '../../common/utils/location-utils.js';
 
 export interface SquashArgs {
   ticketId: string;
@@ -77,7 +77,7 @@ export async function squashPhase(
   }
 
   // Generate Git command suggestions with ticket location  
-  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
+  const ticketLocation = formatTicketDisplay(ticket, services.ticketService);
   
   const locationInfo = `${STYLES.bold('SQUASH Phase')} for Ticket #${ticketId}: ${ticket.title}\n` +
                       `${STYLES.info('LOCATION: Ticket location')}: ${STYLES.info(ticketLocation)}\n`;

@@ -4,7 +4,7 @@ import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { IDUtils } from '../../common/utils.js';
 import { generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
-import { formatTicketLocation } from '../../common/utils/location-utils.js';
+import { formatTicketDisplay } from '../../common/utils/location-utils.js';
 
 export interface GreenArgs {
   ticketId: string;
@@ -107,7 +107,7 @@ ${STYLES.info('TIP: Check test configuration and ensure all dependencies are ins
 ${formatTicketHeader(ticketId, ticketTitle, 'GREEN Phase', ticket, services)}
 
 ${STYLES.bold('Claude Code Instructions')}:
-1. Read ticket: ${STYLES.info(formatTicketLocation(ticket, services.ticketService))}
+1. Read ticket: ${STYLES.info(formatTicketDisplay(ticket, services.ticketService))}
 2. Run tests and analyze failures
 3. Implement minimal code to pass tests:
    ├─ Follow existing codebase patterns
