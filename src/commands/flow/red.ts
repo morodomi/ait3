@@ -4,7 +4,7 @@ import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { SlugUtils, IDUtils } from '../../common/utils.js';
 import { generateCommitMessage, formatTicketHeader, getTicketOrThrow } from '../../common/flow-utils.js';
-import { formatTicketLocation } from '../../common/utils/location-utils.js';
+import { formatTicketDisplay } from '../../common/utils/location-utils.js';
 
 export interface RedArgs {
   ticketId: string;
@@ -84,7 +84,7 @@ export async function redPhase(
 
   // Get ticket title for better formatting
   const ticketTitle = ticket.title || 'Feature';
-  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
+  const ticketLocation = formatTicketDisplay(ticket, services.ticketService);
 
   return {
     success: true,
@@ -153,7 +153,7 @@ function generateIntegrationTestPath(ticket: { title: string }): string {
 
 function generateInteractiveOutput(ticket: Ticket, testCases: string[], dryRun: boolean, services: Services): CLIResult {
   const prefix = dryRun ? `${STYLES.warning('[DRY RUN]')} ` : '';
-  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
+  const ticketLocation = formatTicketDisplay(ticket, services.ticketService);
   
   return {
     success: true,
@@ -181,7 +181,7 @@ ${STYLES.muted('Interactive mode: Select an option to continue')}
 
 function generateDryRunOutput(ticket: Ticket, type: string, testCases: string[], services: Services): CLIResult {
   const files: string[] = [];
-  const ticketLocation = formatTicketLocation(ticket, services.ticketService);
+  const ticketLocation = formatTicketDisplay(ticket, services.ticketService);
   
   if (type === 'unit' || type === 'both') {
     files.push(`- ${generateUnitTestPath(ticket)}`);

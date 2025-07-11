@@ -4,7 +4,7 @@ import { STYLES } from '../../common/styles.js';
 import { FLOW_MESSAGES } from '../../common/flow-messages.js';
 import { IDUtils } from '../../common/utils.js';
 import { generateCommitMessage, formatTicketHeader, getTicketOrThrow, validateTicketForFlow } from '../../common/flow-utils.js';
-import { formatTicketLocation } from '../../common/utils/location-utils.js';
+import { formatTicketDisplay } from '../../common/utils/location-utils.js';
 
 const REFACTOR_MESSAGES = {
   INVALID_FOCUS_AREA: (area: string) => `Invalid focus area: ${area}`
@@ -182,7 +182,7 @@ function formatAnalysisOutput(
   const ticketTitle = ticket?.title || 'Feature';
 
   // Header
-  const ticketLocation = ticket && services ? formatTicketLocation(ticket, services.ticketService) : '.tickets/doing/0001-feature.md';
+  const ticketLocation = ticket && services ? formatTicketDisplay(ticket, services.ticketService) : '.tickets/doing/0001-feature.md';
   sections.push(`${formatTicketHeader(ticketId, ticketTitle, 'REFACTOR Phase', ticket, services)}`);
   
   // Claude Code Instructions

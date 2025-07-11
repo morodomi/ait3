@@ -105,7 +105,7 @@ describe('greenPhase Pure Function', () => {
       const result = await greenPhase({ ticketId: '82' }, githubServices);
 
       expect(result.success).toBe(true);
-      expect(stripAnsi(result.message)).toContain('LOCATION: https://github.com/testowner/testrepo/issues/82');
+      expect(stripAnsi(result.message)).toContain('LOCATION: GitHub Issue #82 (use: gh issue view 82)');
     });
   });
 

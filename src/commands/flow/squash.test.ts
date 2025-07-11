@@ -114,7 +114,7 @@ describe('squashPhase Pure Function', () => {
       const result = await squashPhase({ ticketId: '82' }, githubServices);
 
       expect(result.success).toBe(true);
-      expect(stripAnsi(result.message)).toContain('LOCATION: Ticket location: https://github.com/testowner/testrepo/issues/82');
+      expect(stripAnsi(result.message)).toContain('LOCATION: Ticket location: GitHub Issue #82 (use: gh issue view 82)');
     });
   });
 
