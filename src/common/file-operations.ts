@@ -3,8 +3,9 @@
  * Reduces code duplication for directory creation and file handling
  */
 
-import { mkdir, writeFile, access } from 'fs/promises';
+import { mkdir, writeFile, access, rename, rm } from 'fs/promises';
 import { dirname } from 'path';
+import { randomBytes } from 'crypto';
 import { STYLES } from './styles.js';
 
 export interface FileOperationResult {
@@ -167,4 +168,79 @@ export function generateFileOperationMessage(
   }
   
   return messages.join('\n');
+}
+
+/**
+ * Write file atomically using write-then-rename pattern
+ * Ensures that concurrent reads never see partial content
+ */
+export async function atomicWriteFile(filePath: string, content: string): Promise<void> {
+  // Generate unique temporary file name to avoid conflicts
+  const hash = randomBytes(8).toString('hex');
+  const tempFilePath = `${filePath}.tmp-${hash}`;
+  
+  try {
+    // Step 1: Write content to temporary file
+    await writeFile(tempFilePath, content, 'utf-8');
+    
+    // Step 2: Atomically rename temporary file to target file
+    await rename(tempFilePath, filePath);
+  } catch (error) {
+    // Clean up temporary file on any error
+    try {
+      await rm(tempFilePath, { force: true });
+    } catch {
+      // Ignore cleanup errors - temp file might not exist
+    }
+    
+    // Re-throw original error
+    throw error;
+  }
+}
+
+/**
+ * Write file atomically with directory creation and force overwrite logic
+ * Combines atomic write with existing directory creation patterns
+ */
+export async function atomicWriteFileWithDirectoryCreation(
+  filePath: string,
+  content: string,
+  force: boolean = false
+): Promise<FileOperationResult> {
+  const fileDir = dirname(filePath);
+  
+  try {
+    // Ensure directory exists
+    const directoryCreated = await ensureDirectoryExists(fileDir);
+    
+    // Check if file exists and handle force logic
+    const fileCheck = await checkFileExists(filePath, force);
+    
+    if (!fileCheck.shouldWrite) {
+      return {
+        success: false,
+        directoryCreated,
+        fileOverwritten: false,
+        message: fileCheck.message
+      };
+    }
+    
+    // Write file atomically
+    await atomicWriteFile(filePath, content);
+    
+    return {
+      success: true,
+      directoryCreated,
+      fileOverwritten: fileCheck.exists,
+      message: fileCheck.message
+    };
+    
+  } catch (error) {
+    return {
+      success: false,
+      directoryCreated: false,
+      fileOverwritten: false,
+      message: `${STYLES.danger('ERROR: Failed to create')}: ${filePath}\n${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
 }
