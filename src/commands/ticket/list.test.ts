@@ -100,6 +100,7 @@ describe('listTickets pure function', () => {
 
       expect(result.success).toBe(true);
       // Strip ANSI color codes for comparison
+      // eslint-disable-next-line no-control-regex
       const strippedMessage = result.message.replace(/\u001b\[[0-9;]*m/g, '');
       
       // Should use INFO: instead of LIST:

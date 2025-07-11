@@ -61,6 +61,7 @@ describe('createTicket Pure Function', () => {
 
       expect(result.success).toBe(true);
       // Strip ANSI color codes for comparison
+      // eslint-disable-next-line no-control-regex
       const strippedMessage = result.message.replace(/\u001b\[[0-9;]*m/g, '');
       expect(strippedMessage).toContain('LOCATION:');
       expect(strippedMessage).not.toContain('Location:');
