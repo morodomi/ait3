@@ -4,11 +4,10 @@ import { redPhase } from './red.js';
 import { greenPhase } from './green.js';
 import { refactorPhase } from './refactor.js';
 import { squashPhase } from './squash.js';
-import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
 import type { Services } from '../../common/types.js';
-import { STYLES } from '../../common/styles.js';
 import { ServiceFactory } from '../../services/ServiceFactory.js';
 import { createMissingFlowIdErrorHandler } from '../ticket/error-handler.js';
+import { handleCommandError, COMMON_TIPS } from '../../common/command-error-handler.js';
 
 // Service container - centralized dependency injection
 // Use ServiceFactory to ensure proper dependency inversion
@@ -58,19 +57,12 @@ flowCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
-        if (error.field === 'ticketId') {
-          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
+      handleCommandError(error, {
+        action: 'execute planning phase',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId
         }
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else {
-        console.error(STYLES.danger('ERROR in planning phase:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      });
     }
   });
 
@@ -98,19 +90,12 @@ flowCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
-        if (error.field === 'ticketId') {
-          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
+      handleCommandError(error, {
+        action: 'execute RED phase',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId
         }
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else {
-        console.error(STYLES.danger('ERROR in RED phase:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      });
     }
   });
 
@@ -139,19 +124,12 @@ flowCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
-        if (error.field === 'ticketId') {
-          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
+      handleCommandError(error, {
+        action: 'execute GREEN phase',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId
         }
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else {
-        console.error(STYLES.danger('ERROR in GREEN phase:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      });
     }
   });
 
@@ -178,20 +156,13 @@ flowCommand
       process.exit(result.success ? 0 : 1);
     } catch (error) {
       // Enhanced error handling
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
-        if (error.field === 'ticketId') {
-          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-        } else if (error.field === 'focus') {
-          console.error(STYLES.warning('TIP: Valid areas: duplication, mocks, types, organization'));
+      handleCommandError(error, {
+        action: 'execute REFACTOR phase',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId,
+          focus: COMMON_TIPS.focus
         }
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else {
-        console.error(STYLES.danger('ERROR in REFACTOR phase:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      });
     }
   });
 
@@ -219,18 +190,11 @@ flowCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('VALIDATION ERROR:'), error.message);
-        if (error.field === 'ticketId') {
-          console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
+      handleCommandError(error, {
+        action: 'execute SQUASH phase',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId
         }
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else {
-        console.error(STYLES.danger('ERROR in SQUASH phase:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      });
     }
   });
