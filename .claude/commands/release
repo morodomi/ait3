@@ -5,9 +5,10 @@ This guide describes the simple release process for AIT³ following the Trunk-Ba
 ## Prerequisites
 
 Before starting a release:
-- Ensure all tests pass: `npm run test:ci`
 - Ensure zero ESLint warnings: `npm run lint`
+- Ensure type checking passes: `npm run type-check`
 - Ensure successful build: `npm run build`
+- Ensure all tests pass: `npm run test:ci`
 - Ensure main branch is up to date: `git pull origin main`
 
 ## Release Workflow
@@ -100,7 +101,7 @@ ait3 ticket create "Release v1.2.0 - ESLint zero warnings achievement"
 ait3 ticket start 107
 
 # 2. Ensure clean state
-npm run test:ci && npm run lint && npm run build
+npm run lint && npm run type-check && npm run build && npm run test:ci
 
 # 3. Update version
 npm version minor
