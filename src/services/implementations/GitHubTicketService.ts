@@ -65,7 +65,7 @@ export class GitHubTicketService implements TicketService {
   async createTicket(title: string, options?: CreateTicketOptions): Promise<Ticket> {
     const body = this.formatTicketBody(options);
     
-    const response = await this.octokit.issues.create({
+    const response = await this.octokit.rest.issues.create({
       owner: this.config.owner,
       repo: this.config.repo,
       title,
@@ -93,7 +93,7 @@ export class GitHubTicketService implements TicketService {
       labels.push(`priority:${options.priority}`);
     }
 
-    const response = await this.octokit.issues.listForRepo({
+    const response = await this.octokit.rest.issues.listForRepo({
       owner: this.config.owner,
       repo: this.config.repo,
       labels: labels.length > 0 ? labels.join(',') : undefined,
@@ -107,7 +107,7 @@ export class GitHubTicketService implements TicketService {
   async getTicket(id: string): Promise<Ticket | null> {
     try {
       const issueNumber = this.parseTicketId(id);
-      const response = await this.octokit.issues.get({
+      const response = await this.octokit.rest.issues.get({
         owner: this.config.owner,
         repo: this.config.repo,
         issue_number: issueNumber,
@@ -129,7 +129,7 @@ export class GitHubTicketService implements TicketService {
     await this.updateLabels(issueNumber, 'todo', 'doing');
     
     // Add a comment to indicate work has started
-    await this.octokit.issues.createComment({
+    await this.octokit.rest.issues.createComment({
       owner: this.config.owner,
       repo: this.config.repo,
       issue_number: issueNumber,
@@ -144,7 +144,7 @@ export class GitHubTicketService implements TicketService {
     await this.updateLabels(issueNumber, 'doing', 'done');
     
     // Close the issue
-    await this.octokit.issues.update({
+    await this.octokit.rest.issues.update({
       owner: this.config.owner,
       repo: this.config.repo,
       issue_number: issueNumber,
@@ -165,7 +165,7 @@ export class GitHubTicketService implements TicketService {
     
     if (currentStatus === 'done') {
       // Reopen the issue and move to doing
-      await this.octokit.issues.update({
+      await this.octokit.rest.issues.update({
         owner: this.config.owner,
         repo: this.config.repo,
         issue_number: issueNumber,
@@ -184,7 +184,7 @@ export class GitHubTicketService implements TicketService {
 
     if (fromLabel) {
       try {
-        await this.octokit.issues.removeLabel({
+        await this.octokit.rest.issues.removeLabel({
           owner: this.config.owner,
           repo: this.config.repo,
           issue_number: issueNumber,
@@ -197,7 +197,7 @@ export class GitHubTicketService implements TicketService {
     }
 
     if (toLabel) {
-      await this.octokit.issues.addLabels({
+      await this.octokit.rest.issues.addLabels({
         owner: this.config.owner,
         repo: this.config.repo,
         issue_number: issueNumber,

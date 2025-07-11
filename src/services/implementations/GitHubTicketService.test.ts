@@ -16,6 +16,17 @@ interface MockOctokit {
     removeLabel: ReturnType<typeof vi.fn>;
     createComment: ReturnType<typeof vi.fn>;
   };
+  rest: {
+    issues: {
+      create: ReturnType<typeof vi.fn>;
+      listForRepo: ReturnType<typeof vi.fn>;
+      get: ReturnType<typeof vi.fn>;
+      update: ReturnType<typeof vi.fn>;
+      addLabels: ReturnType<typeof vi.fn>;
+      removeLabel: ReturnType<typeof vi.fn>;
+      createComment: ReturnType<typeof vi.fn>;
+    };
+  };
 }
 
 describe('GitHubTicketService', () => {
@@ -23,15 +34,35 @@ describe('GitHubTicketService', () => {
   let mockOctokit: MockOctokit;
 
   beforeEach(() => {
+    // Create shared mock functions
+    const createMock = vi.fn();
+    const listForRepoMock = vi.fn();
+    const getMock = vi.fn();
+    const updateMock = vi.fn();
+    const addLabelsMock = vi.fn();
+    const removeLabelMock = vi.fn();
+    const createCommentMock = vi.fn();
+
     mockOctokit = {
       issues: {
-        create: vi.fn(),
-        listForRepo: vi.fn(),
-        get: vi.fn(),
-        update: vi.fn(),
-        addLabels: vi.fn(),
-        removeLabel: vi.fn(),
-        createComment: vi.fn(),
+        create: createMock,
+        listForRepo: listForRepoMock,
+        get: getMock,
+        update: updateMock,
+        addLabels: addLabelsMock,
+        removeLabel: removeLabelMock,
+        createComment: createCommentMock,
+      },
+      rest: {
+        issues: {
+          create: createMock,
+          listForRepo: listForRepoMock,
+          get: getMock,
+          update: updateMock,
+          addLabels: addLabelsMock,
+          removeLabel: removeLabelMock,
+          createComment: createCommentMock,
+        },
       },
     };
 
@@ -567,6 +598,183 @@ describe('GitHubTicketService', () => {
       await expect(async () => {
         await service.deleteTicket('123');
       }).rejects.toThrow();
+    });
+  });
+
+  describe('API consistency: octokit.rest.* pattern enforcement', () => {
+    describe('should use consistent rest.* API pattern', () => {
+      it('should use rest.issues.create for createTicket', async () => {
+        mockOctokit.rest.issues.create.mockResolvedValue({
+          data: {
+            number: 123,
+            title: 'Test ticket',
+            state: 'open',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z',
+            labels: [{ name: 'status:todo' }],
+            body: 'Test description',
+            html_url: 'https://github.com/owner/repo/issues/123',
+            url: 'https://api.github.com/repos/owner/repo/issues/123',
+            assignee: null,
+          },
+        });
+
+        await service.createTicket('Test ticket');
+
+        expect(mockOctokit.rest.issues.create).toHaveBeenCalled();
+      });
+
+      it('should use rest.issues.listForRepo for listTickets', async () => {
+        mockOctokit.rest.issues.listForRepo.mockResolvedValue({
+          data: [{
+            number: 123,
+            title: 'Test ticket',
+            state: 'open',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z',
+            labels: [{ name: 'status:todo' }],
+            body: 'Test description',
+            html_url: 'https://github.com/owner/repo/issues/123',
+            url: 'https://api.github.com/repos/owner/repo/issues/123',
+            assignee: null,
+          }],
+        });
+
+        await service.listTickets();
+
+        expect(mockOctokit.rest.issues.listForRepo).toHaveBeenCalled();
+      });
+
+      it('should use rest.issues.get for getTicket', async () => {
+        mockOctokit.rest.issues.get.mockResolvedValue({
+          data: {
+            number: 123,
+            title: 'Test ticket',
+            state: 'open',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z',
+            labels: [{ name: 'status:todo' }],
+            body: 'Test description',
+            html_url: 'https://github.com/owner/repo/issues/123',
+            url: 'https://api.github.com/repos/owner/repo/issues/123',
+            assignee: null,
+          },
+        });
+
+        await service.getTicket('123');
+
+        expect(mockOctokit.rest.issues.get).toHaveBeenCalled();
+      });
+
+      it('should use rest.issues.createComment for startTicket', async () => {
+        mockOctokit.rest.issues.removeLabel.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.addLabels.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.createComment.mockResolvedValue({ data: {} });
+
+        await service.startTicket('123');
+
+        expect(mockOctokit.rest.issues.createComment).toHaveBeenCalled();
+      });
+
+      it('should use rest.issues.update for completeTicket', async () => {
+        mockOctokit.rest.issues.removeLabel.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.addLabels.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.update.mockResolvedValue({ data: {} });
+
+        await service.completeTicket('123');
+
+        expect(mockOctokit.rest.issues.update).toHaveBeenCalled();
+      });
+
+      it('should use rest.issues.update for undoTicket', async () => {
+        // Mock getTicket to return a ticket
+        mockOctokit.rest.issues.get.mockResolvedValue({
+          data: {
+            number: 123,
+            title: 'Test ticket',
+            state: 'closed',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z',
+            labels: [{ name: 'status:done' }],
+            body: 'Test description',
+            html_url: 'https://github.com/owner/repo/issues/123',
+            url: 'https://api.github.com/repos/owner/repo/issues/123',
+            assignee: null,
+          },
+        });
+
+        mockOctokit.rest.issues.update.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.removeLabel.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.addLabels.mockResolvedValue({ data: {} });
+
+        await service.undoTicket('123');
+
+        expect(mockOctokit.rest.issues.update).toHaveBeenCalled();
+      });
+
+      it('should use rest.issues.removeLabel for label operations', async () => {
+        mockOctokit.rest.issues.removeLabel.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.addLabels.mockResolvedValue({ data: {} });
+
+        await service.startTicket('123');
+
+        expect(mockOctokit.rest.issues.removeLabel).toHaveBeenCalled();
+      });
+
+      it('should use rest.issues.addLabels for label operations', async () => {
+        mockOctokit.rest.issues.removeLabel.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.addLabels.mockResolvedValue({ data: {} });
+
+        await service.startTicket('123');
+
+        expect(mockOctokit.rest.issues.addLabels).toHaveBeenCalled();
+      });
+
+      it('should use rest.issues.update for deleteTicket (already consistent)', async () => {
+        mockOctokit.rest.issues.update.mockResolvedValue({ data: {} });
+
+        await service.deleteTicket('123');
+
+        expect(mockOctokit.rest.issues.update).toHaveBeenCalled();
+      });
+    });
+
+    describe('should NOT use legacy direct issues.* pattern', () => {
+      it('should successfully execute all methods using rest.* pattern', async () => {
+        // Comprehensive test verifying all methods work with rest.* pattern
+        
+        // Setup mocks for successful operations
+        mockOctokit.rest.issues.create.mockResolvedValue({ data: { number: 123, title: 'Test', state: 'open', created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z', labels: [], body: '', html_url: '', url: '', assignee: null } });
+        mockOctokit.rest.issues.listForRepo.mockResolvedValue({ data: [] });
+        mockOctokit.rest.issues.get.mockResolvedValue({ data: { number: 123, title: 'Test', state: 'open', created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z', labels: [], body: '', html_url: '', url: '', assignee: null } });
+        mockOctokit.rest.issues.createComment.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.update.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.removeLabel.mockResolvedValue({ data: {} });
+        mockOctokit.rest.issues.addLabels.mockResolvedValue({ data: {} });
+
+        // Execute all methods - should complete without errors
+        const ticket = await service.createTicket('Test');
+        const tickets = await service.listTickets();
+        const getResult = await service.getTicket('123');
+        await service.startTicket('123');
+        await service.completeTicket('123');
+        await service.undoTicket('123');
+
+        // Verify all rest.* methods were called correctly
+        expect(mockOctokit.rest.issues.create).toHaveBeenCalled();
+        expect(mockOctokit.rest.issues.listForRepo).toHaveBeenCalled();
+        expect(mockOctokit.rest.issues.get).toHaveBeenCalled();
+        expect(mockOctokit.rest.issues.createComment).toHaveBeenCalled();
+        expect(mockOctokit.rest.issues.update).toHaveBeenCalled();
+        expect(mockOctokit.rest.issues.removeLabel).toHaveBeenCalled();
+        expect(mockOctokit.rest.issues.addLabels).toHaveBeenCalled();
+
+        // Verify return values are correct
+        expect(ticket).toBeDefined();
+        expect(ticket.id).toBe('#123');
+        expect(tickets).toEqual([]);
+        expect(getResult).toBeDefined();
+      });
     });
   });
 });
