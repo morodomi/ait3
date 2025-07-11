@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createSetupCommand } from './index.js';
 import type { Services } from '../../common/types.js';
+import { Command } from 'commander';
 
 describe('createSetupCommand', () => {
   it('should create setup command with subcommands', () => {

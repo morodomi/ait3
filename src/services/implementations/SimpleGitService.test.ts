@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { simpleGit } from 'simple-git';
+import { simpleGit, SimpleGit } from 'simple-git';
 import { SimpleGitService } from './SimpleGitService.js';
 
 // Mock simple-git
