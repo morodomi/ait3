@@ -1,40 +1,55 @@
 # Initialize Complete CLAUDE.md
 
-This command integrates AIT³ methodology with your project-specific analysis.
+This command creates a comprehensive CLAUDE.md by merging the AIT³ template with your project analysis.
 
-## Instructions
+## What I'll Do
 
-### Step 1: Security Settings (Optional but Recommended)
-If you want to restrict certain commands for security:
+1. **Read** the temporary template file `CLAUDE.ait3.md`
+2. **Analyze** your project structure using AIT³ tools
+3. **Create** a new CLAUDE.md that combines both
+4. **Delete** the temporary CLAUDE.ait3.md file
+
+## Execute These Steps
+
+### Step 1: Read the Template
 ```bash
-ait3 install security
+# First, let me read the AIT³ template
+cat CLAUDE.ait3.md
 ```
-This will update your .claude/settings.local.json with:
-- Deny: curl, wget, rm
-- Allow: grep, rg, ls, find (implicitly)
 
-### Step 2: Analyze and Generate CLAUDE.md
-1. Read CLAUDE.ait3.md for AIT³ template and project analysis
-2. Read .claude/CLAUDE.md for current minimal version  
-3. Analyze the project structure deeply
-4. Generate comprehensive CLAUDE.md that:
-   - Incorporates AIT³ methodology from the template
-   - Includes project-specific details and analysis
-   - Maintains the philosophical approach of AIT³
-   - Adds any additional context from your analysis
-
-### Step 3: Cleanup
-Delete CLAUDE.ait3.md as it's no longer needed:
+### Step 2: Analyze Your Project
 ```bash
+# Analyze project structure
+ait3 analyze project
+
+# Check for existing hierarchical CLAUDE.md files
+find . -name "CLAUDE.md" -type f | grep -v ".git"
+```
+
+### Step 3: Create Comprehensive CLAUDE.md
+```bash
+# I will now create a new CLAUDE.md that includes:
+# - Everything from CLAUDE.ait3.md (AIT³ methodology)
+# - Your project-specific details
+# - Proper commands for your project
+# - Testing guidelines specific to your framework
+# - AI collaboration patterns
+
+# The new CLAUDE.md will replace the minimal one
+```
+
+### Step 4: Clean Up
+```bash
+# Remove the temporary template file
 rm CLAUDE.ait3.md
 ```
 
-## Key Sections to Include
-- Project overview with AIT³ context
-- Architecture and technology stack
-- Development methodology (AIT³ workflow)
-- Testing strategy and requirements
-- AI collaboration patterns
-- Project-specific guidelines
+## Important Notes
 
-After generation, the CLAUDE.ait3.md file can be safely deleted.
+- I will **completely rewrite** CLAUDE.md (not append)
+- The new file will include all AIT³ methodology
+- Project-specific sections will be based on actual analysis
+- All placeholder text like "[Add description here]" will be replaced
+
+## Ready?
+Just run `/ait3-init` and I'll handle everything!
