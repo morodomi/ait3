@@ -28,6 +28,7 @@ export default [
       'linebreak-style': ['error', 'unix'],
       'quotes': ['error', 'single'],
       'semi': ['error', 'always'],
+      // Allow variables prefixed with _ to be unused (common convention for intentionally unused vars)
       '@typescript-eslint/no-unused-vars': ['warn', { 
         'argsIgnorePattern': '^_',
         'varsIgnorePattern': '^_',
@@ -41,7 +42,10 @@ export default [
     }
   },
   {
-    files: ['src/**/*.test.ts'],
+    // Test-specific configurations
+    // Test files often have many small helper functions and beforeEach/afterEach hooks
+    // where explicit return types add noise without meaningful value
+    files: ['src/**/*.test.ts', 'tests/**/*.test.ts'],
     rules: {
       '@typescript-eslint/explicit-function-return-type': 'off'
     }
