@@ -81,6 +81,7 @@ export async function analyzeProject(): Promise<ProjectAnalysis> {
     // No package.json, check other project types
     await checkPythonProject(analysis);
     await checkGoProject(analysis);
+    await checkLaravelProject(analysis);
   }
   
   // Check for Docker
@@ -93,7 +94,19 @@ async function checkPythonProject(analysis: ProjectAnalysis): Promise<void> {
   try {
     await access('requirements.txt');
     analysis.language = 'Python';
-    analysis.framework = 'pip';
+    
+    // Check if it's Flask
+    try {
+      const requirements = await readFile('requirements.txt', 'utf-8');
+      if (requirements.toLowerCase().includes('flask')) {
+        analysis.framework = 'Flask';
+      } else {
+        analysis.framework = 'pip';
+      }
+    } catch {
+      analysis.framework = 'pip';
+    }
+    
     analysis.buildSystem = 'pip';
     analysis.commands.install = 'pip install -r requirements.txt';
     analysis.commands.test = 'pytest';
@@ -104,7 +117,19 @@ async function checkPythonProject(analysis: ProjectAnalysis): Promise<void> {
     try {
       await access('pyproject.toml');
       analysis.language = 'Python';
-      analysis.framework = 'poetry';
+      
+      // Check if it's Flask with poetry
+      try {
+        const pyproject = await readFile('pyproject.toml', 'utf-8');
+        if (pyproject.toLowerCase().includes('flask')) {
+          analysis.framework = 'Flask';
+        } else {
+          analysis.framework = 'poetry';
+        }
+      } catch {
+        analysis.framework = 'poetry';
+      }
+      
       analysis.buildSystem = 'poetry';
       analysis.commands.install = 'poetry install';
       analysis.commands.test = 'poetry run pytest';
@@ -128,6 +153,39 @@ async function checkGoProject(analysis: ProjectAnalysis): Promise<void> {
     analysis.commands.dev = 'go run main.go';
   } catch {
     // Not a Go project
+  }
+}
+
+async function checkLaravelProject(analysis: ProjectAnalysis): Promise<void> {
+  try {
+    // Check for artisan file first (Laravel signature)
+    await access('artisan');
+    analysis.language = 'PHP';
+    analysis.framework = 'Laravel';
+    analysis.buildSystem = 'composer';
+    analysis.commands.install = 'composer install';
+    analysis.commands.test = 'php artisan test';
+    analysis.commands.build = 'npm run build';
+    analysis.commands.dev = 'php artisan serve';
+  } catch {
+    // No artisan, check composer.json for Laravel
+    try {
+      const composerContent = await readFile('composer.json', 'utf-8');
+      const composer = JSON.parse(composerContent);
+      
+      if (composer.require?.['laravel/framework']) {
+        analysis.language = 'PHP';
+        analysis.framework = 'Laravel';
+        analysis.buildSystem = 'composer';
+        analysis.projectName = composer.name || 'laravel-project';
+        analysis.commands.install = 'composer install';
+        analysis.commands.test = 'php artisan test';
+        analysis.commands.build = 'npm run build';
+        analysis.commands.dev = 'php artisan serve';
+      }
+    } catch {
+      // Not a Laravel project
+    }
   }
 }
 

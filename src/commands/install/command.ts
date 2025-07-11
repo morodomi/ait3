@@ -7,38 +7,42 @@ import { ait3Template } from '../../assets/commands/ait3.js';
 import { geminiTemplate } from '../../assets/commands/gemini.js';
 import { orchestratorTemplate } from '../../assets/commands/orchestrator.js';
 import { ait3InitTemplate } from '../../assets/commands/ait3-init.js';
+import { reviewTemplate } from '../../assets/commands/review.js';
 interface InstallCommandArgs {
   name?: string;
   force?: boolean;
 }
+
+// Command name to template mapping
+const commandTemplates = {
+  ait3: ait3Template,
+  gemini: geminiTemplate,
+  orchestrator: orchestratorTemplate,
+  'ait3-init': ait3InitTemplate,
+  review: reviewTemplate
+} as const;
+
+type CommandName = keyof typeof commandTemplates;
 
 export async function installCommand(
   args: InstallCommandArgs
 ): Promise<CLIResult> {
   const { name = 'all', force = false } = args;
   
-  // Available command guides
-  const commandGuides = {
-    ait3: 'ait3',
-    gemini: 'gemini',
-    orchestrator: 'orchestrator',
-    'ait3-init': 'ait3-init'
-  };
-  
   // Determine which files to install
   let filesToInstall: Array<[string, string]> = [];
   
   if (name === 'all' || !name) {
     // Install all command guides
-    filesToInstall = Object.entries(commandGuides);
-  } else if (name in commandGuides) {
+    filesToInstall = Object.keys(commandTemplates).map(cmd => [cmd, cmd]);
+  } else if (name in commandTemplates) {
     // Install specific command guide
-    filesToInstall = [[name, commandGuides[name as keyof typeof commandGuides]]];
+    filesToInstall = [[name, name]];
   } else {
     // Invalid command name
     return {
       success: false,
-      message: `${STYLES.danger('ERROR: Unknown command')}: ${name}\n${STYLES.info('Available commands')}: ${Object.keys(commandGuides).join(', ')}`
+      message: `${STYLES.danger('ERROR: Unknown command')}: ${name}\n${STYLES.info('Available commands')}: ${Object.keys(commandTemplates).join(', ')}`
     };
   }
   
@@ -53,7 +57,7 @@ export async function installCommand(
   }
   
   // Process each file
-  for (const [cmdName, fileName] of filesToInstall) {
+  for (const [cmdName, _fileName] of filesToInstall) {
     const targetPath = join('.claude', 'commands', cmdName);
     const targetDir = dirname(targetPath);
     
@@ -83,8 +87,11 @@ export async function installCommand(
       }
       
       if (shouldWrite) {
-        // Load template content
-        const templateContent = await getTemplateContent(cmdName);
+        // Get template content
+        const templateContent = commandTemplates[cmdName as CommandName];
+        if (!templateContent) {
+          throw new Error(`Template not found for command: ${cmdName}`);
+        }
         
         // Write file
         await writeFile(targetPath, templateContent, 'utf-8');
@@ -118,21 +125,6 @@ export async function installCommand(
   };
 }
 
-async function getTemplateContent(commandName: string): Promise<string> {
-  // Import templates based on command name
-  switch (commandName) {
-  case 'ait3':
-    return ait3Template;
-  case 'gemini':
-    return geminiTemplate;
-  case 'orchestrator':
-    return orchestratorTemplate;
-  case 'ait3-init':
-    return ait3InitTemplate;
-  default:
-    throw new Error(`Template not found for command: ${commandName}`);
-  }
-}
 
 export const commandCommand = new Command('command')
   .description('Install Claude command guides')

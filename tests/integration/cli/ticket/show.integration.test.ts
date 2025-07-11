@@ -140,7 +140,7 @@ labels:
       expect(result).toContain('Comprehensive Test Ticket');
       
       // Check metadata
-      expect(result).toContain('Details:');
+      expect(result).toContain('INFO:');
       expect(result).toContain('Status:');
       expect(result).toContain('todo');
       expect(result).toContain('Priority:');
@@ -379,7 +379,7 @@ labels:
         }
       );
 
-      expect(result).toContain('Details:');
+      expect(result).toContain('INFO:');
       expect(result).toContain('────');
       expect(result).toContain('Description:');
     });
@@ -398,6 +398,67 @@ labels:
       expect(result).toContain('Show ticket details');
       expect(result).toContain('Usage:');
       expect(result).toContain('<id>');
+    });
+  });
+
+  describe('error message standardization', () => {
+    it('should show standardized ERROR: format for ticket not found', () => {
+      try {
+        execSync(
+          'node dist/cli.js ticket show 9999',
+          {
+            encoding: 'utf8',
+            timeout: 5000,
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
+          }
+        );
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        // Verify standardized ERROR: format instead of "TICKET NOT FOUND:"
+        expect(error.stderr || error.stdout).toMatch(/ERROR:/);
+        expect(error.stderr || error.stdout).not.toMatch(/TICKET NOT FOUND:/);
+      }
+    });
+
+    it('should show standardized ERROR: format for validation errors', () => {
+      try {
+        execSync(
+          'node dist/cli.js ticket show invalid-format',
+          {
+            encoding: 'utf8',
+            timeout: 5000,
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
+          }
+        );
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        // Verify standardized ERROR: format instead of "VALIDATION ERROR:"
+        expect(error.stderr || error.stdout).toMatch(/ERROR:/);
+        expect(error.stderr || error.stdout).not.toMatch(/VALIDATION ERROR:/);
+      }
+    });
+
+    it('should show standardized ERROR: format for service errors', () => {
+      try {
+        execSync(
+          'node dist/cli.js ticket show 0001',
+          {
+            encoding: 'utf8',
+            timeout: 5000,
+            env: { ...process.env, TICKETS_DIR: testDir + '-nonexistent' },
+            stdio: 'pipe'
+          }
+        );
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        // Verify standardized ERROR: format instead of "ERROR showing ticket:"
+        if ((error.stderr || error.stdout).includes('ERROR')) {
+          expect(error.stderr || error.stdout).toMatch(/ERROR:/);
+          expect(error.stderr || error.stdout).not.toMatch(/ERROR showing ticket:/);
+        }
+      }
     });
   });
 });

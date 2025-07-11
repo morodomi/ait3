@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { startTicket } from './start.js';
-import type { Services, StartTicketArgs } from '@/common/types.js';
+import type { Services, StartTicketArgs, Ticket } from '@/common/types.js';
 import type { TicketService } from '@/services/interfaces/TicketService.js';
 import type { GitService } from '@/services/interfaces/GitService.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError } from '@/common/errors.js';
@@ -23,15 +23,15 @@ class MockTicketService implements TicketService {
     this.shouldThrowError = error;
   }
 
-  async createTicket(): Promise<any> {
+  async createTicket(): Promise<Ticket> {
     throw new Error('Not implemented for this test');
   }
 
-  async listTickets(): Promise<any[]> {
+  async listTickets(): Promise<Ticket[]> {
     throw new Error('Not implemented for this test');
   }
 
-  async getTicket(id: string): Promise<any> {
+  async getTicket(id: string): Promise<Ticket> {
     // Handle TicketNotFoundError specifically
     if (this.shouldThrowError instanceof TicketNotFoundError) {
       return null;
@@ -196,7 +196,7 @@ describe('startTicket pure function', () => {
       };
 
       const githubServices: Services = {
-        ticketService: mockGitHubService as any,
+        ticketService: mockGitHubService as TicketService,
         gitService: mockGitService
       };
 

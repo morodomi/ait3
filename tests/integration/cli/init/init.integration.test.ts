@@ -32,6 +32,7 @@ describe('CLI Integration: ait3 init', () => {
       expect(stdout).toContain('CLAUDE.ait3.md');
       expect(stdout).toContain('.claude/CLAUDE.md');
       expect(stdout).toContain('.claude/commands/ait3-init');
+      expect(stdout).not.toContain('.claude/commands/review');
       expect(stdout).toContain('Next steps:');
       expect(stdout).toContain('Launch Claude Code: claude');
       expect(stdout).toContain('Run: /ait3-init');
@@ -40,6 +41,9 @@ describe('CLI Integration: ait3 init', () => {
       await expect(access(join(testDir, 'CLAUDE.ait3.md'))).resolves.not.toThrow();
       await expect(access(join(testDir, '.claude/CLAUDE.md'))).resolves.not.toThrow();
       await expect(access(join(testDir, '.claude/commands/ait3-init'))).resolves.not.toThrow();
+      
+      // Review command should NOT be created
+      await expect(access(join(testDir, '.claude/commands/review'))).rejects.toThrow();
     });
 
     it('should overwrite existing files without warning', async () => {

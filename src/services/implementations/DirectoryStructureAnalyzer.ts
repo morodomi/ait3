@@ -1,5 +1,5 @@
 import { readdir, stat, readFile, access } from 'fs/promises';
-import { join, basename } from 'path';
+import { join } from 'path';
 import { constants } from 'fs';
 import type { StructureAnalyzer } from '../interfaces/StructureAnalyzer.js';
 import type { ProjectStructure, FrameworkInfo, DirectoryInfo } from '../../common/types/analyzer.js';

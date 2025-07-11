@@ -1,13 +1,26 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { simpleGit, SimpleGit, SimpleGitOptions } from 'simple-git';
+import { simpleGit, SimpleGit } from 'simple-git';
 import { SimpleGitService } from './SimpleGitService.js';
 
 // Mock simple-git
 vi.mock('simple-git');
 
+// Type for our mock git instance
+interface MockGit {
+  checkIsRepo: ReturnType<typeof vi.fn>;
+  status: ReturnType<typeof vi.fn>;
+  fetch: ReturnType<typeof vi.fn>;
+  branch: ReturnType<typeof vi.fn>;
+  checkoutBranch: ReturnType<typeof vi.fn>;
+  checkout: ReturnType<typeof vi.fn>;
+  revparse: ReturnType<typeof vi.fn>;
+  log: ReturnType<typeof vi.fn>;
+  raw: ReturnType<typeof vi.fn>;
+}
+
 describe('SimpleGitService', () => {
   let service: SimpleGitService;
-  let mockGit: any;
+  let mockGit: MockGit;
 
   beforeEach(() => {
     // Create mock git instance
@@ -24,7 +37,7 @@ describe('SimpleGitService', () => {
     };
 
     // Mock the simpleGit constructor
-    vi.mocked(simpleGit).mockReturnValue(mockGit as any);
+    vi.mocked(simpleGit).mockReturnValue(mockGit as unknown as SimpleGit);
 
     service = new SimpleGitService();
   });

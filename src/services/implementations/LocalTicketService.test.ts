@@ -5,7 +5,6 @@ import { join } from 'path';
 import { randomBytes } from 'crypto';
 import matter from 'gray-matter';
 import { LocalTicketService } from './LocalTicketService.js';
-import type { Ticket } from '@/common/types.js';
 
 describe('LocalTicketService', () => {
   let testDir: string;
@@ -150,7 +149,7 @@ describe('LocalTicketService', () => {
       // This test will fail until Zod validation is implemented
       // Invalid priority should be rejected
       await expect(
-        service.createTicket('Invalid Priority', { priority: 'invalid' as any })
+        service.createTicket('Invalid Priority', { priority: 'invalid' as unknown as 'high' | 'medium' | 'low' })
       ).rejects.toThrow();
     });
 

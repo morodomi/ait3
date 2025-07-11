@@ -303,7 +303,7 @@ export class GitHubTicketService implements TicketService {
       const issueNumber = this.parseTicketId(id);
       
       // Use GitHub CLI to delete the issue
-      const { stdout } = await execAsync(
+      await execAsync(
         `gh api -X DELETE repos/${this.config.owner}/${this.config.repo}/issues/${issueNumber}`,
         { cwd: this.basePath }
       );

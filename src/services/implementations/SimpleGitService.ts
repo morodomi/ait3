@@ -11,7 +11,7 @@ export class SimpleGitService implements GitService {
   async isRepository(): Promise<boolean> {
     try {
       return await this.git.checkIsRepo();
-    } catch (error) {
+    } catch {
       return false;
     }
   }

@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto';
 import { squashPhase } from './squash.js';
 import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
 import type { Services } from '@/common/types.js';
+import type { TicketService } from '@/services/interfaces/TicketService.js';
 
 // Helper to strip ANSI color codes for testing
 function stripAnsi(str: string): string {
@@ -107,7 +108,7 @@ describe('squashPhase Pure Function', () => {
       };
 
       const githubServices: Services = {
-        ticketService: mockGitHubService as any
+        ticketService: mockGitHubService as TicketService
       };
 
       const result = await squashPhase({ ticketId: '82' }, githubServices);

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { completeTicket } from './complete.js';
-import type { Services, CompleteTicketArgs } from '@/common/types.js';
+import type { Services, CompleteTicketArgs, Ticket } from '@/common/types.js';
 import type { TicketService } from '@/services/interfaces/TicketService.js';
 import { ValidationError, TicketNotFoundError, TicketNotStartedError, TicketAlreadyCompletedError } from '@/common/errors.js';
 import chalk from 'chalk';
@@ -25,15 +25,15 @@ class MockTicketService implements TicketService {
     this.shouldThrowError = error;
   }
 
-  async createTicket(): Promise<any> {
+  async createTicket(): Promise<Ticket> {
     throw new Error('Not implemented for this test');
   }
 
-  async listTickets(): Promise<any[]> {
+  async listTickets(): Promise<Ticket[]> {
     throw new Error('Not implemented for this test');
   }
 
-  async getTicket(id: string): Promise<any> {
+  async getTicket(id: string): Promise<Ticket> {
     // Return a mock ticket for successful tests
     if (!this.shouldThrowError) {
       return {
@@ -55,7 +55,7 @@ class MockTicketService implements TicketService {
     throw new Error('Not implemented for this test');
   }
 
-  async completeTicket(id: string): Promise<void> {
+  async completeTicket(_id: string): Promise<void> {
     if (this.shouldThrowError) {
       throw this.shouldThrowError;
     }
@@ -111,7 +111,7 @@ describe('completeTicket pure function', () => {
       };
 
       const githubServices: Services = {
-        ticketService: mockGitHubService as any
+        ticketService: mockGitHubService as TicketService
       };
 
       const args: CompleteTicketArgs = { id: '82' };

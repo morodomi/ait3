@@ -23,7 +23,12 @@ export class LinguistLanguageDetector implements LanguageDetector {
 
       // Find the highest percentage for primary language detection
       const maxPercentage = Math.max(
-        ...Object.values(languages).map((lang: any) => lang.percentage || 0)
+        ...Object.values(languages).map((lang) => {
+          if (lang && typeof lang === 'object' && 'percentage' in lang) {
+            return (lang as { percentage?: number }).percentage || 0;
+          }
+          return 0;
+        })
       );
 
       // Convert linguist results to our format
@@ -33,12 +38,28 @@ export class LinguistLanguageDetector implements LanguageDetector {
           return name !== 'count' && name !== 'bytes' && name !== 'lines' && 
                  name !== 'results' && name !== 'total' && name !== 'unknown';
         })
-        .map(([name, data]: [string, any]) => ({
-          name,
-          percentage: data.percentage || 0,
-          files: Array.isArray(data.files) ? data.files.length : (data.files || 0),
-          primaryLanguage: (data.percentage || 0) === maxPercentage
-        }))
+        .map(([name, data]) => {
+          const percentage = data && typeof data === 'object' && 'percentage' in data
+            ? (data as { percentage?: number }).percentage || 0
+            : 0;
+          
+          let files: number = 0;
+          if (data && typeof data === 'object' && 'files' in data) {
+            const filesData = (data as { files?: unknown }).files;
+            if (Array.isArray(filesData)) {
+              files = filesData.length;
+            } else if (typeof filesData === 'number') {
+              files = filesData;
+            }
+          }
+          
+          return {
+            name,
+            percentage,
+            files,
+            primaryLanguage: percentage === maxPercentage
+          };
+        })
         .filter(lang => lang.files > 0 || lang.percentage > 0)
         .sort((a, b) => b.percentage - a.percentage);
 
@@ -48,7 +69,7 @@ export class LinguistLanguageDetector implements LanguageDetector {
       }
 
       return languageResults;
-    } catch (error) {
+    } catch {
       // Fallback to simple file extension-based detection
       return this.fallbackDetection(targetPath);
     }

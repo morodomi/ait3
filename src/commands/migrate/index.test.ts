@@ -38,7 +38,7 @@ describe('migrate command', () => {
         owner: 'testowner',
         repo: 'testrepo'
       });
-    } catch (_error) {
+    } catch {
       // Handle mock creation errors in specific tests
       mockGitHubService = {} as GitHubTicketService;
     }

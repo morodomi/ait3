@@ -6,10 +6,9 @@ import { startTicket } from './start.js';
 import { completeTicket } from './complete.js';
 import { undoTicket } from './undo.js';
 import { deleteTicket } from './delete.js';
-import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError, TicketNotStartedError } from '../../common/errors.js';
-import { STYLES } from '../../common/styles.js';
 import { ServiceFactory } from '../../services/ServiceFactory.js';
 import { createMissingIdErrorHandler } from './error-handler.js';
+import { handleCommandError, COMMON_TIPS } from '../../common/command-error-handler.js';
 
 // Service container will be created per command to respect config changes
 
@@ -56,21 +55,13 @@ ticketCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling with better UX
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('ERROR:'), error.message);
-        
-        // Provide helpful suggestions for common validation errors
-        if (error.field === 'priority') {
-          console.error(STYLES.warning('TIP: Valid priorities: low, medium, high, critical'));
+      handleCommandError(error, {
+        action: 'create ticket',
+        tips: {
+          priority: COMMON_TIPS.priority,
+          title: COMMON_TIPS.title
         }
-        if (error.field === 'title') {
-          console.error(STYLES.warning('TIP: Provide a descriptive title for your ticket'));
-        }
-      } else {
-        console.error(STYLES.danger('ERROR creating ticket:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      });
     }
   });
 
@@ -87,21 +78,13 @@ ticketCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling with better UX
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('ERROR:'), error.message);
-        
-        // Provide helpful suggestions for common validation errors
-        if (error.field === 'status') {
-          console.error(STYLES.warning('TIP: Valid statuses: todo, doing, done'));
+      handleCommandError(error, {
+        action: 'list tickets',
+        tips: {
+          status: COMMON_TIPS.status,
+          priority: COMMON_TIPS.priority
         }
-        if (error.field === 'priority') {
-          console.error(STYLES.warning('TIP: Valid priorities: low, medium, high, critical'));
-        }
-      } else {
-        console.error(STYLES.danger('ERROR listing tickets:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      });
     }
   });
 
@@ -118,17 +101,12 @@ ticketCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling with better UX
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('ERROR:'), error.message);
-        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else {
-        console.error(STYLES.danger('ERROR showing ticket:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      handleCommandError(error, {
+        action: 'show ticket',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId
+        }
+      });
     }
   });
 
@@ -145,23 +123,12 @@ ticketCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling with better UX
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('ERROR:'), error.message);
-        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else if (error instanceof TicketAlreadyInProgressError) {
-        console.error(STYLES.danger('ALREADY IN PROGRESS:'), error.message);
-        console.error(STYLES.warning('TIP: This ticket is already being worked on'));
-      } else if (error instanceof TicketAlreadyCompletedError) {
-        console.error(STYLES.danger('ALREADY COMPLETED:'), error.message);
-        console.error(STYLES.warning('TIP: This ticket has already been completed'));
-      } else {
-        console.error(STYLES.danger('ERROR starting ticket:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      handleCommandError(error, {
+        action: 'start ticket',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId
+        }
+      });
     }
   });
 
@@ -178,23 +145,12 @@ ticketCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling with better UX
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('ERROR:'), error.message);
-        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else if (error instanceof TicketNotStartedError) {
-        console.error(STYLES.danger('NOT STARTED:'), error.message);
-        console.error(STYLES.warning('TIP: You must start the ticket before completing it'));
-      } else if (error instanceof TicketAlreadyCompletedError) {
-        console.error(STYLES.danger('ALREADY COMPLETED:'), error.message);
-        console.error(STYLES.warning('TIP: This ticket has already been completed'));
-      } else {
-        console.error(STYLES.danger('ERROR completing ticket:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      handleCommandError(error, {
+        action: 'complete ticket',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId
+        }
+      });
     }
   });
 
@@ -212,17 +168,12 @@ ticketCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling with better UX
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('ERROR:'), error.message);
-        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else {
-        console.error(STYLES.danger('ERROR undoing ticket:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      handleCommandError(error, {
+        action: 'undo ticket',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId
+        }
+      });
     }
   });
 
@@ -240,16 +191,11 @@ ticketCommand
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
-      // Enhanced error handling with better UX
-      if (error instanceof ValidationError) {
-        console.error(STYLES.danger('ERROR:'), error.message);
-        console.error(STYLES.warning('TIP: Use local format (0001) or GitHub format (#70, 70)'));
-      } else if (error instanceof TicketNotFoundError) {
-        console.error(STYLES.danger('TICKET NOT FOUND:'), error.message);
-        console.error(STYLES.warning('TIP: Use "ait3 ticket list" to see available tickets'));
-      } else {
-        console.error(STYLES.danger('ERROR deleting ticket:'), error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
+      handleCommandError(error, {
+        action: 'delete ticket',
+        tips: {
+          ticketId: COMMON_TIPS.ticketId
+        }
+      });
     }
   });

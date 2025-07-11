@@ -100,7 +100,9 @@ describe('listTickets pure function', () => {
 
       expect(result.success).toBe(true);
       // Strip ANSI color codes for comparison
-      const strippedMessage = result.message.replace(/\u001b\[[0-9;]*m/g, '');
+      const escapeChar = String.fromCharCode(27); // ESC character
+      const ansiRegex = new RegExp(`${escapeChar}\\[[0-9;]*m`, 'g');
+      const strippedMessage = result.message.replace(ansiRegex, '');
       
       // Should use INFO: instead of LIST:
       expect(strippedMessage).toContain('INFO: Found 3 tickets');
@@ -141,7 +143,7 @@ describe('listTickets pure function', () => {
     });
 
     it('should validate status values', async () => {
-      const args: ListTicketsArgs = { status: 'invalid' as any };
+      const args: ListTicketsArgs = { status: 'invalid' as unknown as 'todo' | 'doing' | 'done' };
       
       await expect(listTickets(args, services)).rejects.toThrow(ValidationError);
     });
@@ -169,7 +171,7 @@ describe('listTickets pure function', () => {
     });
 
     it('should validate priority values', async () => {
-      const args: ListTicketsArgs = { priority: 'invalid' as any };
+      const args: ListTicketsArgs = { priority: 'invalid' as unknown as 'high' | 'medium' | 'low' };
       
       await expect(listTickets(args, services)).rejects.toThrow(ValidationError);
     });
