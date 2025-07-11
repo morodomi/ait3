@@ -31,7 +31,7 @@ describe('initCommand - Redesigned', () => {
   });
 
   describe('basic functionality', () => {
-    it('should generate exactly 3 files', async () => {
+    it('should generate exactly 4 files', async () => {
       // Create minimal package.json for project detection
       await writeFile('package.json', JSON.stringify({ name: 'test-project' }));
       
@@ -39,10 +39,11 @@ describe('initCommand - Redesigned', () => {
       
       expect(result.success).toBe(true);
       
-      // Check all 3 files were created
+      // Check all 4 files were created
       await expect(access('CLAUDE.ait3.md')).resolves.toBeUndefined();
       await expect(access('.claude/CLAUDE.md')).resolves.toBeUndefined();
       await expect(access('.claude/commands/ait3-init')).resolves.toBeUndefined();
+      await expect(access('.claude/commands/review')).resolves.toBeUndefined();
       
       // Ensure settings.local.json was NOT created
       await expect(access('.claude/settings.local.json')).rejects.toThrow();
@@ -63,8 +64,9 @@ describe('initCommand - Redesigned', () => {
       
       // Create existing files with old content
       await writeFile('CLAUDE.ait3.md', '# Old content');
-      await mkdir('.claude', { recursive: true });
+      await mkdir('.claude/commands', { recursive: true });
       await writeFile('.claude/CLAUDE.md', '# Old minimal content');
+      await writeFile('.claude/commands/review', '# Old review content');
       
       const result = await initCommand({});
       
@@ -74,6 +76,11 @@ describe('initCommand - Redesigned', () => {
       const newContent = await readFile('CLAUDE.ait3.md', 'utf-8');
       expect(newContent).not.toContain('Old content');
       expect(newContent).toContain('AIT³');
+      
+      // Verify review command was overwritten
+      const reviewContent = await readFile('.claude/commands/review', 'utf-8');
+      expect(reviewContent).not.toContain('Old review content');
+      expect(reviewContent).toContain('Multi-Agent Code Review');
     });
   });
 
@@ -192,6 +199,24 @@ describe('initCommand - Redesigned', () => {
       expect(content).toContain('Delete CLAUDE.ait3.md');
       expect(content).toContain('Optional but Recommended');
     });
+
+    it('should generate correct review command guide', async () => {
+      const result = await initCommand({});
+      
+      expect(result.success).toBe(true);
+      
+      const content = await readFile('.claude/commands/review', 'utf-8');
+      
+      // Check review command guide content
+      expect(content).toContain('Multi-Agent Code Review');
+      expect(content).toContain('Correctness Review (Claude)');
+      expect(content).toContain('Performance Review (Gemini)');
+      expect(content).toContain('Security Review (Claude)');
+      expect(content).toContain('Synthesize Results');
+      expect(content).toContain('Document Decision');
+      expect(content).toContain('gemini -p "@src/ @tests/');
+      expect(content).toContain('review(#TICKET): implement review feedback');
+    });
   });
 
   describe('error handling', () => {
@@ -228,7 +253,20 @@ describe('initCommand - Redesigned', () => {
       expect(result.message).toContain('SUCCESS');
       expect(result.message).toContain('claude');
       expect(result.message).toContain('/ait3-init');
-      expect(result.message).toContain('3 files generated');
+      expect(result.message).toContain('4 files generated');
+    });
+
+    it('should include review command in file list', async () => {
+      await writeFile('package.json', JSON.stringify({ name: 'test-project' }));
+      
+      const result = await initCommand({});
+      
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Files created:');
+      expect(result.message).toContain('CLAUDE.ait3.md');
+      expect(result.message).toContain('.claude/CLAUDE.md');
+      expect(result.message).toContain('.claude/commands/ait3-init');
+      expect(result.message).toContain('.claude/commands/review');
     });
   });
 
@@ -426,6 +464,36 @@ describe('initCommand - Redesigned', () => {
         await expect(access('app')).resolves.toBeUndefined();
         await expect(access('resources/views')).resolves.toBeUndefined();
         await expect(access('resources/js')).resolves.toBeUndefined();
+      });
+
+      it('should generate review command for all project types', async () => {
+        // Test TypeScript project
+        await writeFile('package.json', JSON.stringify({
+          devDependencies: { typescript: '^5.0.0' }
+        }));
+        
+        let result = await initCommand({});
+        expect(result.success).toBe(true);
+        await expect(access('.claude/commands/review')).resolves.toBeUndefined();
+        
+        // Clean up and test Laravel project
+        await rm('.claude', { recursive: true, force: true });
+        await writeFile('composer.json', JSON.stringify({
+          require: { 'laravel/framework': '^10.0' }
+        }));
+        
+        result = await initCommand({});
+        expect(result.success).toBe(true);
+        await expect(access('.claude/commands/review')).resolves.toBeUndefined();
+        
+        // Clean up and test unknown project
+        await rm('.claude', { recursive: true, force: true });
+        await rm('composer.json', { force: true });
+        await rm('package.json', { force: true });
+        
+        result = await initCommand({});
+        expect(result.success).toBe(true);
+        await expect(access('.claude/commands/review')).resolves.toBeUndefined();
       });
     });
   });
