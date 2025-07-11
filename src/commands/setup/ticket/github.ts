@@ -24,9 +24,14 @@ export async function setupTicketGitHub(
   const existingConfig = await readConfig(context.cwd);
   
   if (existingConfig.backend === 'github' && !options.force) {
-    const currentRepo = existingConfig.github?.owner && existingConfig.github?.repo 
-      ? `${existingConfig.github.owner}/${existingConfig.github.repo}`
-      : 'unknown repository';
+    const githubConfig = existingConfig.github;
+    let currentRepo = 'unknown repository';
+    
+    if (githubConfig && typeof githubConfig === 'object' && 
+        'owner' in githubConfig && 'repo' in githubConfig) {
+      const config = githubConfig as { owner: string; repo: string };
+      currentRepo = `${config.owner}/${config.repo}`;
+    }
     return {
       success: true,
       message: `Already configured for GitHub (${currentRepo})`,

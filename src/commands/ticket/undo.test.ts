@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { undoTicket } from './undo.js';
 import type { Services, UndoTicketArgs } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
+import type { TicketService } from '../../services/interfaces/TicketService.js';
 
 // Helper to strip ANSI color codes for testing
 function stripAnsi(str: string): string {
@@ -95,7 +96,7 @@ describe('undoTicket', () => {
       };
 
       const githubServices: Services = {
-        ticketService: mockGitHubService as any
+        ticketService: mockGitHubService as TicketService
       };
 
       const result = await undoTicket(args, githubServices);

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { deleteTicket } from './delete.js';
 import type { Services, Ticket } from '../../common/types.js';
 import { ValidationError, TicketNotFoundError } from '../../common/errors.js';
+import type { TicketService } from '../../services/interfaces/TicketService.js';
 
 describe('deleteTicket', () => {
   let mockServices: Services;
@@ -23,11 +24,19 @@ describe('deleteTicket', () => {
       }
     };
 
+    const mockTicketService = {
+      getTicket: vi.fn(),
+      deleteTicket: vi.fn(),
+      createTicket: vi.fn(),
+      updateTicket: vi.fn(),
+      listTickets: vi.fn(),
+      moveTicket: vi.fn(),
+      getNextId: vi.fn(),
+      undoLastAction: vi.fn(),
+    };
+    
     mockServices = {
-      ticketService: {
-        getTicket: vi.fn(),
-        deleteTicket: vi.fn(),
-      } as any,
+      ticketService: mockTicketService as TicketService,
     };
   });
 

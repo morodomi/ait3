@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto';
 import { createTicket } from './create.js';
 import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
 import type { Services, CreateTicketArgs } from '@/common/types.js';
+import type { TicketService } from '@/services/interfaces/TicketService.js';
 
 describe('createTicket Pure Function', () => {
   let testDir: string;
@@ -163,7 +164,7 @@ describe('createTicket Pure Function', () => {
       // This test will fail until createTicket function is implemented
       const args: CreateTicketArgs = {
         title: 'Test Task',
-        priority: 'invalid' as any
+        priority: 'invalid' as unknown as 'high' | 'medium' | 'low'
       };
 
       await expect(
@@ -228,7 +229,7 @@ describe('createTicket Pure Function', () => {
       };
 
       const githubServices: Services = {
-        ticketService: mockGitHubService as any
+        ticketService: mockGitHubService as TicketService
       };
 
       const args: CreateTicketArgs = {
@@ -271,7 +272,7 @@ describe('createTicket Pure Function', () => {
           createTicket: async () => {
             throw new Error('Service unavailable');
           }
-        } as any
+        } as TicketService
       };
 
       const args: CreateTicketArgs = {
