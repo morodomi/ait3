@@ -173,4 +173,47 @@ describe('CLI Integration: ticket create', () => {
       expect(result).toContain('-l, --labels');
     });
   });
+
+  describe('error message standardization', () => {
+    it('should show standardized ERROR: format for commander validation errors', () => {
+      // This test verifies that commander.js validation errors are shown as-is
+      // Commander.js generates its own error messages for argument validation
+      try {
+        execSync(
+          'node dist/cli.js ticket create "Test" --priority invalid',
+          {
+            encoding: 'utf8',
+            timeout: 10000,
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
+          }
+        );
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        // Commander.js generates this error, not our code
+        expect(error.stderr || error.stdout).toContain("error: option '-p, --priority <priority>' argument 'invalid' is invalid");
+        expect(error.stderr || error.stdout).not.toMatch(/ERROR creating ticket:/);
+      }
+    });
+
+    it('should show standardized ERROR: format for missing arguments', () => {
+      // This test verifies that commander.js missing argument errors are shown as-is
+      try {
+        execSync(
+          'node dist/cli.js ticket create',
+          {
+            encoding: 'utf8',
+            timeout: 5000,
+            env: { ...process.env, TICKETS_DIR: testDir },
+            stdio: 'pipe'
+          }
+        );
+        expect.fail('Command should have failed');
+      } catch (error: any) {
+        // Commander.js generates this error, not our code
+        expect(error.stderr || error.stdout).toContain("error: missing required argument 'title'");
+        expect(error.stderr || error.stdout).not.toMatch(/VALIDATION ERROR:/);
+      }
+    });
+  });
 });

@@ -45,7 +45,7 @@ describe('ticket create backend switching', () => {
     );
 
     expect(result).toContain('SUCCESS: Ticket created successfully');
-    expect(result).toContain('Location: .tickets/todo/0001-test-ticket.md');
+    expect(result).toContain('LOCATION: .tickets/todo/0001-test-ticket.md');
     
     // Verify local file was created
     const files = await readFile(join(testDir, '.tickets/todo/0001-test-ticket.md'), 'utf-8');
