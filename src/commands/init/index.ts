@@ -54,7 +54,7 @@ New workflow:
     // 2. Create directories
     await ensureMultipleDirectories(['.claude/commands']);
     
-    // 3. Generate base 3 files (review command is now installed separately via 'ait3 install command review')
+    // 3. Generate base 3 files (code-review command is now installed separately via 'ait3 install command code-review')
     const baseFiles = [
       generateClaudeAit3Md(analysis),
       generateMinimalClaudeMd(analysis),

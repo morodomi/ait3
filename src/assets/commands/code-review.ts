@@ -2,7 +2,7 @@
  * Multi-agent code review command guide template
  * Provides structured approach for comprehensive code reviews using Claude and Gemini
  */
-export const reviewTemplate = `# Multi-Agent Code Review
+export const codeReviewTemplate = `# Multi-Agent Code Review
 
 Perform comprehensive code reviews using multiple AI perspectives.
 
@@ -44,18 +44,23 @@ Create a summary that includes:
 3. Priority-ordered action items
 4. Overall assessment
 
-### Step 5: Document Decision
-After human review, document the decision:
+### Step 5: Create Tickets for Findings
+After reviewing all perspectives, create tickets for issues that need action:
+
 \`\`\`bash
+# For critical issues:
+ait3 ticket create "Fix security vulnerability: [specific issue from review]"
+ait3 ticket create "Optimize performance: [specific bottleneck identified]"
+ait3 ticket create "Refactor for maintainability: [specific improvement needed]"
+
+# Optional: Document review completion
 git add .
-git commit -m "review(#TICKET): implement review feedback
+git commit -m "review(#TICKET): completed multi-agent code review
 
-Correctness: [summary of fixes]
-Performance: [optimizations made]
-Security: [vulnerabilities addressed]
-
-Human decision: [rationale for choices made]"
+Review findings documented as tickets for future implementation"
 \`\`\`
+
+**Key Principle**: Review results should guide future work through ticket creation, not immediate commits of changes.
 
 ## Quick Commands
 

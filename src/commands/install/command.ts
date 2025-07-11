@@ -7,7 +7,7 @@ import { ait3Template } from '../../assets/commands/ait3.js';
 import { geminiTemplate } from '../../assets/commands/gemini.js';
 import { orchestratorTemplate } from '../../assets/commands/orchestrator.js';
 import { ait3InitTemplate } from '../../assets/commands/ait3-init.js';
-import { reviewTemplate } from '../../assets/commands/review.js';
+import { codeReviewTemplate } from '../../assets/commands/code-review.js';
 interface InstallCommandArgs {
   name?: string;
   force?: boolean;
@@ -19,7 +19,7 @@ const commandTemplates = {
   gemini: geminiTemplate,
   orchestrator: orchestratorTemplate,
   'ait3-init': ait3InitTemplate,
-  review: reviewTemplate
+  'code-review': codeReviewTemplate
 } as const;
 
 type CommandName = keyof typeof commandTemplates;

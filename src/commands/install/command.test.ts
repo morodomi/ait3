@@ -97,7 +97,7 @@ describe('installCommand', () => {
       expect(result.message).toContain('gemini');
       expect(result.message).toContain('orchestrator');
       expect(result.message).toContain('ait3-init');
-      expect(result.message).toContain('review');
+      expect(result.message).toContain('code-review');
     });
 
     it('should install gemini command guide', async () => {
@@ -139,19 +139,31 @@ describe('installCommand', () => {
       expect(content).toContain('Project Analysis');
     });
 
-    it('should install review command guide', async () => {
-      const args = { name: 'review' };
+    it('should install code-review command guide', async () => {
+      const args = { name: 'code-review' };
       
       const result = await installCommand(args);
       
       expect(result.success).toBe(true);
-      expect(result.message).toContain('.claude/commands/review');
+      expect(result.message).toContain('.claude/commands/code-review');
       
-      const content = await readFile(join(testDir, '.claude/commands/review'), 'utf-8');
+      const content = await readFile(join(testDir, '.claude/commands/code-review'), 'utf-8');
       expect(content).toContain('Multi-Agent Code Review');
       expect(content).toContain('Correctness Review (Claude)');
       expect(content).toContain('Performance Review (Gemini)');
       expect(content).toContain('Security Review (Claude)');
+    });
+
+    it('should reject old review command name', async () => {
+      const args = { name: 'review' };
+      
+      const result = await installCommand(args);
+      
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Unknown command');
+      expect(result.message).toContain('review');
+      expect(result.message).toContain('Available commands');
+      expect(result.message).toContain('code-review');
     });
   });
 
@@ -167,20 +179,20 @@ describe('installCommand', () => {
       expect(result.message).toContain('.claude/commands/gemini');
       expect(result.message).toContain('.claude/commands/orchestrator');
       expect(result.message).toContain('.claude/commands/ait3-init');
-      expect(result.message).toContain('.claude/commands/review');
+      expect(result.message).toContain('.claude/commands/code-review');
       
       // Check all files
       const ait3Path = join(testDir, '.claude/commands/ait3');
       const geminiPath = join(testDir, '.claude/commands/gemini');
       const orchestratorPath = join(testDir, '.claude/commands/orchestrator');
       const ait3InitPath = join(testDir, '.claude/commands/ait3-init');
-      const reviewPath = join(testDir, '.claude/commands/review');
+      const codeReviewPath = join(testDir, '.claude/commands/code-review');
       
       await expect(access(ait3Path)).resolves.toBeUndefined();
       await expect(access(geminiPath)).resolves.toBeUndefined();
       await expect(access(orchestratorPath)).resolves.toBeUndefined();
       await expect(access(ait3InitPath)).resolves.toBeUndefined();
-      await expect(access(reviewPath)).resolves.toBeUndefined();
+      await expect(access(codeReviewPath)).resolves.toBeUndefined();
     });
 
     it('should install all commands with "all" name', async () => {
