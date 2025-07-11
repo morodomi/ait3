@@ -1,4 +1,3 @@
-import { cosmiconfig } from 'cosmiconfig';
 import { readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { constants } from 'fs';

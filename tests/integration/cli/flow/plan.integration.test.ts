@@ -61,7 +61,7 @@ describe('CLI Integration: flow plan', () => {
 
       expect(result).toContain('PLANNING Phase');
       expect(result).toContain('Claude Code Instructions');
-      expect(result).toContain('TODO:');
+      expect(result).toContain('TODO: Next actions for AI');
       expect(result).toContain('test-planning-feature'); // Converted to kebab-case
     });
 

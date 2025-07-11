@@ -25,13 +25,13 @@ export function createSetupCommand(services: Services): Command {
 
       if (result.success) {
         console.log(result.message);
-        if (result.data?.details) {
-          console.log(result.data.details);
+        if (result.data && typeof result.data === 'object' && 'details' in result.data) {
+          console.log((result.data as { details: string }).details);
         }
       } else {
         console.error(`ERROR: ${result.message}`);
-        if (result.data?.details) {
-          console.error(result.data.details);
+        if (result.data && typeof result.data === 'object' && 'details' in result.data) {
+          console.error((result.data as { details: string }).details);
         }
         process.exit(1);
       }
@@ -50,13 +50,13 @@ export function createSetupCommand(services: Services): Command {
 
       if (result.success) {
         console.log(result.message);
-        if (result.data?.details) {
-          console.log(result.data.details);
+        if (result.data && typeof result.data === 'object' && 'details' in result.data) {
+          console.log((result.data as { details: string }).details);
         }
       } else {
         console.error(`ERROR: ${result.message}`);
-        if (result.data?.details) {
-          console.error(result.data.details);
+        if (result.data && typeof result.data === 'object' && 'details' in result.data) {
+          console.error((result.data as { details: string }).details);
         }
         process.exit(1);
       }

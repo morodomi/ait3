@@ -85,7 +85,7 @@ describe('greenPhase Pure Function', () => {
     it('should show GitHub URL location for GitHubTicketService', async () => {
       // Mock GitHubTicketService
       const mockGitHubService = {
-        getTicket: async () => ({
+        getTicket: async (): Promise<any> => ({
           id: '#82',
           title: 'GitHub Green Test',
           status: 'doing',
@@ -94,7 +94,7 @@ describe('greenPhase Pure Function', () => {
           updated: '2025-01-01T00:00:00Z',
           labels: []
         }),
-        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
+        getConfig: (): any => ({ owner: 'testowner', repo: 'testrepo' })
       };
 
       const githubServices: Services = {

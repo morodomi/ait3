@@ -55,7 +55,7 @@ class MockTicketService implements TicketService {
     throw new Error('Not implemented for this test');
   }
 
-  async completeTicket(id: string): Promise<void> {
+  async completeTicket(_id: string): Promise<void> {
     if (this.shouldThrowError) {
       throw this.shouldThrowError;
     }

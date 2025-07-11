@@ -255,4 +255,178 @@ describe('initCommand - Redesigned', () => {
       // Options are ignored, standard behavior applies
     });
   });
+
+  describe('hierarchical CLAUDE.md generation', () => {
+    describe('TypeScript project', () => {
+      beforeEach(async () => {
+        await writeFile('package.json', JSON.stringify({
+          name: 'test-cli',
+          scripts: { test: 'vitest', build: 'tsc' },
+          devDependencies: { typescript: '^5.0.0', vitest: '^1.0.0' }
+        }));
+      });
+
+      it('should generate src/CLAUDE.md for TypeScript project', async () => {
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        await expect(access('src/CLAUDE.md')).resolves.toBeUndefined();
+        const content = await readFile('src/CLAUDE.md', 'utf-8');
+        expect(content).toContain('Implementation Guidelines');
+        expect(content).toContain('TypeScript');
+        expect(content).toContain('pure functions');
+        expect(content).toContain('strict mode');
+      });
+
+      it('should generate tests/CLAUDE.md for TypeScript project', async () => {
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        await expect(access('tests/CLAUDE.md')).resolves.toBeUndefined();
+        const content = await readFile('tests/CLAUDE.md', 'utf-8');
+        expect(content).toContain('Test Strategy');
+        expect(content).toContain('Vitest');
+        expect(content).toContain('describe');
+        expect(content).toContain('vi.mock');
+      });
+    });
+
+    describe('Laravel project', () => {
+      beforeEach(async () => {
+        await writeFile('composer.json', JSON.stringify({
+          require: { 'laravel/framework': '^10.0' }
+        }));
+        await writeFile('artisan', '#!/usr/bin/env php');
+      });
+
+      it('should generate app/CLAUDE.md for Laravel project', async () => {
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        await expect(access('app/CLAUDE.md')).resolves.toBeUndefined();
+        const content = await readFile('app/CLAUDE.md', 'utf-8');
+        expect(content).toContain('Backend');
+        expect(content).toContain('Laravel');
+        expect(content).toContain('Controller');
+        expect(content).toContain('Service');
+      });
+
+      it('should generate resources/views/CLAUDE.md for Laravel project', async () => {
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        await expect(access('resources/views/CLAUDE.md')).resolves.toBeUndefined();
+        const content = await readFile('resources/views/CLAUDE.md', 'utf-8');
+        expect(content).toContain('Blade');
+        expect(content).toContain('Component');
+        expect(content).toContain('Tailwind');
+      });
+
+      it('should generate resources/js/CLAUDE.md for Laravel project', async () => {
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        await expect(access('resources/js/CLAUDE.md')).resolves.toBeUndefined();
+        const content = await readFile('resources/js/CLAUDE.md', 'utf-8');
+        expect(content).toContain('Frontend');
+        expect(content).toContain('Vue');
+        expect(content).toContain('Alpine.js');
+      });
+
+      it('should generate Laravel infrastructure template', async () => {
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        await expect(access('CLAUDE.laravel-infra.md')).resolves.toBeUndefined();
+        const content = await readFile('CLAUDE.laravel-infra.md', 'utf-8');
+        expect(content).toContain('Docker');
+        expect(content).toContain('Bref');
+        expect(content).toContain('CodePipeline');
+      });
+    });
+
+    describe('Flask project', () => {
+      beforeEach(async () => {
+        await writeFile('requirements.txt', 'Flask==2.3.0\npytest==7.4.0');
+      });
+
+      it('should generate Flask template files', async () => {
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        // Backend template
+        await expect(access('CLAUDE.flask-backend.md')).resolves.toBeUndefined();
+        const backendContent = await readFile('CLAUDE.flask-backend.md', 'utf-8');
+        expect(backendContent).toContain('Flask');
+        expect(backendContent).toContain('Python');
+        expect(backendContent).toContain('Poetry');
+        
+        // Frontend template
+        await expect(access('CLAUDE.flask-frontend.md')).resolves.toBeUndefined();
+        const frontendContent = await readFile('CLAUDE.flask-frontend.md', 'utf-8');
+        expect(frontendContent).toContain('Vite');
+        expect(frontendContent).toContain('Alpine.js');
+        
+        // Tests template
+        await expect(access('CLAUDE.flask-tests.md')).resolves.toBeUndefined();
+        const testsContent = await readFile('CLAUDE.flask-tests.md', 'utf-8');
+        expect(testsContent).toContain('pytest');
+        
+        // Infrastructure template
+        await expect(access('CLAUDE.flask-infra.md')).resolves.toBeUndefined();
+        const infraContent = await readFile('CLAUDE.flask-infra.md', 'utf-8');
+        expect(infraContent).toContain('Docker');
+        expect(infraContent).toContain('Zappa');
+      });
+
+      it('should update ait3-init command with Flask instructions', async () => {
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        const content = await readFile('.claude/commands/ait3-init', 'utf-8');
+        expect(content).toContain('Flask project');
+        expect(content).toContain('CLAUDE.flask-backend.md');
+        expect(content).toContain('rm -f CLAUDE.flask-*.md');
+      });
+    });
+
+    describe('edge cases', () => {
+      it('should not overwrite existing hierarchical CLAUDE.md files', async () => {
+        await mkdir('src', { recursive: true });
+        await writeFile('src/CLAUDE.md', '# Custom content');
+        await writeFile('package.json', JSON.stringify({
+          devDependencies: { typescript: '^5.0.0' }
+        }));
+        
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        const content = await readFile('src/CLAUDE.md', 'utf-8');
+        expect(content).toBe('# Custom content');
+      });
+
+      it('should create necessary directories', async () => {
+        await writeFile('composer.json', JSON.stringify({
+          require: { 'laravel/framework': '^10.0' }
+        }));
+        
+        const result = await initCommand({});
+        
+        expect(result.success).toBe(true);
+        
+        await expect(access('app')).resolves.toBeUndefined();
+        await expect(access('resources/views')).resolves.toBeUndefined();
+        await expect(access('resources/js')).resolves.toBeUndefined();
+      });
+    });
+  });
 });

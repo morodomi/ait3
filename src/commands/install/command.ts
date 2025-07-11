@@ -53,7 +53,7 @@ export async function installCommand(
   }
   
   // Process each file
-  for (const [cmdName, fileName] of filesToInstall) {
+  for (const [cmdName, _fileName] of filesToInstall) {
     const targetPath = join('.claude', 'commands', cmdName);
     const targetDir = dirname(targetPath);
     
