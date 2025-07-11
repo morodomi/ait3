@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { commandCommand } from './command.js';
+import { hooksCommand } from './hooks.js';
 import { installSecurity } from './security.js';
 
 export const installCommand = new Command('install')
@@ -8,11 +9,13 @@ export const installCommand = new Command('install')
 Examples:
   $ ait3 install command          # Install all command guides
   $ ait3 install command ait3     # Install AIT³ command guide only
+  $ ait3 install hooks            # Install AI safety hooks
   $ ait3 install security         # Install security settings for Claude Code
 `);
 
 // Add subcommands
 installCommand.addCommand(commandCommand);
+installCommand.addCommand(hooksCommand);
 installCommand.addCommand(
   new Command('security')
     .description('Install security settings for Claude Code')
