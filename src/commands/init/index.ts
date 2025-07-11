@@ -9,8 +9,7 @@ import {
 } from '../../common/claude-md-templates.js';
 import { 
   AIT3_METHODOLOGY_TEMPLATE,
-  AIT3_INIT_GUIDE_TEMPLATE,
-  REVIEW_COMMAND_TEMPLATE 
+  AIT3_INIT_GUIDE_TEMPLATE
 } from '../../common/ait3-templates.js';
 import { analyzeProject, type ProjectAnalysis } from '../../common/project-analyzer.js';
 import { 
@@ -55,12 +54,11 @@ New workflow:
     // 2. Create directories
     await ensureMultipleDirectories(['.claude/commands']);
     
-    // 3. Generate base 4 files
+    // 3. Generate base 3 files (review command is now installed separately via 'ait3 install command review')
     const baseFiles = [
       generateClaudeAit3Md(analysis),
       generateMinimalClaudeMd(analysis),
-      generateAit3InitCommand(analysis.framework),
-      generateReviewCommand()
+      generateAit3InitCommand(analysis.framework)
     ];
     
     // 4. Generate hierarchical files based on framework
@@ -169,18 +167,11 @@ Adjust paths based on your project structure.`;
   await writeFile('.claude/commands/ait3-init', content, 'utf-8');
 }
 
-/**
- * Generate the multi-agent review command guide
- * This is project-agnostic, so no parameters needed
- */
-async function generateReviewCommand(): Promise<void> {
-  await writeFile('.claude/commands/review', REVIEW_COMMAND_TEMPLATE, 'utf-8');
-}
 
 function formatSuccessMessage(analysis: ProjectAnalysis): string {
   const messages: string[] = [];
   
-  messages.push(`${STYLES.success('SUCCESS:')} 4 files generated`);
+  messages.push(`${STYLES.success('SUCCESS:')} 3 files generated`);
   messages.push('');
   
   if (analysis.language !== 'Unknown') {
@@ -192,7 +183,6 @@ function formatSuccessMessage(analysis: ProjectAnalysis): string {
   messages.push('  - CLAUDE.ait3.md (temporary template)');
   messages.push('  - .claude/CLAUDE.md (minimal working version)');
   messages.push('  - .claude/commands/ait3-init (integration guide)');
-  messages.push('  - .claude/commands/review (multi-agent review guide)');
   messages.push('');
   
   // Add framework-specific messages
