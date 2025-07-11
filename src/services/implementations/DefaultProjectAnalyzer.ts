@@ -71,7 +71,7 @@ export class DefaultProjectAnalyzer implements ProjectAnalyzer {
     // Detect languages with error handling
     try {
       analysis.languages = await this.languageDetector.detectLanguages(targetPath);
-    } catch (_error) {
+    } catch {
       // Continue with empty languages on error
       analysis.languages = [];
     }

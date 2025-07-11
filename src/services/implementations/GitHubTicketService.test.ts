@@ -51,7 +51,7 @@ describe('GitHubTicketService', () => {
   describe('constructor', () => {
     it('should use environment variable GITHUB_TOKEN if token not provided', () => {
       process.env.GITHUB_TOKEN = 'env-token';
-      const envService = new GitHubTicketService({
+      const _envService = new GitHubTicketService({
         owner: 'testowner',
         repo: 'testrepo',
       });
@@ -128,7 +128,7 @@ describe('GitHubTicketService', () => {
         },
       });
 
-      const ticket = await service.createTicket('Feature ticket', {
+      const _ticket = await service.createTicket('Feature ticket', {
         description: 'Test feature',
         priority: 'high',
         labels: ['feature'],
