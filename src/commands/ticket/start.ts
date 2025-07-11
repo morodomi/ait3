@@ -255,7 +255,7 @@ async function handleMultipleExistingBranches(
   try {
     await gitService.checkout(existingBranches[0]);
     messageParts.push(STYLES.success(`SUCCESS: Switched to: ${existingBranches[0]}`));
-  } catch (_checkoutError) {
+  } catch {
     messageParts.push(STYLES.warning('WARNING: Could not switch automatically'));
     messageParts.push(STYLES.muted('   Choose manually:'));
     messageParts.push(STYLES.muted(`   git checkout ${existingBranches[0]}`));

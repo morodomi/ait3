@@ -5,7 +5,6 @@ import { join } from 'path';
 import { randomBytes } from 'crypto';
 import matter from 'gray-matter';
 import { LocalTicketService } from './LocalTicketService.js';
-import type { Ticket } from '@/common/types.js';
 
 describe('LocalTicketService', () => {
   let testDir: string;

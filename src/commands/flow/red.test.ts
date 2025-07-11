@@ -5,7 +5,7 @@ import { join } from 'path';
 import { randomBytes } from 'crypto';
 import { redPhase } from './red.js';
 import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
-import type { Services, Ticket } from '@/common/types.js';
+import type { Services } from '@/common/types.js';
 import type { TicketService } from '@/services/interfaces/TicketService.js';
 
 // Helper to strip ANSI color codes for testing

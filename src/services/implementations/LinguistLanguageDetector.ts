@@ -69,7 +69,7 @@ export class LinguistLanguageDetector implements LanguageDetector {
       }
 
       return languageResults;
-    } catch (_error) {
+    } catch {
       // Fallback to simple file extension-based detection
       return this.fallbackDetection(targetPath);
     }
