@@ -16,18 +16,27 @@ program
   .description('AIT³ Development Platform - AI + Ticket + Test + Tool driven development')
   .version('1.1.0');
 
-// Create services
-const services = createServiceContainer({ cwd: process.cwd() });
+// Initialize CLI asynchronously
+async function initializeCLI(): Promise<void> {
+  // Create services
+  const services = await createServiceContainer({ cwd: process.cwd() });
 
-// Add command groups
-program.addCommand(ticketCommand);
-program.addCommand(flowCommand);
-program.addCommand(installCommand);
-program.addCommand(analyzeCommand);
-program.addCommand(initCommandGroup);
-program.addCommand(migrateCommandGroup);
-program.addCommand(createSetupCommand(services));
+  // Add command groups
+  program.addCommand(ticketCommand);
+  program.addCommand(flowCommand);
+  program.addCommand(installCommand);
+  program.addCommand(analyzeCommand);
+  program.addCommand(initCommandGroup);
+  program.addCommand(migrateCommandGroup);
+  program.addCommand(createSetupCommand(services));
 
-// Future command groups will be added here:
+  // Future command groups will be added here:
 
-program.parse();
+  program.parse();
+}
+
+// Start the CLI
+initializeCLI().catch((error) => {
+  console.error('Failed to initialize CLI:', error);
+  process.exit(1);
+});

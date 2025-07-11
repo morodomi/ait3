@@ -12,7 +12,8 @@ analyzeCommand
   .option('-p, --path <path>', 'Path to analyze (defaults to current directory)')
   .option('-f, --format <format>', 'Output format (default or detailed)', 'default')
   .action(async (options) => {
-    const services = ServiceFactory.createServices();
+    // Create services for this command execution
+    const services = await ServiceFactory.createServices();
     const result = await analyzeProject(
       { path: options.path, format: options.format },
       services

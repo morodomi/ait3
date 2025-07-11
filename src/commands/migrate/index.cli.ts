@@ -3,8 +3,8 @@ import { migrateCommand } from './index.js';
 import { ServiceFactory } from '../../services/ServiceFactory.js';
 import { STYLES } from '../../common/styles.js';
 
-// Service container - centralized dependency injection
-const services = ServiceFactory.createServices();
+// Service container - centralized dependency injection  
+// Services are created async per command to respect config changes
 
 export const migrateCommandGroup = new Command('migrate')
   .description('Migrate tickets between local and GitHub backends')
@@ -25,6 +25,9 @@ Examples:
   .option('--tickets <ids>', 'Migrate specific local tickets (e.g., "1,3,5" or "1-10" or "1,3-5")')
   .action(async (options) => {
     try {
+      // Create services for this command execution
+      const services = await ServiceFactory.createServices();
+      
       const result = await migrateCommand(
         {
           from: options.from,
