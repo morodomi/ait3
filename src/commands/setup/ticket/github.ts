@@ -1,6 +1,7 @@
 import type { CLIResult, Services } from '../../../common/types.js';
 import { promisify } from 'util';
 import { exec as execCallback } from 'child_process';
+import { Octokit } from '@octokit/rest';
 import { validateTicketsDirectory, readConfig, writeConfig, buildTicketNotice } from '../common/config-utils.js';
 
 const defaultExec = promisify(execCallback);
@@ -8,6 +9,32 @@ const defaultExec = promisify(execCallback);
 interface SetupOptions {
   force?: boolean;
   repository?: string;
+}
+
+/**
+ * Validates GitHub repository identifier (owner or repo name)
+ * GitHub allows: alphanumeric, hyphens, dots, underscores
+ * But NOT: semicolons, pipes, command substitution, spaces, etc.
+ */
+function validateGitHubIdentifier(identifier: string): boolean {
+  // GitHub username/repo rules: 
+  // - Can contain alphanumeric characters, hyphens, dots, underscores
+  // - Cannot start or end with hyphens, dots
+  // - Cannot contain spaces or shell metacharacters
+  const validPattern = /^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?$/;
+  return validPattern.test(identifier) && identifier.length > 0 && identifier.length <= 39;
+}
+
+/**
+ * Safely gets GitHub auth token from gh CLI
+ */
+async function getGitHubAuthToken(exec: typeof defaultExec): Promise<string | null> {
+  try {
+    const { stdout } = await exec('gh auth token');
+    return stdout.trim();
+  } catch {
+    return null;
+  }
 }
 
 export async function setupTicketGitHub(
@@ -87,15 +114,39 @@ export async function setupTicketGitHub(
     owner = parts[0];
     repo = parts[1];
     
-    // Validate repository access
+    // Validate GitHub identifiers to prevent injection
+    if (!validateGitHubIdentifier(owner) || !validateGitHubIdentifier(repo)) {
+      return {
+        success: false,
+        message: 'Invalid repository format',
+        data: {
+          details: 'Repository owner and name must contain only alphanumeric characters, hyphens, dots, and underscores'
+        }
+      };
+    }
+    
+    // Validate repository access using Octokit API (secure)
     try {
-      await exec(`gh api repos/${owner}/${repo}`, { cwd: context.cwd });
-    } catch {
+      const authToken = await getGitHubAuthToken(exec);
+      if (!authToken) {
+        return {
+          success: false,
+          message: 'Cannot authenticate with GitHub',
+          data: {
+            details: 'Failed to get auth token from gh CLI'
+          }
+        };
+      }
+      
+      const octokit = new Octokit({ auth: authToken });
+      await octokit.rest.repos.get({ owner, repo });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
         message: `Cannot access repository: ${owner}/${repo}`,
         data: {
-          details: 'Check repository name and access permissions'
+          details: `Check repository name and access permissions. Error: ${errorMessage}`
         }
       };
     }

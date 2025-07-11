@@ -1,12 +1,8 @@
 import { Octokit } from '@octokit/rest';
 import { execSync } from 'child_process';
-import { promisify } from 'util';
-import { exec } from 'child_process';
 import type { TicketService } from '../interfaces/TicketService.js';
 import type { Ticket, CreateTicketOptions } from '../../common/types.js';
 import { TicketNotFoundError } from '../../common/errors.js';
-
-const execAsync = promisify(exec);
 
 interface GitHubConfig {
   owner: string;
@@ -302,18 +298,15 @@ export class GitHubTicketService implements TicketService {
     try {
       const issueNumber = this.parseTicketId(id);
       
-      // Use GitHub CLI to delete the issue
-      await execAsync(
-        `gh api -X DELETE repos/${this.config.owner}/${this.config.repo}/issues/${issueNumber}`,
-        { cwd: this.basePath }
-      );
-      
-      // GitHub API doesn't actually delete issues, it just allows closing them
-      // We'll close the issue instead since deletion isn't supported
-      await execAsync(
-        `gh issue close ${issueNumber} --reason "not planned"`,
-        { cwd: this.basePath }
-      );
+      // GitHub API doesn't actually delete issues, only close them
+      // Use Octokit API directly for security (no shell command injection)
+      await this.octokit.rest.issues.update({
+        owner: this.config.owner,
+        repo: this.config.repo,
+        issue_number: issueNumber,
+        state: 'closed',
+        state_reason: 'not_planned'
+      });
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
