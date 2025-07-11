@@ -51,7 +51,7 @@ export interface TicketConfig {
 export interface CLIResult {
   success: boolean;
   message: string;
-  data?: any;
+  data?: unknown;
   exitCode?: number;
 }
 

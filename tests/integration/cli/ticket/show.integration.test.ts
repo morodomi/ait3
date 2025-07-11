@@ -140,7 +140,7 @@ labels:
       expect(result).toContain('Comprehensive Test Ticket');
       
       // Check metadata
-      expect(result).toContain('Details:');
+      expect(result).toContain('INFO:');
       expect(result).toContain('Status:');
       expect(result).toContain('todo');
       expect(result).toContain('Priority:');
@@ -379,7 +379,7 @@ labels:
         }
       );
 
-      expect(result).toContain('Details:');
+      expect(result).toContain('INFO:');
       expect(result).toContain('────');
       expect(result).toContain('Description:');
     });

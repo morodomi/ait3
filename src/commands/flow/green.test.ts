@@ -79,13 +79,13 @@ describe('greenPhase Pure Function', () => {
       const result = await greenPhase({ ticketId: '0001' }, services);
       
       expect(result.success).toBe(true);
-      expect(result.message).toMatch(/Location.*\.tickets\/doing\/0001-location-test-green\.md/);
+      expect(result.message).toMatch(/LOCATION.*\.tickets\/doing\/0001-location-test-green\.md/);
     });
 
     it('should show GitHub URL location for GitHubTicketService', async () => {
       // Mock GitHubTicketService
       const mockGitHubService = {
-        getTicket: async () => ({
+        getTicket: async (): Promise<any> => ({
           id: '#82',
           title: 'GitHub Green Test',
           status: 'doing',
@@ -94,7 +94,7 @@ describe('greenPhase Pure Function', () => {
           updated: '2025-01-01T00:00:00Z',
           labels: []
         }),
-        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
+        getConfig: (): any => ({ owner: 'testowner', repo: 'testrepo' })
       };
 
       const githubServices: Services = {
@@ -104,7 +104,7 @@ describe('greenPhase Pure Function', () => {
       const result = await greenPhase({ ticketId: '82' }, githubServices);
 
       expect(result.success).toBe(true);
-      expect(stripAnsi(result.message)).toContain('Location: https://github.com/testowner/testrepo/issues/82');
+      expect(stripAnsi(result.message)).toContain('LOCATION: https://github.com/testowner/testrepo/issues/82');
     });
   });
 

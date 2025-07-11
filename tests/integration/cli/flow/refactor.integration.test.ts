@@ -158,7 +158,7 @@ describe('CLI Integration: flow refactor', () => {
         env: { ...process.env, TICKETS_DIR: testDir }
       });
 
-      expect(result).toContain('Next Action');
+      expect(result).toContain('TODO: Next actions for AI');
       expect(result).toContain('Review analysis');
       expect(result).toContain('Apply improvements');
     });

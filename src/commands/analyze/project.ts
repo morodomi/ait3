@@ -1,5 +1,5 @@
 import type { CLIResult, Services } from '../../common/types.js';
-import type { ProjectAnalysis } from '../../common/types/analyzer.js';
+import type { ProjectAnalysis, DirectoryInfo } from '../../common/types/analyzer.js';
 import chalk from 'chalk';
 
 interface AnalyzeProjectArgs {
@@ -167,7 +167,7 @@ function formatDetailedOutput(analysis: ProjectAnalysis): CLIResult {
   
   if (analysis.structure.directories.length > 0) {
     lines.push('  Directories:');
-    analysis.structure.directories.forEach((dir: any) => {
+    analysis.structure.directories.forEach((dir: DirectoryInfo) => {
       const typeIcon = getDirectoryIcon(dir.type);
       lines.push(`    ${typeIcon} ${dir.name} (${dir.fileCount} files)`);
     });
