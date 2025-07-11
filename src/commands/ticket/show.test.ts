@@ -127,7 +127,7 @@ describe('showTicket pure function', () => {
       };
 
       const githubServices: Services = {
-        ticketService: mockGitHubService as any
+        ticketService: mockGitHubService as TicketService
       };
 
       const args: ShowTicketArgs = { id: '82' };

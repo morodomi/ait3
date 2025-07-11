@@ -68,10 +68,10 @@ export function handleCommandResult(result: CLIResult): void {
 }
 
 // Wrapper for async command actions with error handling
-export function withErrorHandling<T extends any[]>(
+export function withErrorHandling<T extends unknown[]>(
   action: (...args: T) => Promise<void>,
   errorContext: ErrorContext
-) {
+): (...args: T) => Promise<void> {
   return async (...args: T) => {
     try {
       await action(...args);

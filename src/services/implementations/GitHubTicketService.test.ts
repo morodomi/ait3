@@ -5,9 +5,22 @@ import type { Ticket } from '../../common/types.js';
 
 vi.mock('@octokit/rest');
 
+// Type for our mock Octokit instance
+interface MockOctokit {
+  issues: {
+    create: ReturnType<typeof vi.fn>;
+    listForRepo: ReturnType<typeof vi.fn>;
+    get: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+    addLabels: ReturnType<typeof vi.fn>;
+    removeLabel: ReturnType<typeof vi.fn>;
+    createComment: ReturnType<typeof vi.fn>;
+  };
+}
+
 describe('GitHubTicketService', () => {
   let service: GitHubTicketService;
-  let mockOctokit: any;
+  let mockOctokit: MockOctokit;
 
   beforeEach(() => {
     mockOctokit = {
@@ -22,7 +35,7 @@ describe('GitHubTicketService', () => {
       },
     };
 
-    vi.mocked(Octokit).mockImplementation(() => mockOctokit);
+    vi.mocked(Octokit).mockImplementation(() => mockOctokit as unknown as InstanceType<typeof Octokit>);
 
     service = new GitHubTicketService({
       owner: 'testowner',

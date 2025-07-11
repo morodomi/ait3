@@ -21,7 +21,7 @@ export async function validateTicketsDirectory(cwd: string): Promise<CLIResult |
   }
 }
 
-export async function readConfig(cwd: string): Promise<Record<string, any>> {
+export async function readConfig(cwd: string): Promise<Record<string, unknown>> {
   const configPath = join(cwd, '.tickets', 'config.json');
   try {
     const configContent = await readFile(configPath, 'utf-8');
@@ -31,7 +31,7 @@ export async function readConfig(cwd: string): Promise<Record<string, any>> {
   }
 }
 
-export async function writeConfig(cwd: string, config: Record<string, any>): Promise<void> {
+export async function writeConfig(cwd: string, config: Record<string, unknown>): Promise<void> {
   const configPath = join(cwd, '.tickets', 'config.json');
   await writeFile(configPath, JSON.stringify(config, null, 2));
 }

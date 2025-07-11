@@ -5,7 +5,8 @@ import { join } from 'path';
 import { randomBytes } from 'crypto';
 import { greenPhase, type GreenArgs } from './green.js';
 import { LocalTicketService } from '@/services/implementations/LocalTicketService.js';
-import type { Services } from '@/common/types.js';
+import type { Services, Ticket } from '@/common/types.js';
+import type { TicketService } from '@/services/interfaces/TicketService.js';
 
 // Helper to strip ANSI color codes for testing
 function stripAnsi(str: string): string {
@@ -85,7 +86,7 @@ describe('greenPhase Pure Function', () => {
     it('should show GitHub URL location for GitHubTicketService', async () => {
       // Mock GitHubTicketService
       const mockGitHubService = {
-        getTicket: async (): Promise<any> => ({
+        getTicket: async (): Promise<Ticket> => ({
           id: '#82',
           title: 'GitHub Green Test',
           status: 'doing',
@@ -94,11 +95,11 @@ describe('greenPhase Pure Function', () => {
           updated: '2025-01-01T00:00:00Z',
           labels: []
         }),
-        getConfig: (): any => ({ owner: 'testowner', repo: 'testrepo' })
+        getConfig: () => ({ owner: 'testowner', repo: 'testrepo' })
       };
 
       const githubServices: Services = {
-        ticketService: mockGitHubService as any
+        ticketService: mockGitHubService as TicketService
       };
 
       const result = await greenPhase({ ticketId: '82' }, githubServices);

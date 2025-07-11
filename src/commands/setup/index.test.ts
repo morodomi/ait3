@@ -34,7 +34,12 @@ describe('createSetupCommand', () => {
     
     // Check for optional repository argument
     // Commander stores arguments in registeredArguments property
-    const args = (githubCommand as any).registeredArguments || (githubCommand as any)._args || [];
+    interface CommanderExtended extends Command {
+      registeredArguments?: Array<{ name(): string; required: boolean }>;
+      _args?: Array<{ name(): string; required: boolean }>;
+    }
+    const extendedCommand = githubCommand as CommanderExtended;
+    const args = extendedCommand.registeredArguments || extendedCommand._args || [];
     expect(args.length).toBe(1);
     if (args[0]) {
       expect(args[0].name()).toBe('repository');

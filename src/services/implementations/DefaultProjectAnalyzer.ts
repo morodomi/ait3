@@ -1,5 +1,5 @@
 import { readFile, writeFile, mkdir, access } from 'fs/promises';
-import { join, dirname } from 'path';
+import { join } from 'path';
 import { constants } from 'fs';
 import type { ProjectAnalyzer } from '../interfaces/ProjectAnalyzer.js';
 import type { LanguageDetector } from '../interfaces/LanguageDetector.js';

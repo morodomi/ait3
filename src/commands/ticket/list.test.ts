@@ -143,7 +143,7 @@ describe('listTickets pure function', () => {
     });
 
     it('should validate status values', async () => {
-      const args: ListTicketsArgs = { status: 'invalid' as any };
+      const args: ListTicketsArgs = { status: 'invalid' as unknown as 'todo' | 'doing' | 'done' };
       
       await expect(listTickets(args, services)).rejects.toThrow(ValidationError);
     });
@@ -171,7 +171,7 @@ describe('listTickets pure function', () => {
     });
 
     it('should validate priority values', async () => {
-      const args: ListTicketsArgs = { priority: 'invalid' as any };
+      const args: ListTicketsArgs = { priority: 'invalid' as unknown as 'high' | 'medium' | 'low' };
       
       await expect(listTickets(args, services)).rejects.toThrow(ValidationError);
     });

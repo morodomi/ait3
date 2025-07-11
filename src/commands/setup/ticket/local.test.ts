@@ -31,12 +31,38 @@ describe('setupTicketLocal', () => {
       }, null, 2)
     );
 
+    const mockTicketService = {
+      listTickets: vi.fn().mockResolvedValue([]),
+      createTicket: vi.fn(),
+      getTicket: vi.fn(),
+      updateTicket: vi.fn(),
+      deleteTicket: vi.fn(),
+      moveTicket: vi.fn(),
+      getNextId: vi.fn(),
+      undoLastAction: vi.fn(),
+    };
+    
+    const mockGitService = {
+      isRepository: vi.fn(),
+      hasUncommittedChanges: vi.fn(),
+      getCurrentBranch: vi.fn(),
+      fetch: vi.fn(),
+      findBranches: vi.fn(),
+      createBranch: vi.fn(),
+      checkout: vi.fn(),
+      getMergeBase: vi.fn(),
+      getCommits: vi.fn(),
+      moveFile: vi.fn(),
+    };
+    
+    const mockProjectAnalyzer = {
+      analyzeProject: vi.fn(),
+    };
+    
     services = {
-      ticketService: {
-        listTickets: vi.fn().mockResolvedValue([]),
-      } as any,
-      gitService: {} as any,
-      projectAnalyzer: {} as any,
+      ticketService: mockTicketService,
+      gitService: mockGitService,
+      projectAnalyzer: mockProjectAnalyzer,
     };
   });
 

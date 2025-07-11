@@ -102,7 +102,14 @@ export class ConfigBasedCommandDetector implements CommandDetector {
     type: CommandType
   ): Promise<CommandInfo | null> {
     const packageJson = await this.readPackageJson(targetPath);
-    if (packageJson?.scripts?.[type]) {
+    if (
+      packageJson && 
+      typeof packageJson === 'object' && 
+      'scripts' in packageJson &&
+      packageJson.scripts &&
+      typeof packageJson.scripts === 'object' &&
+      type in packageJson.scripts
+    ) {
       return {
         command: `npm ${type === 'test' ? 'test' : `run ${type}`}`,
         detected: true,
@@ -309,7 +316,7 @@ export class ConfigBasedCommandDetector implements CommandDetector {
     return checks.some(exists => exists);
   }
 
-  private async readPackageJson(targetPath: string): Promise<any> {
+  private async readPackageJson(targetPath: string): Promise<unknown> {
     try {
       const content = await readFile(join(targetPath, 'package.json'), 'utf-8');
       return JSON.parse(content);

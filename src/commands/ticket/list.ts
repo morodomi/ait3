@@ -15,11 +15,11 @@ export async function listTickets(
   services: Services
 ): Promise<CLIResult> {
   // Input validation
-  if (args.status && !VALID_STATUSES.includes(args.status as any)) {
+  if (args.status && !VALID_STATUSES.includes(args.status)) {
     throw new ValidationError(ERROR_MESSAGES.INVALID_STATUS, 'status');
   }
 
-  if (args.priority && !VALID_PRIORITIES.includes(args.priority as any)) {
+  if (args.priority && !VALID_PRIORITIES.includes(args.priority)) {
     throw new ValidationError(ERROR_MESSAGES.INVALID_PRIORITY, 'priority');
   }
 
