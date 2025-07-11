@@ -1,8 +1,4 @@
-/**
- * Multi-agent code review command guide template
- * Provides structured approach for comprehensive code reviews using Claude and Gemini
- */
-export const codeReviewTemplate = `# Multi-Agent Code Review
+# Multi-Agent Code Review
 
 Perform comprehensive code reviews using multiple AI perspectives.
 
@@ -17,7 +13,7 @@ Review the current changes for correctness:
 
 ### Step 2: Performance Review (Gemini)
 Switch to terminal and run:
-\`\`\`bash
+```bash
 gemini -p "@src/ @tests/ Review these changes for performance:
 
 Focus on:
@@ -26,7 +22,7 @@ Focus on:
 - Memory usage patterns
 - Potential bottlenecks
 - Async/await optimization"
-\`\`\`
+```
 
 ### Step 3: Security Review (Claude)
 Review the changes for security issues:
@@ -79,7 +75,7 @@ Categorize findings by priority:
    - Any Optional issues you want to address? (list if any)
 
 3. **Create tickets based on your selection:**
-\`\`\`bash
+```bash
 # For your selected issues only:
 ait3 ticket create "Fix security vulnerability: [specific issue you chose]"
 ait3 ticket create "Optimize performance: [specific bottleneck you selected]"
@@ -90,14 +86,14 @@ git add .
 git commit -m "review(#TICKET): completed multi-agent code review
 
 Selected findings documented as tickets for implementation"
-\`\`\`
+```
 
 **Key Question: What would you like to focus on first?**
 
 ## Quick Commands
 
 For specific review types:
-\`\`\`bash
+```bash
 # Performance only
 gemini -p "@src/ Review this code for performance bottlenecks"
 
@@ -106,11 +102,10 @@ gemini -p "@src/ Review this code for performance bottlenecks"
 
 # Architecture review
 gemini -p "@src/ @docs/ Is this architecture scalable and maintainable?"
-\`\`\`
+```
 
 ## Tips
 - Run reviews after GREEN phase, before REFACTOR
 - Document conflicting opinions in commit messages
 - Keep context focused on specific changes
 - Use ticket scope to limit review scope
-`;
