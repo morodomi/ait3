@@ -24,11 +24,18 @@ AIT³ embodies **Socratic epistemology** - wisdom emerges through questioning, d
 2. **Antithesis** (Gemini): Challenges assumptions and identifies flaws  
 3. **Synthesis** (Human): Weighs evidence and makes informed decisions
 
-## What's New in v1.2.1
+## What's New in v1.2.4
 
-🔧 **Latest Fixes**:
-- **GitHub API Consistency**: All methods now use modern `octokit.rest.*` pattern for future compatibility
-- **Security Test Improvements**: Tests verify actual API behavior with malicious inputs
+🔧 **Global Installation Fixes**:
+- **Dynamic Version Reading**: CLI now reads version from package.json for accurate version display
+- **Complete Dependency Cleanup**: Fixed all global installation issues with proper dependency management
+
+## What's New in v1.2.1-1.2.3
+
+🔧 **Dependency Management Fixes**:
+- **v1.2.3**: Moved proper-lockfile to dependencies, removed unused cosmiconfig
+- **v1.2.2**: Moved zod to dependencies - fixed critical global installation error  
+- **v1.2.1**: GitHub API consistency and security test improvements
 
 ## What's New in v1.2.0
 
