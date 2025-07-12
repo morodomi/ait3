@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { GitHubTicketService } from './GitHubTicketService.js';
 import { Octokit } from '@octokit/rest';
 import type { Ticket } from '../../common/types.js';
+import { TicketNotFoundError } from '../../common/errors.js';
 
 vi.mock('@octokit/rest');
 
@@ -537,67 +538,108 @@ describe('GitHubTicketService', () => {
     });
   });
 
-  describe('security: command injection protection in deleteTicket', () => {
-    it('should prevent command injection via malicious owner configuration', async () => {
-      // Create service with malicious owner configuration
-      const maliciousService = new GitHubTicketService({
-        owner: 'test; rm -rf /',
-        repo: 'testrepo',
-        token: 'test-token',
+  describe('deleteTicket', () => {
+    it('should call octokit.rest.issues.update with correct parameters to close an issue', async () => {
+      // Mock the update method to simulate a successful API call
+      mockOctokit.rest.issues.update.mockResolvedValue({
+        data: { number: 123, state: 'closed' }
       });
 
-      // deleteTicket should not execute dangerous commands
-      await expect(async () => {
-        await maliciousService.deleteTicket('123');
-      }).rejects.toThrow();
-      
-      // Should NOT have executed shell command injection
-      // (This test will fail until we implement the secure Octokit version)
+      await service.deleteTicket('123');
+
+      expect(mockOctokit.rest.issues.update).toHaveBeenCalledWith({
+        owner: 'testowner',
+        repo: 'testrepo',
+        issue_number: 123,
+        state: 'closed',
+        state_reason: 'not_planned'
+      });
     });
 
-    it('should prevent command injection via malicious repo configuration', async () => {
-      // Create service with malicious repo configuration
-      const maliciousService = new GitHubTicketService({
+    it('should handle ticket ID with # prefix', async () => {
+      mockOctokit.rest.issues.update.mockResolvedValue({
+        data: { number: 123, state: 'closed' }
+      });
+
+      await service.deleteTicket('#123');
+
+      expect(mockOctokit.rest.issues.update).toHaveBeenCalledWith({
         owner: 'testowner',
+        repo: 'testrepo',
+        issue_number: 123,
+        state: 'closed',
+        state_reason: 'not_planned'
+      });
+    });
+
+    it('should throw TicketNotFoundError if the issue does not exist', async () => {
+      // Mock the update method to simulate a "Not Found" error
+      mockOctokit.rest.issues.update.mockRejectedValue(
+        new Error('Not Found')
+      );
+
+      await expect(service.deleteTicket('999')).rejects.toThrow(TicketNotFoundError);
+      await expect(service.deleteTicket('999')).rejects.toThrow('Ticket with ID \'999\' not found');
+    });
+
+    it('should throw authentication error for bad credentials', async () => {
+      mockOctokit.rest.issues.update.mockRejectedValue(
+        new Error('Bad credentials - https://docs.github.com/rest')
+      );
+
+      await expect(service.deleteTicket('123')).rejects.toThrow('GitHub authentication failed. Please run: gh auth login');
+    });
+
+    it('should throw permission error for insufficient permissions', async () => {
+      mockOctokit.rest.issues.update.mockRejectedValue(
+        new Error('Resource not accessible by integration (permission denied)')
+      );
+
+      await expect(service.deleteTicket('123')).rejects.toThrow('Insufficient permissions to delete issue #123');
+    });
+
+    it('should throw generic error for other failures', async () => {
+      mockOctokit.rest.issues.update.mockRejectedValue(
+        new Error('Internal Server Error')
+      );
+
+      await expect(service.deleteTicket('123')).rejects.toThrow('Failed to delete GitHub issue: Internal Server Error');
+    });
+
+    it('should throw an error for invalid ticket IDs', async () => {
+      // Invalid ID that cannot be parsed as a number
+      const invalidTicketId = 'abc; rm -rf /';
+      
+      // The method should throw an error because parseTicketId will fail,
+      // not because of command injection protection
+      // The error message is wrapped by the catch block
+      await expect(service.deleteTicket(invalidTicketId)).rejects.toThrow(`Failed to delete GitHub issue: Invalid ticket ID: ${invalidTicketId}`);
+    });
+
+    it('should not be vulnerable to injection via owner/repo config', async () => {
+      const maliciousService = new GitHubTicketService({
+        owner: 'test; rm -rf /',
         repo: 'test`whoami`',
         token: 'test-token',
       });
 
-      // deleteTicket should not execute command substitution
-      await expect(async () => {
-        await maliciousService.deleteTicket('123');
-      }).rejects.toThrow();
-      
-      // Should NOT have executed command substitution
-      // (This test will fail until we implement the secure Octokit version)
-    });
-
-    it('should prevent command injection via malicious ticket ID', async () => {
-      // Malicious ticket ID with command injection
-      const maliciousTicketId = '123; cat /etc/passwd';
-
-      // deleteTicket should not execute dangerous commands
-      await expect(async () => {
-        await service.deleteTicket(maliciousTicketId);
-      }).rejects.toThrow();
-      
-      // Should NOT have executed shell command injection
-      // (This test will fail until we implement the secure Octokit version)
-    });
-
-    it('should handle legitimate deletion requests safely', async () => {
-      // Mock Octokit for future safe implementation
-      mockOctokit.issues.update = vi.fn().mockResolvedValue({
+      // Mock the update method. We expect it to be called with the malicious strings,
+      // proving they are not executed as commands but passed as parameters
+      mockOctokit.rest.issues.update.mockResolvedValue({
         data: { number: 123, state: 'closed' }
       });
 
-      // This test represents the target secure implementation
-      // (Will need to be updated when we implement Octokit-based deleteTicket)
+      await maliciousService.deleteTicket('123');
+
+      expect(mockOctokit.rest.issues.update).toHaveBeenCalledWith({
+        owner: 'test; rm -rf /',
+        repo: 'test`whoami`',
+        issue_number: 123,
+        state: 'closed',
+        state_reason: 'not_planned'
+      });
       
-      // For now, expect the current implementation to fail
-      await expect(async () => {
-        await service.deleteTicket('123');
-      }).rejects.toThrow();
+      // The malicious strings were passed as parameters, not executed
     });
   });
 
