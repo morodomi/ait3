@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-07-12
+
+### Fixed
+
+#### 🐛 Bug Fixes
+- **GitHub API Consistency** (#128) - Standardized all GitHubTicketService methods to use `octokit.rest.*` pattern
+  - Updated 8 methods from deprecated `octokit.issues.*` to modern `octokit.rest.issues.*`
+  - Ensures compatibility with Octokit v17+ library updates
+  - No breaking changes - purely internal consistency improvement
+- **Security Test Corrections** (#130) - Fixed GitHubTicketService security test expectations
+  - Updated tests to match actual Octokit API behavior
+  - Verified that malicious inputs are safely handled as string parameters
+  - Added comprehensive error handling tests for API failures
+
+### Changed
+
+#### 🧪 Test Improvements
+- **Better Security Testing** - Tests now verify actual security behavior rather than theoretical vulnerabilities
+- **API Pattern Enforcement** - Added tests to ensure consistent use of `octokit.rest.*` pattern
+
 ## [1.2.0] - 2025-07-11
 
 ### Added

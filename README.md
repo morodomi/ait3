@@ -24,6 +24,20 @@ AIT³ embodies **Socratic epistemology** - wisdom emerges through questioning, d
 2. **Antithesis** (Gemini): Challenges assumptions and identifies flaws  
 3. **Synthesis** (Human): Weighs evidence and makes informed decisions
 
+## What's New in v1.2.1
+
+🔧 **Latest Fixes**:
+- **GitHub API Consistency**: All methods now use modern `octokit.rest.*` pattern for future compatibility
+- **Security Test Improvements**: Tests verify actual API behavior with malicious inputs
+
+## What's New in v1.2.0
+
+✨ **Zero ESLint Warnings Achievement**:
+- **ESLint Configuration Excellence**: Smart configuration eliminated 42 warnings without manual fixes
+- **Release Process Guide**: New `.claude/commands/release` for streamlined releases
+- **Review Command**: Multi-agent code review with `ait3 install command review`
+- **Type Safety**: Replaced all `any` types with `unknown` and proper type guards
+
 ## What's New in v1.1.0
 
 🎉 **Major Features**:
