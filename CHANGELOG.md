@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.4] - 2025-07-12
+
+### Fixed
+
+#### 🐛 Bug Fixes
+- **Dynamic Version Reading** - CLI now reads version from package.json instead of hardcoded string
+  - Removes maintenance burden of updating version in multiple places
+  - Version command always shows correct package version
+  - Automatically stays in sync with npm version bumps
+- **Version Test Fix** - Updated integration test to dynamically check against package.json version
+  - Removes hardcoded version expectation in test
+  - Ensures version test stays in sync with version bumps
+
+## [1.2.3] - 2025-07-12
+
+### Fixed
+
+#### 📦 Dependency Management
+- **Moved proper-lockfile to dependencies** - Fixed global installation error for file locking functionality
+  - proper-lockfile is used in LocalTicketService for concurrent access protection
+  - Global installations now work correctly with file operations
+- **Removed unused cosmiconfig dependency** - Cleaner package and faster installations
+  - cosmiconfig was not used in production code
+  - Reduces package size and installation time
+  - Cleaner dependency tree
+
+## [1.2.2] - 2025-07-12
+
+### Fixed
+
+#### 📦 Dependency Management
+- **Moved zod to dependencies** - Fixed critical global installation error
+  - zod is used in LocalTicketService for schema validation
+  - devDependencies are not included in published packages
+  - Global installations can now import zod successfully
+
 ## [1.2.1] - 2025-07-12
 
 ### Fixed

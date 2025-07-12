@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { readFile } from 'fs/promises';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { ticketCommand } from './commands/ticket/index.js';
 import { flowCommand } from './commands/flow/index.js';
 import { installCommand } from './commands/install/index.js';
@@ -9,12 +12,16 @@ import { migrateCommandGroup } from './commands/migrate/index.cli.js';
 import { createSetupCommand } from './commands/setup/index.js';
 import { createServiceContainer } from './common/service-container.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const packageJsonPath = join(__dirname, '..', 'package.json');
+const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
+
 const program = new Command();
 
 program
   .name('ait3')
   .description('AIT³ Development Platform - AI + Ticket + Test + Tool driven development')
-  .version('1.1.0');
+  .version(packageJson.version);
 
 // Initialize CLI asynchronously
 async function initializeCLI(): Promise<void> {
