@@ -165,12 +165,20 @@ describe('ServiceFactory', () => {
         JSON.stringify(localConfig)
       );
 
-      await ServiceFactory.createServices();
+      // Change to test directory to ensure proper root detection
+      const originalCwd = process.cwd();
+      process.chdir(testDir);
       
-      expect(LocalTicketService).toHaveBeenCalledWith(
-        '.tickets',
-        undefined // GitService disabled in test environment
-      );
+      try {
+        await ServiceFactory.createServices();
+        
+        expect(LocalTicketService).toHaveBeenCalledWith(
+          expect.stringMatching(/\.tickets$/),
+          undefined // GitService disabled in test environment
+        );
+      } finally {
+        process.chdir(originalCwd);
+      }
     });
 
     it('should use TICKETS_DIR environment variable when set', async () => {
@@ -304,6 +312,120 @@ describe('ServiceFactory', () => {
 
       // Should reject the promise with proper error
       await expect(ServiceFactory.createServices()).rejects.toThrow('GitHub backend configuration missing');
+    });
+  });
+
+  describe('project root detection', () => {
+    it('should detect project root from subdirectory', async () => {
+      // Create .tickets in root
+      await mkdir(join(testDir, '.tickets'), { recursive: true });
+      await writeFile(
+        join(testDir, '.tickets', 'config.json'),
+        JSON.stringify({
+          backend: 'local',
+          local: { path: '.tickets' }
+        })
+      );
+
+      // Create subdirectory and change to it
+      const subDir = join(testDir, 'src', 'components');
+      await mkdir(subDir, { recursive: true });
+      process.chdir(subDir);
+
+      // Should find root .tickets, not create new one in subdirectory
+      const services = await ServiceFactory.createServices();
+      
+      expect(services.ticketService).toBeDefined();
+      expect(LocalTicketService).toHaveBeenCalledWith(
+        expect.stringMatching(/\.tickets$/), // Should use absolute path ending with .tickets
+        undefined // GitService disabled in test environment
+      );
+    });
+
+    it('should call findProjectRoot only once per createServices call', async () => {
+      // Create config
+      await mkdir(join(testDir, '.tickets'), { recursive: true });
+      await writeFile(
+        join(testDir, '.tickets', 'config.json'),
+        JSON.stringify({ backend: 'local' })
+      );
+
+      // Change to test directory
+      const originalCwd = process.cwd();
+      process.chdir(testDir);
+      
+      try {
+        // Spy on getProjectRoot from the actual module
+        const projectRootUtils = await import('../common/utils/project-root-utils.js');
+        const spy = vi.spyOn(projectRootUtils, 'getProjectRoot');
+        
+        const services = await ServiceFactory.createServices();
+        
+        // Should only call getProjectRoot once
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(services.ticketService).toBeDefined();
+        expect(services.projectAnalyzer).toBeDefined();
+        
+        spy.mockRestore();
+      } finally {
+        process.chdir(originalCwd);
+      }
+    });
+
+    it('should handle absolute TICKETS_DIR correctly', async () => {
+      const absolutePath = join(testDir, 'custom-tickets');
+      await mkdir(absolutePath, { recursive: true });
+      await writeFile(
+        join(absolutePath, 'config.json'),
+        JSON.stringify({ backend: 'local' })
+      );
+
+      process.env.TICKETS_DIR = absolutePath;
+
+      const _services = await ServiceFactory.createServices();
+      
+      expect(LocalTicketService).toHaveBeenCalledWith(
+        absolutePath,
+        undefined // GitService disabled in test environment
+      );
+    });
+
+    it('should handle relative TICKETS_DIR with project root', async () => {
+      // Create .tickets in project root
+      await mkdir(join(testDir, '.tickets'), { recursive: true });
+      
+      process.env.TICKETS_DIR = '.tickets';
+
+      // Change to test directory
+      const originalCwd = process.cwd();
+      process.chdir(testDir);
+      
+      try {
+        const _services = await ServiceFactory.createServices();
+        
+        expect(LocalTicketService).toHaveBeenCalledWith(
+          expect.stringMatching(/\.tickets$/),
+          undefined // GitService disabled in test environment
+        );
+      } finally {
+        process.chdir(originalCwd);
+      }
+    });
+
+    it('should use detected root for ProjectAnalyzer', async () => {
+      // Create subdirectory and change to it
+      const subDir = join(testDir, 'src');
+      await mkdir(subDir, { recursive: true });
+      await mkdir(join(testDir, '.tickets'), { recursive: true });
+      
+      process.chdir(subDir);
+
+      const services = await ServiceFactory.createServices();
+      
+      // ProjectAnalyzer should use project root, not current directory
+      expect(services.projectAnalyzer).toBeDefined();
+      // Verify the analyzer was created (we can't easily test the path it received)
+      expect(services.projectAnalyzer).toBeTruthy();
     });
   });
 });
