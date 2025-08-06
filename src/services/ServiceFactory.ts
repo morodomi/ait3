@@ -9,8 +9,9 @@ import { DefaultProjectAnalyzer } from './implementations/DefaultProjectAnalyzer
 import { LinguistLanguageDetector } from './implementations/LinguistLanguageDetector.js';
 import { ConfigBasedCommandDetector } from './implementations/ConfigBasedCommandDetector.js';
 import { DirectoryStructureAnalyzer } from './implementations/DirectoryStructureAnalyzer.js';
+import { getProjectRoot } from '../common/utils/project-root-utils.js';
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { join, isAbsolute } from 'path';
 
 /**
  * ServiceFactory provides dependency injection for all services
@@ -21,12 +22,16 @@ export class ServiceFactory {
    * Create default services for production use
    */
   static async createServices(): Promise<Services> {
-    const config = await this.loadConfig();
+    // Detect project root once
+    const projectRoot = await getProjectRoot();
+    
+    // Pass project root to all methods that need it
+    const config = await this.loadConfig(projectRoot);
     const gitService = this.createGitService();
-    const projectAnalyzer = this.createProjectAnalyzer();
+    const projectAnalyzer = this.createProjectAnalyzer(projectRoot);
     
     return {
-      ticketService: this.createTicketService(config, gitService),
+      ticketService: this.createTicketService(config, gitService, projectRoot),
       gitService,
       projectAnalyzer
     };
@@ -66,7 +71,8 @@ export class ServiceFactory {
    */
   private static createTicketService(
     config: BackendConfig,
-    gitService?: GitService
+    gitService?: GitService,
+    projectRoot?: string
   ): TicketService {
     if (config.backend === 'github') {
       if (!config.github) {
@@ -76,17 +82,29 @@ export class ServiceFactory {
     }
     
     // Default to local backend
-    const ticketsPath = process.env.TICKETS_DIR || config.local?.path || '.tickets';
+    const ticketsDir = process.env.TICKETS_DIR || config.local?.path || '.tickets';
+    
+    // Handle absolute vs relative paths
+    const ticketsPath = isAbsolute(ticketsDir)
+      ? ticketsDir
+      : join(projectRoot || process.cwd(), ticketsDir);
+    
     return new LocalTicketService(ticketsPath, gitService);
   }
 
   /**
    * Load backend configuration from .tickets/config.json
    */
-  private static async loadConfig(): Promise<BackendConfig> {
+  private static async loadConfig(projectRoot: string): Promise<BackendConfig> {
     try {
-      const ticketsPath = process.env.TICKETS_DIR || '.tickets';
-      const configPath = join(process.cwd(), ticketsPath, 'config.json');
+      const ticketsDir = process.env.TICKETS_DIR || '.tickets';
+      
+      // Handle absolute vs relative paths
+      const ticketsPath = isAbsolute(ticketsDir)
+        ? ticketsDir
+        : join(projectRoot, ticketsDir);
+      
+      const configPath = join(ticketsPath, 'config.json');
       const configContent = await fs.readFile(configPath, 'utf-8');
       const config = JSON.parse(configContent);
       
@@ -97,9 +115,14 @@ export class ServiceFactory {
       };
     } catch {
       // Fallback to local backend if config file doesn't exist or is invalid
+      const ticketsDir = process.env.TICKETS_DIR || '.tickets';
+      const ticketsPath = isAbsolute(ticketsDir)
+        ? ticketsDir
+        : join(projectRoot, ticketsDir);
+        
       return {
         backend: 'local',
-        local: { path: process.env.TICKETS_DIR || '.tickets' }
+        local: { path: ticketsPath }
       };
     }
   }
@@ -107,14 +130,13 @@ export class ServiceFactory {
   /**
    * Create ProjectAnalyzer instance
    */
-  private static createProjectAnalyzer(): ProjectAnalyzer {
-    const rootPath = process.cwd();
-    const languageDetector = new LinguistLanguageDetector(rootPath);
-    const commandDetector = new ConfigBasedCommandDetector(rootPath);
-    const structureAnalyzer = new DirectoryStructureAnalyzer(rootPath);
+  private static createProjectAnalyzer(projectRoot: string): ProjectAnalyzer {
+    const languageDetector = new LinguistLanguageDetector(projectRoot);
+    const commandDetector = new ConfigBasedCommandDetector(projectRoot);
+    const structureAnalyzer = new DirectoryStructureAnalyzer(projectRoot);
     
     return new DefaultProjectAnalyzer(
-      rootPath,
+      projectRoot,
       languageDetector,
       commandDetector,
       structureAnalyzer
