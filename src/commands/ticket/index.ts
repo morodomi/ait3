@@ -115,12 +115,17 @@ ticketCommand
   .command('start <id>')
   .description('Start working on a ticket')
   .option('--no-branch', 'Skip Git branch creation/switching')
+  .option('--allow-dirty', 'Allow starting with uncommitted changes')
   .showHelpAfterError()
   .exitOverride(createMissingIdErrorHandler('start'))
   .action(async (id: string, options) => {
     try {
       const services = await ServiceFactory.createServices();
-      const result = await startTicket({ id, noBranch: options.branch === false }, services);
+      const result = await startTicket({ 
+        id, 
+        noBranch: options.branch === false,
+        allowDirty: options.dirty !== false
+      }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {

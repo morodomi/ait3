@@ -1,5 +1,5 @@
 import type { StartTicketArgs, Services, CLIResult } from '../../common/types.js';
-import type { GitService } from '../../services/interfaces/GitService.js';
+import type { GitService, GitStatus } from '../../services/interfaces/GitService.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError } from '../../common/errors.js';
 import { IDUtils, SlugUtils } from '../../common/utils.js';
 import { STYLES } from '../../common/styles.js';
@@ -34,14 +34,23 @@ export async function startTicket(
         // Check for uncommitted changes first (only when creating branches)
         const isRepo = await services.gitService.isRepository();
         if (isRepo) {
-          const hasChanges = await services.gitService.hasUncommittedChanges();
-          if (hasChanges) {
+          // Single git status call - more efficient than separate hasUncommittedChanges + getStatus calls
+          const status = await services.gitService.getStatus();
+          const hasChanges = status.modified.length > 0 || 
+                            status.added.length > 0 || 
+                            status.deleted.length > 0 || 
+                            status.untracked.length > 0;
+          
+          if (hasChanges && !args.allowDirty) {
             throw new Error('Cannot start ticket: You have uncommitted changes. Please commit or stash them first.');
+          } else if (hasChanges && args.allowDirty) {
+            // Use already-fetched status for warning
+            gitMessage = formatDirtyWarning(status) + '\n';
           }
         }
         
         // Try to create/checkout branch
-        gitMessage = await handleGitOperations(args.id, ticket.title, services.gitService);
+        gitMessage += await handleGitOperations(args.id, ticket.title, services.gitService);
         gitOperationSuccess = true;
       } catch (gitError) {
         // If it's a critical error (uncommitted changes or branch creation failure), don't move ticket
@@ -309,4 +318,27 @@ async function handleNoBranchMode(gitService: GitService): Promise<string> {
   }
   
   return STYLES.info('INFO: Branch operations skipped (--no-branch)');
+}
+
+function formatDirtyWarning(status: GitStatus): string {
+  const parts = [
+    STYLES.warning('WARNING: Creating branch with uncommitted changes:')
+  ];
+  
+  if (status.modified.length > 0) {
+    parts.push(STYLES.muted(`   Modified: ${status.modified.length} file(s)`));
+  }
+  if (status.added.length > 0) {
+    parts.push(STYLES.muted(`   Added: ${status.added.length} file(s)`));
+  }
+  if (status.deleted.length > 0) {
+    parts.push(STYLES.muted(`   Deleted: ${status.deleted.length} file(s)`));
+  }
+  if (status.untracked.length > 0) {
+    parts.push(STYLES.muted(`   Untracked: ${status.untracked.length} file(s)`));
+  }
+  
+  parts.push(STYLES.info('These changes will be carried to the new branch.'));
+  
+  return parts.join('\n');
 }

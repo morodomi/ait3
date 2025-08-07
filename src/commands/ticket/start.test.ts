@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { startTicket } from './start.js';
 import type { Services, StartTicketArgs, Ticket } from '@/common/types.js';
 import type { TicketService } from '@/services/interfaces/TicketService.js';
-import type { GitService } from '@/services/interfaces/GitService.js';
+import type { GitService, GitStatus } from '@/services/interfaces/GitService.js';
 import { ValidationError, TicketNotFoundError, TicketAlreadyInProgressError, TicketAlreadyCompletedError } from '@/common/errors.js';
 
 // Helper to strip ANSI color codes for testing
@@ -65,6 +65,35 @@ class MockTicketService implements TicketService {
     this.startedTickets.add(id);
     return Promise.resolve();
   }
+
+  // Add missing methods from TicketService interface
+  async updateTicket(): Promise<Ticket> {
+    throw new Error('Not implemented for this test');
+  }
+
+  async deleteTicket(): Promise<void> {
+    throw new Error('Not implemented for this test');
+  }
+
+  async completeTicket(): Promise<void> {
+    throw new Error('Not implemented for this test');
+  }
+
+  async undoTicket(): Promise<void> {
+    throw new Error('Not implemented for this test');
+  }
+
+  async migrate(): Promise<void> {
+    throw new Error('Not implemented for this test');
+  }
+
+  getBackendType(): string {
+    return 'local';
+  }
+
+  getServiceName(): string {
+    return 'MockTicketService';
+  }
 }
 
 // Mock GitService for unit testing
@@ -75,7 +104,16 @@ class MockGitService implements GitService {
   private currentBranch = 'main';
   private createBranchError: Error | null = null;
   private checkoutError: Error | null = null;
+  private statusError: Error | null = null;
   private isRepo = true;
+  private status: GitStatus = {
+    modified: [],
+    added: [],
+    deleted: [],
+    untracked: [],
+    ahead: 0,
+    behind: 0
+  };
 
   setUncommittedChanges(hasChanges: boolean) {
     this.uncommittedChanges = hasChanges;
@@ -103,6 +141,14 @@ class MockGitService implements GitService {
 
   setIsRepo(isRepo: boolean) {
     this.isRepo = isRepo;
+  }
+
+  setStatus(status: GitStatus) {
+    this.status = status;
+  }
+
+  setStatusError(error: Error | null) {
+    this.statusError = error;
   }
 
   async isRepository(): Promise<boolean> {
@@ -139,6 +185,30 @@ class MockGitService implements GitService {
 
   async getCurrentBranch(): Promise<string> {
     return this.currentBranch;
+  }
+
+  async getStatus(): Promise<GitStatus> {
+    if (this.statusError) {
+      throw this.statusError;
+    }
+    return this.status;
+  }
+
+  // Add missing methods from GitService interface
+  async getMergeBase(_branch1: string, _branch2: string): Promise<string> {
+    return 'mock-merge-base';
+  }
+
+  async getCommits(_base: string): Promise<Array<{ hash: string; message: string }>> {
+    return [];
+  }
+
+  async moveFile(_oldPath: string, _newPath: string): Promise<void> {
+    // Mock implementation
+  }
+
+  async removeFile(_filePath: string): Promise<void> {
+    // Mock implementation
   }
 }
 
@@ -408,7 +478,15 @@ describe('startTicket pure function', () => {
     });
 
     it('should handle uncommitted changes gracefully', async () => {
-      mockGitService.setUncommittedChanges(true);
+      // Set up uncommitted changes in the status object
+      mockGitService.setStatus({
+        modified: ['test.txt'],
+        added: [],
+        deleted: [],
+        untracked: [],
+        ahead: 0,
+        behind: 0
+      });
       const args: StartTicketArgs = { id: '0001' };
       
       await expect(startTicket(args, services)).rejects.toThrow(
@@ -584,6 +662,184 @@ describe('startTicket pure function', () => {
     });
   });
 
+  describe('--allow-dirty option', () => {
+    beforeEach(() => {
+      // Set up GitService with uncommitted changes
+      mockGitService.setUncommittedChanges(true);
+      mockGitService.setStatus({
+        modified: ['src/file1.ts', 'src/file2.ts'],
+        added: ['src/new.ts'],
+        deleted: [],
+        untracked: ['temp.txt', 'debug.log'],
+        ahead: 0,
+        behind: 0
+      });
+    });
+
+    it('should allow starting ticket with uncommitted changes when --allow-dirty is true', async () => {
+      const args: StartTicketArgs = {
+        id: '0001',
+        allowDirty: true
+      };
+
+      const result = await startTicket(args, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('WARNING: Creating branch with uncommitted changes');
+      expect(result.message).toContain('Modified: 2 file(s)');
+      expect(result.message).toContain('Added: 1 file(s)');
+      expect(result.message).toContain('Untracked: 2 file(s)');
+      expect(result.message).toContain('These changes will be carried to the new branch');
+    });
+
+    it('should block starting ticket with uncommitted changes when --allow-dirty is false', async () => {
+      const args: StartTicketArgs = {
+        id: '0001',
+        allowDirty: false
+      };
+
+      await expect(startTicket(args, services)).rejects.toThrow(
+        'Cannot start ticket: You have uncommitted changes. Please commit or stash them first.'
+      );
+    });
+
+    it('should block starting ticket with uncommitted changes when --allow-dirty is not specified', async () => {
+      const args: StartTicketArgs = {
+        id: '0001'
+        // allowDirty not specified - defaults to false
+      };
+
+      await expect(startTicket(args, services)).rejects.toThrow(
+        'Cannot start ticket: You have uncommitted changes. Please commit or stash them first.'
+      );
+    });
+
+    it('should skip Git operations entirely with --no-branch flag', async () => {
+      const args: StartTicketArgs = {
+        id: '0001',
+        noBranch: true,
+        allowDirty: true  // Should be ignored with --no-branch
+      };
+
+      const result = await startTicket(args, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Branch operations skipped (--no-branch)');
+      expect(result.message).not.toContain('WARNING: Creating branch with uncommitted changes');
+    });
+
+    it('should show warning but create branch with --allow-dirty alone', async () => {
+      const args: StartTicketArgs = {
+        id: '0001',
+        allowDirty: true
+      };
+
+      const result = await startTicket(args, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('WARNING: Creating branch with uncommitted changes');
+      expect(result.message).toContain('Created and switched to branch: feature/0001-test-ticket');
+    });
+
+    it('should work normally when no uncommitted changes exist', async () => {
+      // Set clean status (no changes)
+      mockGitService.setStatus({
+        modified: [],
+        added: [],
+        deleted: [],
+        untracked: [],
+        ahead: 0,
+        behind: 0
+      });
+      
+      const args: StartTicketArgs = {
+        id: '0001',
+        allowDirty: true  // Flag present but not needed
+      };
+
+      const result = await startTicket(args, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).not.toContain('WARNING: Creating branch with uncommitted changes');
+      expect(result.message).toContain('Created and switched to branch');
+    });
+
+    it('should show correct counts for modified files only', async () => {
+      mockGitService.setStatus({
+        modified: ['file1.ts', 'file2.ts', 'file3.ts'],
+        added: [],
+        deleted: [],
+        untracked: [],
+        ahead: 0,
+        behind: 0
+      });
+      
+      const args: StartTicketArgs = {
+        id: '0001',
+        allowDirty: true
+      };
+
+      const result = await startTicket(args, services);
+
+      expect(result.message).toContain('Modified: 3 file(s)');
+      expect(result.message).not.toContain('Added:');
+      expect(result.message).not.toContain('Deleted:');
+      expect(result.message).not.toContain('Untracked:');
+    });
+
+    it('should show all change types when present', async () => {
+      mockGitService.setStatus({
+        modified: ['file1.ts'],
+        added: ['new1.ts', 'new2.ts'],
+        deleted: ['old.ts'],
+        untracked: ['temp1.txt', 'temp2.txt', 'temp3.txt'],
+        ahead: 2,
+        behind: 1
+      });
+      
+      const args: StartTicketArgs = {
+        id: '0001',
+        allowDirty: true
+      };
+
+      const result = await startTicket(args, services);
+
+      expect(result.message).toContain('Modified: 1 file(s)');
+      expect(result.message).toContain('Added: 2 file(s)');
+      expect(result.message).toContain('Deleted: 1 file(s)');
+      expect(result.message).toContain('Untracked: 3 file(s)');
+    });
+
+    it('should handle getStatus() failure gracefully', async () => {
+      mockGitService.setStatusError(new Error('Git status failed'));
+      
+      const args: StartTicketArgs = {
+        id: '0001',
+        allowDirty: true
+      };
+
+      // Should still work but without detailed warning
+      const result = await startTicket(args, services);
+      
+      expect(result.success).toBe(true);
+      // Should fall back to generic warning or handle error appropriately
+    });
+
+    it('should handle non-repository case', async () => {
+      mockGitService.setIsRepo(false);
+      
+      const args: StartTicketArgs = {
+        id: '0001',
+        allowDirty: true
+      };
+
+      const result = await startTicket(args, services);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Git is not initialized');
+    });
+  });
+
   describe('GitService error handling', () => {
     it('should handle unexpected Git errors gracefully', async () => {
       // Mock GitService to throw unexpected error
@@ -594,7 +850,8 @@ describe('startTicket pure function', () => {
         findBranches: async () => [],
         createBranch: async () => {},
         checkout: async () => {},
-        getCurrentBranch: async () => 'main'
+        getCurrentBranch: async () => 'main',
+        getStatus: async () => ({ modified: [], added: [], deleted: [], untracked: [], ahead: 0, behind: 0 })
       } as GitService;
 
       const args: StartTicketArgs = { id: '0001' };
@@ -745,8 +1002,7 @@ describe('startTicket pure function', () => {
       });
 
       it('should show ticket service information when available', async () => {
-        // Add getServiceName method support to MockTicketService
-        (mockTicketService as any).getServiceName = () => 'local';
+        // MockTicketService already has getServiceName method
         
         const args: StartTicketArgs = { id: '0001', noBranch: true };
         
