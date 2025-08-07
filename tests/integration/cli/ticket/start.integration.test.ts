@@ -567,4 +567,258 @@ This ticket is already completed.
       }
     });
   });
+
+  describe('--allow-dirty option', () => {
+    let gitTestDir: string;
+    let originalCwd: string;
+
+    beforeEach(async () => {
+      // Create a separate directory for Git tests
+      const hash = randomBytes(8).toString('hex');
+      const prefix = join(tmpdir(), `test-ait3-allow-dirty-${hash}-`);
+      gitTestDir = await mkdtemp(prefix);
+      
+      // Save original directory
+      originalCwd = process.cwd();
+      process.chdir(gitTestDir);
+
+      // Initialize git repo
+      execSync('git init', { encoding: 'utf-8' });
+      execSync('git config user.name "Test User"', { encoding: 'utf-8' });
+      execSync('git config user.email "test@example.com"', { encoding: 'utf-8' });
+
+      // Create initial commit
+      await writeFile('README.md', '# Test Project\n');
+      execSync('git add README.md', { encoding: 'utf-8' });
+      execSync('git commit -m "Initial commit"', { encoding: 'utf-8' });
+
+      // Initialize tickets directory
+      await mkdir('.tickets/todo', { recursive: true });
+      await mkdir('.tickets/doing', { recursive: true });
+      await mkdir('.tickets/done', { recursive: true });
+      
+      // Create a test ticket
+      const ticketContent = matter.stringify('', {
+        id: '0001',
+        title: 'Test Feature',
+        status: 'todo',
+        priority: 'medium',
+        created: '2024-01-01T00:00:00Z',
+        updated: '2024-01-01T00:00:00Z',
+        labels: []
+      }) + '\n# Test Feature\n\nTest description';
+      
+      await writeFile('.tickets/todo/0001-test-feature.md', ticketContent);
+    });
+
+    afterEach(async () => {
+      // Return to original directory
+      process.chdir(originalCwd);
+      
+      // Clean up test directory
+      await rm(gitTestDir, { recursive: true, force: true });
+    });
+
+    it('should fail without --allow-dirty when there are uncommitted changes', async () => {
+      // Create uncommitted changes
+      await writeFile('test.txt', 'uncommitted content');
+      
+      // Try to start ticket without --allow-dirty
+      const result = execSync(
+        `npx ait3 ticket start 0001 2>&1 || true`,
+        { 
+          encoding: 'utf-8',
+          env: { ...process.env, PROJECT_ROOT: gitTestDir, TICKETS_DIR: join(gitTestDir, '.tickets') }
+        }
+      );
+
+      expect(result).toContain('ERROR');
+      expect(result).toContain('uncommitted changes');
+      expect(result).toContain('commit or stash');
+    });
+
+    it('should succeed with --allow-dirty when there are uncommitted changes', async () => {
+      // Create uncommitted changes
+      await writeFile('test.txt', 'uncommitted content');
+      await writeFile('another.txt', 'more changes');
+      
+      // Start ticket with --allow-dirty
+      const result = execSync(
+        `npx ait3 ticket start 0001 --allow-dirty`,
+        { 
+          encoding: 'utf-8',
+          env: { ...process.env, PROJECT_ROOT: gitTestDir, TICKETS_DIR: join(gitTestDir, '.tickets') }
+        }
+      );
+
+      expect(result).toContain('SUCCESS');
+      expect(result).toContain('Started ticket #0001');
+      expect(result).toContain('WARNING: Creating branch with uncommitted changes');
+      expect(result).toContain('Untracked: 2 file(s)');
+      expect(result).toContain('These changes will be carried to the new branch');
+      
+      // Verify branch was created
+      const currentBranch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
+      expect(currentBranch).toBe('feature/0001-test-feature');
+      
+      // Verify uncommitted changes still exist
+      const status = execSync('git status --porcelain', { encoding: 'utf-8' });
+      expect(status).toContain('?? test.txt');
+      expect(status).toContain('?? another.txt');
+    });
+
+    it('should work normally when working directory is clean', async () => {
+      // No uncommitted changes
+      const result = execSync(
+        `npx ait3 ticket start 0001 --allow-dirty`,
+        { 
+          encoding: 'utf-8',
+          env: { ...process.env, PROJECT_ROOT: gitTestDir, TICKETS_DIR: join(gitTestDir, '.tickets') }
+        }
+      );
+
+      expect(result).toContain('SUCCESS');
+      expect(result).not.toContain('WARNING: Creating branch with uncommitted changes');
+      expect(result).toContain('Created and switched to branch');
+    });
+
+    it('should handle modified files', async () => {
+      // Modify existing file
+      await writeFile('README.md', '# Test Project\n\nModified content\n');
+      
+      const result = execSync(
+        `npx ait3 ticket start 0001 --allow-dirty`,
+        { 
+          encoding: 'utf-8',
+          env: { ...process.env, PROJECT_ROOT: gitTestDir, TICKETS_DIR: join(gitTestDir, '.tickets') }
+        }
+      );
+
+      expect(result).toContain('WARNING: Creating branch with uncommitted changes');
+      expect(result).toContain('Modified: 1 file(s)');
+      
+      // Verify changes are preserved
+      const currentBranch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
+      expect(currentBranch).toBe('feature/0001-test-feature');
+      
+      const status = execSync('git status --porcelain', { encoding: 'utf-8' });
+      expect(status).toContain(' M README.md');
+    });
+
+    it('should handle staged files', async () => {
+      // Create and stage a new file
+      await writeFile('staged.txt', 'staged content');
+      execSync('git add staged.txt', { encoding: 'utf-8' });
+      
+      const result = execSync(
+        `npx ait3 ticket start 0001 --allow-dirty`,
+        { 
+          encoding: 'utf-8',
+          env: { ...process.env, PROJECT_ROOT: gitTestDir, TICKETS_DIR: join(gitTestDir, '.tickets') }
+        }
+      );
+
+      expect(result).toContain('WARNING: Creating branch with uncommitted changes');
+      expect(result).toContain('Added: 1 file(s)');
+      
+      // Verify staged changes are preserved
+      const status = execSync('git status --porcelain', { encoding: 'utf-8' });
+      expect(status).toContain('A  staged.txt');
+    });
+
+    it('should handle mixed changes', async () => {
+      // Create various types of changes
+      await writeFile('README.md', '# Test Project\n\nModified\n'); // Modified
+      await writeFile('new.txt', 'new file');                        // Untracked
+      await writeFile('staged.txt', 'staged');                       // To be staged
+      execSync('git add staged.txt', { encoding: 'utf-8' });         // Staged
+      
+      const result = execSync(
+        `npx ait3 ticket start 0001 --allow-dirty`,
+        { 
+          encoding: 'utf-8',
+          env: { ...process.env, PROJECT_ROOT: gitTestDir, TICKETS_DIR: join(gitTestDir, '.tickets') }
+        }
+      );
+
+      expect(result).toContain('WARNING: Creating branch with uncommitted changes');
+      expect(result).toContain('Modified: 1 file(s)');
+      expect(result).toContain('Added: 1 file(s)');
+      expect(result).toContain('Untracked: 1 file(s)');
+      
+      // Verify all changes are preserved
+      const status = execSync('git status --porcelain', { encoding: 'utf-8' });
+      expect(status).toContain(' M README.md');
+      expect(status).toContain('A  staged.txt');
+      expect(status).toContain('?? new.txt');
+    });
+
+    it('should work with --no-branch and --allow-dirty together', async () => {
+      // Create uncommitted changes
+      await writeFile('test.txt', 'uncommitted');
+      
+      const result = execSync(
+        `npx ait3 ticket start 0001 --no-branch --allow-dirty`,
+        { 
+          encoding: 'utf-8',
+          env: { ...process.env, PROJECT_ROOT: gitTestDir, TICKETS_DIR: join(gitTestDir, '.tickets') }
+        }
+      );
+
+      expect(result).toContain('SUCCESS');
+      expect(result).toContain('Branch operations skipped (--no-branch)');
+      expect(result).not.toContain('WARNING: Creating branch with uncommitted changes');
+      
+      // Verify still on main branch
+      const currentBranch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
+      expect(currentBranch).toBe('main');
+    });
+
+    it('should work with --no-branch alone even with dirty working directory', async () => {
+      // Create uncommitted changes
+      await writeFile('test.txt', 'uncommitted');
+      
+      // --no-branch should skip all Git checks
+      const result = execSync(
+        `npx ait3 ticket start 0001 --no-branch`,
+        { 
+          encoding: 'utf-8',
+          env: { ...process.env, PROJECT_ROOT: gitTestDir, TICKETS_DIR: join(gitTestDir, '.tickets') }
+        }
+      );
+
+      expect(result).toContain('SUCCESS');
+      expect(result).toContain('Branch operations skipped (--no-branch)');
+      
+      // Verify still on main branch
+      const currentBranch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
+      expect(currentBranch).toBe('main');
+    });
+
+    it('should display proper formatting for warnings', async () => {
+      // Create specific number of each type of change
+      await writeFile('README.md', 'Modified');           // 1 modified
+      await writeFile('new1.txt', 'new');                 // 3 untracked
+      await writeFile('new2.txt', 'new');
+      await writeFile('new3.txt', 'new');
+      await writeFile('staged.txt', 'staged');            // 2 staged
+      await writeFile('staged2.txt', 'staged2');
+      execSync('git add staged.txt staged2.txt', { encoding: 'utf-8' });
+      
+      const result = execSync(
+        `npx ait3 ticket start 0001 --allow-dirty`,
+        { 
+          encoding: 'utf-8',
+          env: { ...process.env, PROJECT_ROOT: gitTestDir, TICKETS_DIR: join(gitTestDir, '.tickets') }
+        }
+      );
+
+      // Check exact formatting
+      expect(result).toMatch(/WARNING.*Creating branch with uncommitted changes/);
+      expect(result).toMatch(/Modified:\s+1 file\(s\)/);
+      expect(result).toMatch(/Added:\s+2 file\(s\)/);
+      expect(result).toMatch(/Untracked:\s+3 file\(s\)/);
+      expect(result).toContain('These changes will be carried to the new branch');
+    });
+  });
 });

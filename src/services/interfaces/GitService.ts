@@ -2,6 +2,18 @@
  * GitService interface for Git operations
  * Used by the ticket start command for automatic branch creation
  */
+
+/**
+ * Detailed Git status information
+ */
+export interface GitStatus {
+  modified: string[];
+  added: string[];
+  deleted: string[];
+  untracked: string[];
+  ahead: number;
+  behind: number;
+}
 export interface GitService {
   /**
    * Check if the current directory is a Git repository
@@ -75,4 +87,11 @@ export interface GitService {
    * @throws Error if git rm fails
    */
   removeFile(filePath: string): Promise<void>;
+
+  /**
+   * Get detailed Git status information
+   * @returns Detailed status including modified, added, deleted, and untracked files
+   * @throws Error if git status fails
+   */
+  getStatus(): Promise<GitStatus>;
 }

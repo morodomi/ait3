@@ -1,5 +1,5 @@
 import { simpleGit, SimpleGit } from 'simple-git';
-import type { GitService } from '../interfaces/GitService.js';
+import type { GitService, GitStatus } from '../interfaces/GitService.js';
 
 export class SimpleGitService implements GitService {
   private git: SimpleGit;
@@ -112,5 +112,17 @@ export class SimpleGitService implements GitService {
       // Re-throw original error with additional context
       throw new Error(`Git remove failed: ${errorMessage}`);
     }
+  }
+
+  async getStatus(): Promise<GitStatus> {
+    const status = await this.git.status();
+    return {
+      modified: status.modified,
+      added: status.created,
+      deleted: status.deleted,
+      untracked: status.not_added,
+      ahead: status.ahead,
+      behind: status.behind
+    };
   }
 }

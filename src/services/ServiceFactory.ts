@@ -22,12 +22,12 @@ export class ServiceFactory {
    * Create default services for production use
    */
   static async createServices(): Promise<Services> {
-    // Detect project root once
-    const projectRoot = await getProjectRoot();
+    // Detect project root once (allow override from environment)
+    const projectRoot = process.env.PROJECT_ROOT || await getProjectRoot();
     
     // Pass project root to all methods that need it
     const config = await this.loadConfig(projectRoot);
-    const gitService = this.createGitService();
+    const gitService = this.createGitService(projectRoot);
     const projectAnalyzer = this.createProjectAnalyzer(projectRoot);
     
     return {
@@ -55,15 +55,19 @@ export class ServiceFactory {
 
   /**
    * Create GitService instance
-   * Returns undefined in test environments
+   * Returns undefined in unit test environments, but allows integration tests to enable it
    */
-  private static createGitService(): GitService | undefined {
-    // Disable Git operations in test environments
+  private static createGitService(basePath: string): GitService | undefined {
+    // Disable Git operations in unit test environments, but allow integration tests
     if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+      // Allow integration tests to enable GitService via environment variable
+      if (process.env.ENABLE_GIT_SERVICE_FOR_TESTS === 'true') {
+        return new SimpleGitService(basePath);
+      }
       return undefined;
     }
     
-    return new SimpleGitService();
+    return new SimpleGitService(basePath);
   }
 
   /**
