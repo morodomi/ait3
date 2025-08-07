@@ -114,12 +114,13 @@ ticketCommand
 ticketCommand
   .command('start <id>')
   .description('Start working on a ticket')
+  .option('--no-branch', 'Skip Git branch creation/switching')
   .showHelpAfterError()
   .exitOverride(createMissingIdErrorHandler('start'))
-  .action(async (id: string) => {
+  .action(async (id: string, options) => {
     try {
       const services = await ServiceFactory.createServices();
-      const result = await startTicket({ id }, services);
+      const result = await startTicket({ id, noBranch: options.branch === false }, services);
       console.log(result.message);
       process.exit(result.success ? 0 : 1);
     } catch (error) {
