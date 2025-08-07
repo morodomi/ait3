@@ -85,6 +85,7 @@ export interface ShowTicketArgs {
 
 export interface StartTicketArgs {
   id: string;
+  noBranch?: boolean;
 }
 
 export interface CompleteTicketArgs {

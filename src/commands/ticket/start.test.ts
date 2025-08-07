@@ -621,4 +621,228 @@ describe('startTicket pure function', () => {
       expect(result.message).toContain('Creating local tracking branch');
     });
   });
+
+  describe('--no-branch option', () => {
+    beforeEach(() => {
+      // Reset mocks for --no-branch tests
+      mockTicketService = new MockTicketService();
+      mockGitService = new MockGitService();
+      services = {
+        ticketService: mockTicketService,
+        gitService: mockGitService
+      };
+    });
+
+    describe('basic functionality', () => {
+      it('should skip git operations when --no-branch is specified', async () => {
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        expect(result.message).toContain('SUCCESS: Started ticket #0001');
+        expect(result.message).toContain('INFO: Branch operations skipped (--no-branch)');
+        expect(result.message).not.toContain('Created and switched to branch');
+        expect(result.message).not.toContain('WARNING: Could not fetch remote branches');
+      });
+
+      it('should update ticket status without branch operations', async () => {
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        // Verify ticket was started (this is tracked in MockTicketService)
+        const ticket = await mockTicketService.getTicket('0001');
+        expect(ticket.status).toBe('doing');
+      });
+
+      it('should still provide next action guidance with --no-branch', async () => {
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        expect(result.message).toContain('Next Action:');
+        expect(result.message).toContain('ait3 flow plan 0001');
+      });
+    });
+
+    describe('protected branch warnings', () => {
+      it('should warn when using --no-branch on main branch', async () => {
+        mockGitService.setCurrentBranch('main');
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        const strippedMessage = stripAnsi(result.message);
+        expect(strippedMessage).toContain('WARNING: Using --no-branch on \'main\' branch is not recommended for team collaboration');
+        expect(strippedMessage).toContain('INFO: Branch operations skipped (--no-branch)');
+      });
+
+      it('should warn when using --no-branch on master branch', async () => {
+        mockGitService.setCurrentBranch('master');
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        const strippedMessage = stripAnsi(result.message);
+        expect(strippedMessage).toContain('WARNING: Using --no-branch on \'master\' branch is not recommended for team collaboration');
+      });
+
+      it('should warn when using --no-branch on develop branch', async () => {
+        mockGitService.setCurrentBranch('develop');
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        const strippedMessage = stripAnsi(result.message);
+        expect(strippedMessage).toContain('WARNING: Using --no-branch on \'develop\' branch is not recommended for team collaboration');
+      });
+
+      it('should warn when using --no-branch on development branch', async () => {
+        mockGitService.setCurrentBranch('development');
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        const strippedMessage = stripAnsi(result.message);
+        expect(strippedMessage).toContain('WARNING: Using --no-branch on \'development\' branch is not recommended for team collaboration');
+      });
+
+      it('should not warn when using --no-branch on feature branch', async () => {
+        mockGitService.setCurrentBranch('feature/some-feature');
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        expect(result.message).toContain('INFO: Branch operations skipped (--no-branch)');
+        expect(result.message).not.toContain('WARNING: Using --no-branch');
+      });
+    });
+
+    describe('enhanced output information', () => {
+      it('should display comprehensive status information', async () => {
+        mockGitService.setCurrentBranch('feature/current-work');
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        const message = stripAnsi(result.message);
+        
+        // Check for enhanced output elements
+        expect(message).toContain('SUCCESS: Started ticket #0001');
+        expect(message).toContain('Details:');
+        expect(message).toContain('Status: doing');
+        expect(message).toContain('Next Action:');
+        expect(message).toContain('ait3 flow plan 0001');
+      });
+
+      it('should show ticket service information when available', async () => {
+        // Add getServiceName method support to MockTicketService
+        (mockTicketService as any).getServiceName = () => 'local';
+        
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        // The current implementation doesn't show service type yet, 
+        // but this test prepares for that enhancement
+        expect(result.message).toContain('SUCCESS: Started ticket #0001');
+      });
+    });
+
+    describe('edge cases and error scenarios', () => {
+      it('should work with --no-branch when not in a Git repository', async () => {
+        mockGitService.setIsRepo(false);
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        expect(result.message).toContain('SUCCESS: Started ticket #0001');
+        expect(result.message).toContain('INFO: Branch operations skipped (--no-branch)');
+      });
+
+      it('should allow uncommitted changes when using --no-branch', async () => {
+        mockGitService.setUncommittedChanges(true);
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        expect(result.message).toContain('SUCCESS: Started ticket #0001');
+        expect(result.message).toContain('INFO: Branch operations skipped (--no-branch)');
+      });
+
+      it('should work when GitService is unavailable with --no-branch', async () => {
+        services.gitService = undefined;
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        expect(result.message).toContain('SUCCESS: Started ticket #0001');
+        expect(result.message).toContain('INFO: Branch operations skipped (--no-branch)');
+      });
+
+      it('should still validate ticket ID format with --no-branch', async () => {
+        const args: StartTicketArgs = { id: 'invalid', noBranch: true };
+        
+        await expect(startTicket(args, services)).rejects.toThrow(ValidationError);
+      });
+
+      it('should still handle TicketNotFoundError with --no-branch', async () => {
+        mockTicketService.setError(new TicketNotFoundError('9999'));
+        const args: StartTicketArgs = { id: '9999', noBranch: true };
+        
+        await expect(startTicket(args, services)).rejects.toThrow(TicketNotFoundError);
+      });
+
+      it('should still handle TicketAlreadyInProgressError with --no-branch', async () => {
+        mockTicketService.setError(new TicketAlreadyInProgressError('0001'));
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        await expect(startTicket(args, services)).rejects.toThrow(TicketAlreadyInProgressError);
+      });
+
+      it('should still handle TicketAlreadyCompletedError with --no-branch', async () => {
+        mockTicketService.setError(new TicketAlreadyCompletedError('0001'));
+        const args: StartTicketArgs = { id: '0001', noBranch: true };
+        
+        await expect(startTicket(args, services)).rejects.toThrow(TicketAlreadyCompletedError);
+      });
+    });
+
+    describe('compatibility and backward compatibility', () => {
+      it('should maintain existing behavior when --no-branch is not specified', async () => {
+        const args: StartTicketArgs = { id: '0001' }; // No noBranch flag
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        expect(result.message).toContain('SUCCESS: Started ticket #0001');
+        expect(result.message).toContain('Created and switched to branch: feature/0001-test-ticket');
+        expect(result.message).not.toContain('Branch operations skipped');
+      });
+
+      it('should work correctly when noBranch is explicitly false', async () => {
+        const args: StartTicketArgs = { id: '0001', noBranch: false };
+        
+        const result = await startTicket(args, services);
+        
+        expect(result.success).toBe(true);
+        expect(result.message).toContain('SUCCESS: Started ticket #0001');
+        expect(result.message).toContain('Created and switched to branch: feature/0001-test-ticket');
+        expect(result.message).not.toContain('Branch operations skipped');
+      });
+    });
+  });
 });

@@ -28,9 +28,10 @@ export async function startTicket(
     let gitOperationSuccess = false;
     let gitMessage = '';
     
-    if (services.gitService && ticket) {
+    
+    if (!args.noBranch && services.gitService && ticket) {
       try {
-        // Check for uncommitted changes first
+        // Check for uncommitted changes first (only when creating branches)
         const isRepo = await services.gitService.isRepository();
         if (isRepo) {
           const hasChanges = await services.gitService.hasUncommittedChanges();
@@ -58,8 +59,13 @@ export async function startTicket(
                      STYLES.muted(`   git checkout -b ${generateBranchName(args.id, ticket.title)}\n`);
         gitOperationSuccess = true; // Allow ticket move for non-critical errors
       }
+    } else if (args.noBranch && services.gitService) {
+      gitMessage = await handleNoBranchMode(services.gitService);
+      gitOperationSuccess = true;
+    } else if (args.noBranch && !services.gitService) {
+      gitMessage = STYLES.info('INFO: Branch operations skipped (--no-branch)');
+      gitOperationSuccess = true;
     } else {
-      // No GitService available, that's OK
       gitOperationSuccess = true;
     }
     
@@ -287,4 +293,20 @@ async function handleNewBranchCreation(
 
 function formatErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Unknown error';
+}
+
+async function handleNoBranchMode(gitService: GitService): Promise<string> {
+  // Protected branches that typically should not be directly worked on
+  const PROTECTED_BRANCHES = ['main', 'master', 'develop', 'development'];
+  
+  const currentBranch = await gitService.getCurrentBranch();
+  const isProtectedBranch = PROTECTED_BRANCHES.includes(currentBranch);
+  
+  if (isProtectedBranch) {
+    // Warning for protected branches
+    const warningMessage = `${STYLES.warning('WARNING')}: Using --no-branch on '${currentBranch}' branch is not recommended for team collaboration.`;
+    return `${warningMessage}\n${STYLES.info('INFO: Branch operations skipped (--no-branch)')}`;
+  }
+  
+  return STYLES.info('INFO: Branch operations skipped (--no-branch)');
 }
